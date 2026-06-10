@@ -158,7 +158,7 @@ const fetchCompanySources = async (companyId: string) => {
     if (!res.ok) { const d = await res.json(); showToast(d.error ?? "Error al guardar", false); return; }
     showToast(editCompany ? "Empresa actualizada" : "Empresa creada");
     setShowCompanyModal(false); setEditCompany(null);
-    setCForm({ name: "", taxId: "", industry: "", country: "BO", licenseType: "BASIC", maxUsers: "5", reportingYear: String(new Date().getFullYear()), licenseExpiresAt: "" });
+    setCForm({ name: "", taxId: "", industry: "", country: "BO", orgBoundaryType: "", baseYear: "", baseYearRecalcNote: "", licenseType: "BASIC", yearFrom: "", yearTo: "", reportingYear: String(new Date().getFullYear()), licenseExpiresAt: "" });
     loadCompanies();
   };
 

@@ -1,4 +1,5 @@
 "use client";
+import { Suspense } from "react";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -43,7 +44,7 @@ function newDraft(): DraftRow {
   return { id: crypto.randomUUID(), invoiceNumber: "", plateNumber: "", quantity: "", dataQuality: "DIGITAL_INVOICE", saving: false, imageFile: null };
 }
 
-export default function InventoryPage() {
+function InventoryPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -650,5 +651,13 @@ const [zoomImage, setZoomImage] = useState<string|null>(null);
         )}
       </main>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <InventoryPage />
+    </Suspense>
   );
 }
