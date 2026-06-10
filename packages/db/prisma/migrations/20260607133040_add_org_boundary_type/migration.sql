@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "OrgBoundaryType" AS ENUM ('OPERATIONAL_CONTROL', 'FINANCIAL_CONTROL', 'EQUITY_SHARE');
+
+-- AlterTable
+ALTER TABLE "companies" ADD COLUMN     "orgBoundaryType" "OrgBoundaryType" NOT NULL DEFAULT 'OPERATIONAL_CONTROL';
