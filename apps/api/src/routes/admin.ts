@@ -420,6 +420,25 @@ router.post("/companies/:id/sources", async (c) => {
   });
   return c.json(source, 201);
 });
+// POST /api/admin/companies/:id/sources
+router.post("/companies/:id/sources", async (c) => {
+  const companyId = c.req.param("id");
+  const body = await c.req.json().catch(() => null);
+  const schema = z.object({
+    name:             z.string().min(2),
+    description:      z.string().optional(),
+    scope:            z.enum(["SCOPE_1", "SCOPE_2", "SCOPE_3"]),
+    category:         z.enum(["STATIONARY_COMBUSTION","MOBILE_COMBUSTION","PROCESS_EMISSIONS","FUGITIVE_EMISSIONS","PURCHASED_ELECTRICITY","PURCHASED_HEAT","PURCHASED_COOLING","BUSINESS_TRAVEL","EMPLOYEE_COMMUTING","WASTE_DISPOSAL","PURCHASED_GOODS","UPSTREAM_TRANSPORT","DOWNSTREAM_TRANSPORT","USE_OF_SOLD_PRODUCTS","END_OF_LIFE_TREATMENT"]),
+    unit:             z.enum(["LITER","GALLON_US","M3","KG","TON","KWH","MWH","KM","KM_PASSENGER","TON_KM","TON_WASTE","USD"]),
+    emissionFactorId: z.string().optional(),
+  });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return c.json({ error: "Datos inválidos", detail: parsed.error.flatten() }, 400);
+  const source = await prisma.emissionSource.create({
+    data: { ...parsed.data, companyId },
+  });
+  return c.json(source, 201);
+});
 
 // PATCH /api/admin/companies/:companyId/sources/:sourceId
 router.patch("/companies/:companyId/sources/:sourceId", async (c) => {
