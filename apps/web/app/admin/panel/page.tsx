@@ -480,7 +480,9 @@ const fetchCompanySources = async (companyId: string) => {
                         <td className="px-4 py-3.5">
                           {s.isExcluded
                             ? <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600 font-medium">Excluida</span>
-                            : <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">Activa</span>}
+                            : s.isActive
+                              ? <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">Activa</span>
+                              : <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 font-medium">Inactiva</span>}
                           {s.exclusionReason && <p className="text-xs text-gray-400 mt-0.5">{s.exclusionReason}</p>}
                         </td>
                         <td className="px-4 py-3.5 text-center">
