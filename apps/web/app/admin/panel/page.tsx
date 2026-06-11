@@ -81,6 +81,8 @@ const [companySources, setCompanySources]       = useState<any[]>([]);
 const [editSource, setEditSource]               = useState<any | null>(null);
 const [showSourceModal, setShowSourceModal]     = useState(false);
 const [sfForm, setSfForm]                       = useState({ uncertaintyLevel: "MEDIUM", uncertaintyNote: "", isExcluded: false, exclusionReason: "" });
+const [showAddSourceModal, setShowAddSourceModal] = useState(false);
+const [safForm, setSafForm] = useState({ name: "", description: "", scope: "SCOPE_1", category: "STATIONARY_COMBUSTION", unit: "LITER", emissionFactorId: "" });
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
   const showToast = (msg: string, ok = true) => {
@@ -435,8 +437,14 @@ const fetchCompanySources = async (companyId: string) => {
                   <h3 className="font-bold text-gray-900">Fuentes de emisión — {selCompanySources.name}</h3>
                   <p className="text-xs text-gray-400 mt-0.5">Incertidumbre y exclusiones por fuente (ISO 14064-1 cláusula 6.5)</p>
                 </div>
+                <div className="flex items-center gap-2">
+                <button onClick={() => { setShowAddSourceModal(true); setSafForm({ name: "", description: "", scope: "SCOPE_1", category: "STATIONARY_COMBUSTION", unit: "LITER", emissionFactorId: "" }); }}
+                  className="flex items-center gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition">
+                  <Plus className="w-3.5 h-3.5" />Nueva fuente
+                </button>
                 <button onClick={() => { setSelCompanySources(null); setCompanySources([]); }}
                   className="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -494,6 +502,86 @@ const fetchCompanySources = async (companyId: string) => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal nueva fuente */}
+        {showAddSourceModal && (
+          <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-auto my-8">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-bold text-gray-900">Nueva fuente — {selCompanySources?.name}</h3>
+                <button onClick={() => setShowAddSourceModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Nombre *</label>
+                  <input type="text" value={safForm.name} onChange={(e) => setSafForm((p) => ({ ...p, name: e.target.value }))}
+                    placeholder="Ej: Flota de vehículos diésel"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Descripción</label>
+                  <input type="text" value={safForm.description} onChange={(e) => setSafForm((p) => ({ ...p, description: e.target.value }))}
+                    placeholder="Opcional"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Alcance *</label>
+                  <select value={safForm.scope} onChange={(e) => setSafForm((p) => ({ ...p, scope: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                    <option value="SCOPE_1">Alcance 1 — Emisiones directas</option>
+                    <option value="SCOPE_2">Alcance 2 — Electricidad comprada</option>
+                    <option value="SCOPE_3">Alcance 3 — Cadena de valor</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Categoría *</label>
+                  <select value={safForm.category} onChange={(e) => setSafForm((p) => ({ ...p, category: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                    <option value="STATIONARY_COMBUSTION">Combustión estacionaria</option>
+                    <option value="MOBILE_COMBUSTION">Combustión móvil</option>
+                    <option value="PROCESS_EMISSIONS">Emisiones de proceso</option>
+                    <option value="FUGITIVE_EMISSIONS">Emisiones fugitivas</option>
+                    <option value="PURCHASED_ELECTRICITY">Electricidad comprada</option>
+                    <option value="PURCHASED_HEAT">Calor comprado</option>
+                    <option value="BUSINESS_TRAVEL">Viajes de negocio</option>
+                    <option value="EMPLOYEE_COMMUTING">Transporte empleados</option>
+                    <option value="WASTE_DISPOSAL">Disposición de residuos</option>
+                    <option value="PURCHASED_GOODS">Bienes y servicios comprados</option>
+                    <option value="UPSTREAM_TRANSPORT">Transporte aguas arriba</option>
+                    <option value="DOWNSTREAM_TRANSPORT">Transporte aguas abajo</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Unidad *</label>
+                  <select value={safForm.unit} onChange={(e) => setSafForm((p) => ({ ...p, unit: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                    {Object.entries(UNIT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-6">
+                <button onClick={() => setShowAddSourceModal(false)}
+                  className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition">Cancelar</button>
+                <button onClick={async () => {
+                  if (!safForm.name) { showToast("El nombre es obligatorio", false); return; }
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${selCompanySources.id}/sources`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(safForm),
+                  });
+                  if (res.ok) {
+                    setShowAddSourceModal(false);
+                    fetchCompanySources(selCompanySources.id);
+                    showToast("Fuente creada correctamente");
+                  } else {
+                    const err = await res.json();
+                    showToast(err.error ?? "Error al crear fuente", false);
+                  }
+                }} className="flex-1 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition">Crear fuente</button>
               </div>
             </div>
           </div>
