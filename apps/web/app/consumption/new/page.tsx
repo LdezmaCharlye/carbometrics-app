@@ -138,7 +138,7 @@ function InventoryPage() {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          emissionFactorId: selectedSource.id,
+          emissionSourceId: selectedSource.id,
           year: selectedYear, month: selectedMonth,
           quantity: parseFloat(draft.quantity),
           notes: notesParts.length ? notesParts.join(" | ") : undefined,

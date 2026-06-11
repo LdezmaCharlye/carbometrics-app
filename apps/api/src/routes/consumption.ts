@@ -89,47 +89,22 @@ router.get("/", requireAuth, async (c) => {
 router.post("/from-factor", requireManager, async (c) => {
   const payload = c.get("jwtPayload") as any;
   const body = await c.req.json().catch(() => null);
-  if (!body || !body.emissionFactorId || !body.year || !body.month || !body.quantity) {
+  if (!body || !body.emissionSourceId || !body.year || !body.month || !body.quantity) {
     return c.json({ error: "Faltan campos obligatorios" }, 400);
   }
 
-  const factor = await prisma.emissionFactor.findUnique({
-    where: { id: body.emissionFactorId },
+  // Buscar la fuente directamente por ID
+  const source = await prisma.emissionSource.findFirst({
+    where: { id: body.emissionSourceId, companyId: payload.companyId, isActive: true },
+    include: { emissionFactor: true },
   });
-  if (!factor) return c.json({ error: "Factor no encontrado" }, 404);
+  if (!source) return c.json({ error: "Fuente no encontrada" }, 404);
 
-  // Buscar scope y category según el factor
-  const scopeMap: Record<string, { scope: string; category: string }> = {
-    "LITER":        { scope: "SCOPE_1", category: "MOBILE_COMBUSTION" },
-    "KG":           { scope: "SCOPE_1", category: "STATIONARY_COMBUSTION" },
-    "M3":           { scope: "SCOPE_1", category: "STATIONARY_COMBUSTION" },
-    "KWH":          { scope: "SCOPE_2", category: "PURCHASED_ELECTRICITY" },
-    "MWH":          { scope: "SCOPE_2", category: "PURCHASED_ELECTRICITY" },
-    "KM_PASSENGER": { scope: "SCOPE_3", category: "BUSINESS_TRAVEL" },
-    "TON_KM":       { scope: "SCOPE_3", category: "UPSTREAM_TRANSPORT" },
-  };
-  const { scope, category } = scopeMap[factor.unit] ?? { scope: "SCOPE_1", category: "STATIONARY_COMBUSTION" };
-
-  // Buscar o crear fuente para esta empresa
-  let source = await prisma.emissionSource.findFirst({
-    where: { companyId: payload.companyId, emissionFactorId: factor.id, isActive: true },
-  });
-  if (!source) {
-    source = await prisma.emissionSource.create({
-      data: {
-        name:            factor.name,
-        scope,
-        category,
-        unit:            factor.unit,
-        emissionFactorId: factor.id,
-        companyId:       payload.companyId,
-        uncertaintyLevel: "MEDIUM",
-      },
-    });
-  }
+  const factor = source.emissionFactor;
+  if (!factor) return c.json({ error: "La fuente no tiene factor de emisión asignado" }, 422);
 
   const emissionsKgCO2eq = Math.round(
-    body.quantity * (factor.kgCO2 + factor.kgCH4 * 27.9 + factor.kgN2O * 273) * 1000
+    parseFloat(body.quantity) * (factor.kgCO2 + factor.kgCH4 * 27.9 + factor.kgN2O * 273) * 1000
   ) / 1000;
 
   const log = await prisma.consumptionLog.create({
