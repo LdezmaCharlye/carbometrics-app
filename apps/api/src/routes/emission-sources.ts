@@ -50,13 +50,31 @@ router.post("/", requireManager, async (c) => {
   return c.json(source, 201);
 });
 
-// GET /api/sources/factors — lista factores de emisión disponibles
+// GET /api/sources/factors — fuentes ACTIVAS de la empresa con su factor de emisión
 router.get("/factors", requireAuth, async (c) => {
-  const factors = await prisma.emissionFactor.findMany({
-    where:   { isActive: true },
-    orderBy: { name: "asc" },
+  const payload = c.get("jwtPayload") as any;
+  const sources = await prisma.emissionSource.findMany({
+    where: {
+      companyId: payload.companyId,
+      isActive: true,
+      isExcluded: false,
+    },
+    include: {
+      emissionFactor: {
+        select: { id: true, name: true, kgCO2: true, kgCH4: true, kgN2O: true, unit: true },
+      },
+    },
+    orderBy: [{ scope: "asc" }, { name: "asc" }],
   });
-  return c.json(factors);
+  return c.json(sources.map((s) => ({
+    id: s.id,
+    name: s.name,
+    scope: s.scope,
+    unit: s.unit,
+    kgCO2: s.emissionFactor?.kgCO2 ?? 0,
+    kgCH4: s.emissionFactor?.kgCH4 ?? 0,
+    kgN2O: s.emissionFactor?.kgN2O ?? 0,
+  })));
 });
 // PATCH /api/sources/:id
 router.patch("/:id", requireManager, async (c) => {
