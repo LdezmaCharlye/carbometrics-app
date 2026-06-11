@@ -41,6 +41,7 @@ model Company {
   users           User[]
   emissionSources EmissionSource[]
   ghgInventories  GhgInventory[]
+  removalProjects RemovalProject[]
 
   @@map("companies")
 }
@@ -296,4 +297,42 @@ model CountryEmissionFactor {
   updatedAt   DateTime @updatedAt
 
   @@map("country_emission_factors")
+}
+model RemovalProject {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  type            RemovalType
+  methodology     String?
+  startYear       Int
+  endYear         Int?
+  tCO2eRemovedPerYear Float
+  verificationBody String?
+  status          RemovalStatus @default(ACTIVE)
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  companyId       String
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, startYear])
+  @@map("removal_projects")
+}
+
+enum RemovalType {
+  REFORESTATION
+  AFFORESTATION
+  SOIL_CARBON
+  BIOCHAR
+  DIRECT_AIR_CAPTURE
+  ENHANCED_WEATHERING
+  BLUE_CARBON
+  OTHER
+}
+
+enum RemovalStatus {
+  ACTIVE
+  COMPLETED
+  SUSPENDED
 }
