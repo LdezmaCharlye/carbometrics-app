@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "echo ok",
-    "start": "npx prisma generate --schema=../../packages/db/prisma/schema.prisma && npx tsx src/index.ts",
+    "start": "npx prisma generate --schema=../../packages/db/prisma/schema.prisma && npx tsx src/index.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.11.0",
