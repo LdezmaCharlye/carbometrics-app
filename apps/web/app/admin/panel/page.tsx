@@ -484,6 +484,22 @@ const fetchCompanySources = async (companyId: string) => {
                           {s.exclusionReason && <p className="text-xs text-gray-400 mt-0.5">{s.exclusionReason}</p>}
                         </td>
                         <td className="px-4 py-3.5 text-center">
+                          <button onClick={async (e) => {
+                            e.stopPropagation();
+                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${selCompanySources.id}/sources/${s.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                              body: JSON.stringify({ isActive: !s.isActive }),
+                            });
+                            if (res.ok) {
+                              fetchCompanySources(selCompanySources.id);
+                              showToast(s.isActive ? "Fuente desactivada" : "Fuente activada");
+                            }
+                          }} className="text-gray-400 hover:text-green-600 transition">
+                            {s.isActive
+                              ? <ToggleRight className="w-5 h-5 text-green-500" />
+                              : <ToggleLeft className="w-5 h-5 text-gray-300" />}
+                          </button>
                           <button onClick={(e) => {
                             e.stopPropagation();
                             setEditSource(s);
