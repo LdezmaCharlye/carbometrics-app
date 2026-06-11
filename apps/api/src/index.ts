@@ -13,7 +13,13 @@ const app = new Hono();
 
 app.use("*", logger());
 app.use("*", cors({
-  origin:      process.env.CORS_ORIGIN ?? "http://localhost:3000",
+  origin: [
+    "http://localhost:3000",
+    "https://carbometrics.site",
+    "https://www.carbometrics.site",
+    "https://carbometrics-app-web-git-main-charlye-s-projects.vercel.app",
+    ...(process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN] : []),
+  ],
   credentials: true,
 }));
 
