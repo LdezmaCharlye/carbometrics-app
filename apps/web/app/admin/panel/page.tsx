@@ -492,7 +492,7 @@ const fetchCompanySources = async (companyId: string) => {
                               body: JSON.stringify({ isActive: !s.isActive }),
                             });
                             if (res.ok) {
-                              fetchCompanySources(selCompanySources.id);
+                              setCompanySources((prev) => prev.map((src) => src.id === s.id ? { ...src, isActive: !src.isActive } : src));
                               showToast(s.isActive ? "Fuente desactivada" : "Fuente activada");
                             }
                           }} className="text-gray-400 hover:text-green-600 transition">
