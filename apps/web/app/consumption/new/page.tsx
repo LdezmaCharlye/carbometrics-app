@@ -89,7 +89,7 @@ function InventoryPage() {
     }).catch(() => {});
   }, [router, token]);
 
-  const scopeSources = sources.filter((s) => (SCOPE_UNITS[selectedScope] ?? []).includes(s.unit));
+  const scopeSources = sources.filter((s) => s.scope === selectedScope);
 
   const loadSaved = useCallback(async () => {
     if (!selectedSource || selectedMonth === null) return;
@@ -375,7 +375,7 @@ const [zoomImage, setZoomImage] = useState<string|null>(null);
             <p className="text-gray-500 text-sm mb-3">Año seleccionado: <strong>{selectedYear}</strong></p>
             <div className="flex flex-col gap-2">
               {SCOPES.map((scope) => {
-                const count = sources.filter((s) => (SCOPE_UNITS[scope.id] ?? []).includes(s.unit)).length;
+                const count = sources.filter((s) => s.scope === scope.id).length;
                 return (
                   <button key={scope.id} onClick={() => { setSelectedScope(scope.id); setStep("month"); updateURL({ scope: scope.id, step: "month", sourceId: "" }); }}
                     disabled={count === 0}
