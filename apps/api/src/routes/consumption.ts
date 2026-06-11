@@ -221,10 +221,13 @@ router.get("/list", requireAuth, async (c) => {
   const year             = c.req.query("year")             ? parseInt(c.req.query("year")!)  : new Date().getFullYear();
   const month            = c.req.query("month")            ? parseInt(c.req.query("month")!) : undefined;
   const emissionFactorId = c.req.query("emissionFactorId") ?? undefined;
+  const emissionSourceId = c.req.query("emissionSourceId") ?? undefined;
 
   const where: any = { companyId: payload.companyId, year };
   if (month) where.month = month;
-  if (emissionFactorId) {
+  if (emissionSourceId) {
+    where.emissionSourceId = emissionSourceId;
+  } else if (emissionFactorId) {
     where.emissionSource = { emissionFactorId };
   }
 

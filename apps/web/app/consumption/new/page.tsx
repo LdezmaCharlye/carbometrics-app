@@ -96,7 +96,7 @@ function InventoryPage() {
     setLoadingSaved(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/consumption/list?year=${selectedYear}&month=${selectedMonth}&emissionFactorId=${selectedSource.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/consumption/list?year=${selectedYear}&month=${selectedMonth}&emissionSourceId=${selectedSource.id}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
