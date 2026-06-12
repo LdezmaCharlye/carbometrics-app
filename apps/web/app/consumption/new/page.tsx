@@ -35,8 +35,8 @@ function newDraft(): DraftRow {
   return { id: crypto.randomUUID(), invoiceNumber: "", plateNumber: "", quantity: "", dataQuality: "DIGITAL_INVOICE", saving: false, imageFile: null };
 }
 
-// ─── Recortador Canvas nativo ────────────────────────────────────────────────
-interface CropBox { x: number; y: number; w: number; h: number; }
+// ─── Recortador con esquinas libres ──────────────────────────────────────────
+interface Point { x: number; y: number; }
 
 function ImageCropper({ src, onConfirm, onCancel, loading }: {
   src: string;
@@ -46,57 +46,62 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imgRef    = useRef<HTMLImageElement | null>(null);
-  const cropRef   = useRef<CropBox>({ x: 0, y: 0, w: 0, h: 0 });
-  const dragging  = useRef<null | "move" | "tl" | "tr" | "bl" | "br">(null);
-  const startPos  = useRef({ x: 0, y: 0 });
-  const startCrop = useRef<CropBox>({ x: 0, y: 0, w: 0, h: 0 });
-  const [zoomCorner, setZoomCorner] = useState<{ x: number; y: number; imgX: number; imgY: number } | null>(null);
-  const zoomCanvasRef = useRef<HTMLCanvasElement>(null);
-  const animRef = useRef<number>(0);
-
-  const HANDLE = 18;
+  const cornersRef = useRef<Point[]>([]);
+  const draggingIdx = useRef<number | null>(null);
+  const HANDLE = 22;
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     const img = imgRef.current;
-    if (!canvas || !img) return;
+    if (!canvas || !img || cornersRef.current.length < 4) return;
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    const { x, y, w, h } = cropRef.current;
+    const [tl, tr, br, bl] = cornersRef.current;
 
-    // Overlay oscuro fuera del recorte
-    ctx.fillStyle = "rgba(0,0,0,0.5)";
-    ctx.fillRect(0, 0, canvas.width, y);
-    ctx.fillRect(0, y + h, canvas.width, canvas.height - y - h);
-    ctx.fillRect(0, y, x, h);
-    ctx.fillRect(x + w, y, canvas.width - x - w, h);
+    // Overlay oscuro fuera del polígono
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.moveTo(tl.x, tl.y);
+    ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(br.x, br.y);
+    ctx.lineTo(bl.x, bl.y);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
 
-    // Borde del recorte
+    // Imagen dentro del polígono
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(tl.x, tl.y);
+    ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(br.x, br.y);
+    ctx.lineTo(bl.x, bl.y);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
+
+    // Borde verde
     ctx.strokeStyle = "#00e676";
     ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, w, h);
-
-    // Líneas de guía (regla de tercios)
-    ctx.strokeStyle = "rgba(255,255,255,0.3)";
-    ctx.lineWidth = 1;
-    for (let i = 1; i < 3; i++) {
-      ctx.beginPath(); ctx.moveTo(x + w * i / 3, y); ctx.lineTo(x + w * i / 3, y + h); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x, y + h * i / 3); ctx.lineTo(x + w, y + h * i / 3); ctx.stroke();
-    }
+    ctx.beginPath();
+    ctx.moveTo(tl.x, tl.y);
+    ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(br.x, br.y);
+    ctx.lineTo(bl.x, bl.y);
+    ctx.closePath();
+    ctx.stroke();
 
     // Esquinas
-    const corners = [
-      { cx: x,     cy: y     },
-      { cx: x + w, cy: y     },
-      { cx: x,     cy: y + h },
-      { cx: x + w, cy: y + h },
-    ];
-    corners.forEach(({ cx, cy }) => {
-      ctx.fillStyle = "#00e676";
+    cornersRef.current.forEach((p) => {
       ctx.beginPath();
-      ctx.arc(cx, cy, HANDLE / 2, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, HANDLE / 2, 0, Math.PI * 2);
+      ctx.fillStyle = "#00e676";
       ctx.fill();
       ctx.strokeStyle = "#fff";
       ctx.lineWidth = 2;
@@ -109,23 +114,23 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     img.onload = () => {
       imgRef.current = img;
       const canvas = canvasRef.current!;
-      const maxW = Math.min(window.innerWidth - 32, 480);
+      const maxW = Math.min(window.innerWidth - 16, 500);
       const scale = maxW / img.naturalWidth;
       canvas.width  = maxW;
       canvas.height = img.naturalHeight * scale;
-      // Crop inicial: 85% centrado
-      const pad = Math.min(canvas.width, canvas.height) * 0.075;
-      cropRef.current = {
-        x: pad, y: pad,
-        w: canvas.width  - pad * 2,
-        h: canvas.height - pad * 2,
-      };
+      const pad = 20;
+      cornersRef.current = [
+        { x: pad,                  y: pad },
+        { x: canvas.width - pad,   y: pad },
+        { x: canvas.width - pad,   y: canvas.height - pad },
+        { x: pad,                  y: canvas.height - pad },
+      ];
       draw();
     };
     img.src = src;
   }, [src, draw]);
 
-  const getPos = (e: React.MouseEvent | React.TouchEvent) => {
+  const getCanvasPos = (e: React.TouchEvent | React.MouseEvent): Point => {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width  / rect.width;
@@ -137,177 +142,81 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     };
   };
 
-  const getHandle = (px: number, py: number): typeof dragging.current => {
-    const { x, y, w, h } = cropRef.current;
-    const corners: { key: typeof dragging.current; cx: number; cy: number }[] = [
-      { key: "tl", cx: x,     cy: y     },
-      { key: "tr", cx: x + w, cy: y     },
-      { key: "bl", cx: x,     cy: y + h },
-      { key: "br", cx: x + w, cy: y + h },
-    ];
-    for (const c of corners) {
-      if (Math.hypot(px - c.cx, py - c.cy) < HANDLE) return c.key;
-    }
-    if (px > x && px < x + w && py > y && py < y + h) return "move";
-    return null;
-  };
-
-  const updateZoom = (handle: typeof dragging.current) => {
-    const canvas = canvasRef.current!;
-    const img = imgRef.current!;
-    const { x, y, w, h } = cropRef.current;
-    const scaleX = img.naturalWidth  / canvas.width;
-    const scaleY = img.naturalHeight / canvas.height;
-    const corners: Record<string, { cx: number; cy: number }> = {
-      tl: { cx: x,     cy: y     },
-      tr: { cx: x + w, cy: y     },
-      bl: { cx: x,     cy: y + h },
-      br: { cx: x + w, cy: y + h },
-    };
-    if (!handle || handle === "move" || !corners[handle]) { setZoomCorner(null); return; }
-    const c = corners[handle];
-    setZoomCorner({ x: c.cx, y: c.cy, imgX: c.cx * scaleX, imgY: c.cy * scaleY });
-
-    // Dibujar zoom
-    requestAnimationFrame(() => {
-      const zc = zoomCanvasRef.current;
-      if (!zc) return;
-      const zctx = zc.getContext("2d")!;
-      const ZS = 3;
-      const ZR = 40;
-      zctx.clearRect(0, 0, zc.width, zc.height);
-      zctx.beginPath();
-      zctx.arc(zc.width / 2, zc.height / 2, zc.width / 2, 0, Math.PI * 2);
-      zctx.clip();
-      zctx.drawImage(img,
-        c.cx * scaleX - ZR, c.cy * scaleY - ZR, ZR * 2, ZR * 2,
-        0, 0, zc.width, zc.height
-      );
-      // Cruz central
-      zctx.strokeStyle = "#00e676";
-      zctx.lineWidth = 1.5;
-      zctx.beginPath(); zctx.moveTo(zc.width/2 - 8, zc.height/2); zctx.lineTo(zc.width/2 + 8, zc.height/2); zctx.stroke();
-      zctx.beginPath(); zctx.moveTo(zc.width/2, zc.height/2 - 8); zctx.lineTo(zc.width/2, zc.height/2 + 8); zctx.stroke();
+  const findClosestCorner = (p: Point): number | null => {
+    let minDist = HANDLE * 2;
+    let idx: number | null = null;
+    cornersRef.current.forEach((c, i) => {
+      const d = Math.hypot(p.x - c.x, p.y - c.y);
+      if (d < minDist) { minDist = d; idx = i; }
     });
+    return idx;
   };
 
-  const onStart = (e: React.MouseEvent | React.TouchEvent) => {
+  const onStart = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
-    const { x, y } = getPos(e);
-    const handle = getHandle(x, y);
-    dragging.current = handle;
-    startPos.current = { x, y };
-    startCrop.current = { ...cropRef.current };
-    updateZoom(handle);
+    const p = getCanvasPos(e);
+    draggingIdx.current = findClosestCorner(p);
   };
 
-  const onMove = (e: React.MouseEvent | React.TouchEvent) => {
+  const onMove = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
-    if (!dragging.current) return;
+    if (draggingIdx.current === null) return;
     const canvas = canvasRef.current!;
-    const { x, y } = getPos(e);
-    const dx = x - startPos.current.x;
-    const dy = y - startPos.current.y;
-    const sc = startCrop.current;
-    const MIN = 40;
-
-    let { x: cx, y: cy, w: cw, h: ch } = sc;
-
-    if (dragging.current === "move") {
-      cx = Math.max(0, Math.min(canvas.width  - cw, sc.x + dx));
-      cy = Math.max(0, Math.min(canvas.height - ch, sc.y + dy));
-    } else if (dragging.current === "tl") {
-      const nx = Math.min(sc.x + dx, sc.x + sc.w - MIN);
-      const ny = Math.min(sc.y + dy, sc.y + sc.h - MIN);
-      cw = sc.w - (nx - sc.x); ch = sc.h - (ny - sc.y);
-      cx = nx; cy = ny;
-    } else if (dragging.current === "tr") {
-      cw = Math.max(MIN, sc.w + dx);
-      const ny = Math.min(sc.y + dy, sc.y + sc.h - MIN);
-      ch = sc.h - (ny - sc.y); cy = ny;
-    } else if (dragging.current === "bl") {
-      const nx = Math.min(sc.x + dx, sc.x + sc.w - MIN);
-      cw = sc.w - (nx - sc.x); cx = nx;
-      ch = Math.max(MIN, sc.h + dy);
-    } else if (dragging.current === "br") {
-      cw = Math.max(MIN, sc.w + dx);
-      ch = Math.max(MIN, sc.h + dy);
-    }
-
-    // Clamp
-    cx = Math.max(0, cx); cy = Math.max(0, cy);
-    cw = Math.min(cw, canvas.width  - cx);
-    ch = Math.min(ch, canvas.height - cy);
-
-    cropRef.current = { x: cx, y: cy, w: cw, h: ch };
-    updateZoom(dragging.current);
+    const p = getCanvasPos(e);
+    cornersRef.current[draggingIdx.current] = {
+      x: Math.max(0, Math.min(canvas.width,  p.x)),
+      y: Math.max(0, Math.min(canvas.height, p.y)),
+    };
     draw();
   };
 
-  const onEnd = () => {
-    dragging.current = null;
-    setZoomCorner(null);
-  };
+  const onEnd = () => { draggingIdx.current = null; };
 
   const confirm = () => {
     const canvas = canvasRef.current;
     const img = imgRef.current;
-    if (!canvas || !img) { console.error("No canvas or img"); return; }
-    const { x, y, w, h } = cropRef.current;
-    if (w <= 0 || h <= 0) { console.error("Invalid crop", cropRef.current); return; }
+    if (!canvas || !img) return;
+    const [tl, tr, br, bl] = cornersRef.current;
     const scaleX = img.naturalWidth  / canvas.width;
     const scaleY = img.naturalHeight / canvas.height;
+
+    // Bounding box del polígono
+    const xs = [tl.x, tr.x, br.x, bl.x];
+    const ys = [tl.y, tr.y, br.y, bl.y];
+    const minX = Math.min(...xs) * scaleX;
+    const minY = Math.min(...ys) * scaleY;
+    const maxX = Math.max(...xs) * scaleX;
+    const maxY = Math.max(...ys) * scaleY;
+
     const out = document.createElement("canvas");
-    out.width  = w * scaleX;
-    out.height = h * scaleY;
-    out.getContext("2d")!.drawImage(img,
-      x * scaleX, y * scaleY, w * scaleX, h * scaleY,
-      0, 0, out.width, out.height
-    );
-    out.toBlob((blob) => {
-      if (blob) onConfirm(blob);
-      else console.error("toBlob failed");
-    }, "image/jpeg", 0.92);
+    out.width  = maxX - minX;
+    out.height = maxY - minY;
+    out.getContext("2d")!.drawImage(img, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
+    out.toBlob((blob) => { if (blob) onConfirm(blob); }, "image/jpeg", 0.92);
   };
 
   return (
     <div className="fixed inset-0 z-[999998] bg-black flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black/80">
-        <button onClick={onCancel} className="text-white text-sm px-3 py-1.5 rounded-lg border border-white/20">
+      <div className="flex items-center justify-between px-4 py-3 bg-black/80 flex-shrink-0">
+        <button onClick={onCancel} className="text-white text-sm px-4 py-2 rounded-lg border border-white/30">
           Cancelar
         </button>
-        <span className="text-white text-sm font-medium">Recortar imagen</span>
+        <span className="text-white text-sm font-medium">Ajusta las esquinas</span>
         <button onClick={confirm} disabled={loading}
-          className="bg-green-500 text-white text-sm font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓ Subir"}
+          className="bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5">
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓ Guardar"}
         </button>
       </div>
-
-      {/* Canvas */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden relative bg-black">
+      <div className="flex-1 flex items-center justify-center overflow-hidden bg-black">
         <canvas
           ref={canvasRef}
-          style={{ maxWidth: "100%", maxHeight: "100%", touchAction: "none" }}
+          style={{ maxWidth: "100%", maxHeight: "100%", touchAction: "none", display: "block" }}
           onMouseDown={onStart} onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd}
           onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}
         />
-        {/* Lupa de esquina */}
-        {zoomCorner && (
-          <div style={{
-            position: "absolute",
-            left: Math.min(zoomCorner.x + 20, (canvasRef.current?.offsetWidth ?? 300) - 90),
-            top:  Math.max(zoomCorner.y - 90, 10),
-            pointerEvents: "none",
-          }}>
-            <canvas ref={zoomCanvasRef} width={80} height={80}
-              style={{ borderRadius: "50%", border: "2px solid #00e676", display: "block" }} />
-          </div>
-        )}
       </div>
-
-      <p className="text-center text-white/50 text-xs py-2">
-        Arrastra las esquinas para ajustar el recorte
+      <p className="text-center text-white/40 text-xs py-2 flex-shrink-0">
+        Arrastra las esquinas verdes para ajustar
       </p>
     </div>
   );
@@ -332,13 +241,11 @@ function InventoryPage() {
   const [verifying,      setVerifying]     = useState<string|null>(null);
   const [deleting,       setDeleting]      = useState<string|null>(null);
 
-  // Recortador
   const [cropSrc,            setCropSrc]            = useState<string|null>(null);
   const [pendingUploadLogId, setPendingUploadLogId] = useState<string|null>(null);
   const [pendingDraft,       setPendingDraft]       = useState<DraftRow|null>(null);
   const [cropLoading,        setCropLoading]        = useState(false);
 
-  // Zoom imagen
   const [zoomImage,      setZoomImage]      = useState<string|null>(null);
   const dragging        = useRef(false);
   const lastPos         = useRef({ x: 0, y: 0 });
@@ -407,7 +314,6 @@ function InventoryPage() {
 
   useEffect(() => { if (step === "table") loadSaved(); }, [step, loadSaved]);
 
-  // Zoom handlers
   useEffect(() => {
     const container = zoomContainerRef.current;
     if (!container) return;
@@ -432,8 +338,8 @@ function InventoryPage() {
     const reader = new FileReader();
     reader.onload = () => {
       setCropSrc(reader.result as string);
-      if (logId)  setPendingUploadLogId(logId);
-      if (draft)  setPendingDraft(draft);
+      if (logId) setPendingUploadLogId(logId);
+      if (draft) setPendingDraft(draft);
     };
     reader.readAsDataURL(file);
   };
@@ -581,10 +487,24 @@ function InventoryPage() {
   const totalEmissions = saved.reduce((a, l) => a + l.emissionsKgCO2eq, 0) / 1000;
   const verifiedCount  = saved.filter((l) => l.isVerified).length;
 
+  const UploadButtons = ({ onFile }: { onFile: (file: File) => void }) => (
+    <div className="flex flex-col gap-0.5">
+      <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
+        <Upload className="w-3 h-3" /><span>Galería</span>
+        <input type="file" accept="image/*" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+      </label>
+      <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
+        <Upload className="w-3 h-3" /><span>Cámara</span>
+        <input type="file" accept="image/*" capture="environment" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+      </label>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Recortador */}
       {cropSrc && (
         <ImageCropper
           src={cropSrc}
@@ -594,7 +514,6 @@ function InventoryPage() {
         />
       )}
 
-      {/* Zoom imagen */}
       {zoomImage && (
         <div ref={zoomContainerRef} style={{ position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab", userSelect: "none" }}
           onContextMenu={(e) => { e.preventDefault(); setZoomImage(null); posRef.current = { x: 0, y: 0 }; scaleRef.current = 1; }}
@@ -638,7 +557,6 @@ function InventoryPage() {
 
       <main className={`px-4 py-6 space-y-4 ${step === "scope" ? "w-1/3" : step === "month" ? "max-w-xs" : "max-w-4xl mx-auto"}`}>
 
-        {/* PASO 1: Alcance */}
         {step === "scope" && (
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-1">¿Qué tipo de emisión vas a registrar?</h2>
@@ -660,7 +578,6 @@ function InventoryPage() {
           </div>
         )}
 
-        {/* PASO 2: Mes */}
         {step === "month" && sources.length > 0 && (
           <div className="space-y-6">
             <div>
@@ -695,7 +612,6 @@ function InventoryPage() {
           </div>
         )}
 
-        {/* PASO 3: Tabla */}
         {step === "table" && selectedSource && selectedMonth !== null && (
           <div className="space-y-4">
             <div>
@@ -734,7 +650,7 @@ function InventoryPage() {
                         {isScope1 && <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-24">Placa</th>}
                         <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-32">Cantidad ({UNIT_LABELS[selectedSource.unit] ?? selectedSource.unit})</th>
                         <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-36">Tipo de factura</th>
-                        <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-16">Imagen</th>
+                        <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-20">Imagen</th>
                         <th className="text-center px-2 py-2 text-xs text-gray-400 font-semibold w-24">Verificar</th>
                         <th className="w-8"></th>
                       </tr>
@@ -769,23 +685,22 @@ function InventoryPage() {
                           </td>
                           <td className="px-3 py-2">
                             {log.evidenceImages.length > 0 ? (
-                              <img src={log.evidenceImages[0].url} alt="evidencia"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                                onClick={() => setZoomImage(log.evidenceImages[0].url)}
-                                className="w-8 h-8 object-cover rounded-lg border border-gray-200 cursor-zoom-in hover:opacity-80 transition" />
-                            ) : !log.isVerified ? (
-                              <div className="flex flex-col gap-1">
-                                <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
-                                  <Upload className="w-3 h-3" /><span>Galería</span>
-                                  <input type="file" accept="image/*" className="hidden"
-                                    onChange={(e) => { const file = e.target.files?.[0]; if (file) openCropper(file, log.id); }} />
-                                </label>
-                                <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
-                                  <Upload className="w-3 h-3" /><span>Cámara</span>
-                                  <input type="file" accept="image/*" capture="environment" className="hidden"
-                                    onChange={(e) => { const file = e.target.files?.[0]; if (file) openCropper(file, log.id); }} />
-                                </label>
+                              <div className="relative inline-block group">
+                                <img src={log.evidenceImages[0].url} alt="evidencia"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                  onClick={() => setZoomImage(log.evidenceImages[0].url)}
+                                  className="w-8 h-8 object-cover rounded-lg border border-gray-200 cursor-zoom-in hover:opacity-80 transition" />
+                                <button onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (!confirm("¿Eliminar imagen?")) return;
+                                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/evidence/image/${log.evidenceImages[0].id}`, {
+                                    method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+                                  });
+                                  if (res.ok) setSaved((prev) => prev.map((l) => l.id === log.id ? { ...l, evidenceImages: [] } : l));
+                                }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-4 h-4 text-xs items-center justify-center hidden group-hover:flex">✕</button>
                               </div>
+                            ) : !log.isVerified ? (
+                              <UploadButtons onFile={(file) => openCropper(file, log.id)} />
                             ) : <span className="text-gray-300 text-xs">—</span>}
                           </td>
                           <td className="px-3 py-2 text-center">
@@ -837,34 +752,13 @@ function InventoryPage() {
                             </select>
                           </td>
                           <td className="px-3 py-2.5">
-                            <div className="flex flex-col gap-1">
-                              <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 transition text-xs">
-                                <Upload className="w-3 h-3" /><span>Galería</span>
-                                <input type="file" accept="image/*" className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    if (!draft.quantity || parseFloat(draft.quantity) <= 0) {
-                                      alert("Ingresa la cantidad primero y presiona Enter para guardar el registro antes de subir la imagen.");
-                                      return;
-                                    }
-                                    openCropper(file, undefined, draft);
-                                  }} />
-                              </label>
-                              <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 transition text-xs">
-                                <Upload className="w-3 h-3" /><span>Cámara</span>
-                                <input type="file" accept="image/*" capture="environment" className="hidden"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (!file) return;
-                                    if (!draft.quantity || parseFloat(draft.quantity) <= 0) {
-                                      alert("Ingresa la cantidad primero y presiona Enter para guardar el registro antes de subir la imagen.");
-                                      return;
-                                    }
-                                    openCropper(file, undefined, draft);
-                                  }} />
-                              </label>
-                            </div>
+                            <UploadButtons onFile={(file) => {
+                              if (!draft.quantity || parseFloat(draft.quantity) <= 0) {
+                                alert("Ingresa la cantidad primero y presiona Enter para guardar el registro antes de subir la imagen.");
+                                return;
+                              }
+                              openCropper(file, undefined, draft);
+                            }} />
                           </td>
                           <td className="px-3 py-2.5 text-center">
                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-gray-50 text-gray-300">
