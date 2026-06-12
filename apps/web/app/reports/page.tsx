@@ -206,7 +206,10 @@ export default function ReportsPage() {
     ])
     .then(async ([companyData, yearsData]) => {
       setCompany(companyData);
-      const ys: number[] = yearsData.years ?? [];
+      const allYears: number[] = yearsData.years ?? [];
+      const yearFrom = companyData?.yearFrom ?? 0;
+      const yearTo   = companyData?.yearTo   ?? 9999;
+      const ys = allYears.filter((y) => y >= yearFrom && y <= yearTo);
       setYears(ys);
 
       const results = await Promise.all(
