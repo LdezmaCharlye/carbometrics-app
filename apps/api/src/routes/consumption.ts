@@ -101,10 +101,12 @@ router.post("/from-factor", requireManager, async (c) => {
   if (!source) return c.json({ error: "Fuente no encontrada" }, 404);
 
   const factor = source.emissionFactor;
-  if (!factor) return c.json({ error: "La fuente no tiene factor de emisión asignado" }, 422);
+  const kgCO2 = factor?.kgCO2 ?? 0;
+  const kgCH4 = factor?.kgCH4 ?? 0;
+  const kgN2O = factor?.kgN2O ?? 0;
 
   const emissionsKgCO2eq = Math.round(
-    parseFloat(body.quantity) * (factor.kgCO2 + factor.kgCH4 * 27.9 + factor.kgN2O * 273) * 1000
+    parseFloat(body.quantity) * (kgCO2 + kgCH4 * 27.9 + kgN2O * 273) * 1000
   ) / 1000;
 
   const log = await prisma.consumptionLog.create({
