@@ -80,7 +80,7 @@ const [selCompanySources, setSelCompanySources] = useState<any | null>(null);
 const [companySources, setCompanySources]       = useState<any[]>([]);
 const [editSource, setEditSource]               = useState<any | null>(null);
 const [showSourceModal, setShowSourceModal]     = useState(false);
-const [sfForm, setSfForm]                       = useState({ uncertaintyLevel: "MEDIUM", uncertaintyNote: "", isExcluded: false, exclusionReason: "" });
+const [sfForm, setSfForm]                       = useState({ uncertaintyLevel: "MEDIUM", uncertaintyNote: "", isExcluded: false, exclusionReason: "", emissionFactorId: "" });
 const [showAddSourceModal, setShowAddSourceModal] = useState(false);
 const [safForm, setSafForm] = useState({ name: "", description: "", scope: "SCOPE_1", category: "STATIONARY_COMBUSTION", unit: "LITER", emissionFactorId: "" });
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
@@ -105,6 +105,12 @@ const fetchCompanySources = async (companyId: string) => {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.ok) setCompanySources(await res.json());
+
+  if (factors.length === 0) {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/emission-factors`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((r) => r.json()).then(setFactors).catch(() => {});
+  }
 };
 
   const fetchCountryFactors = async () => {
@@ -506,10 +512,11 @@ const fetchCompanySources = async (companyId: string) => {
                             e.stopPropagation();
                             setEditSource(s);
                             setSfForm({
-                              uncertaintyLevel: s.uncertaintyLevel,
-                              uncertaintyNote:  s.uncertaintyNote ?? "",
-                              isExcluded:       s.isExcluded,
-                              exclusionReason:  s.exclusionReason ?? "",
+                              uncertaintyLevel:  s.uncertaintyLevel,
+                              uncertaintyNote:   s.uncertaintyNote ?? "",
+                              isExcluded:        s.isExcluded,
+                              exclusionReason:   s.exclusionReason ?? "",
+                              emissionFactorId:  s.emissionFactorId ?? "",
                             });
                             setShowSourceModal(true);
                           }} className="text-gray-400 hover:text-green-600 transition">
@@ -580,6 +587,19 @@ const fetchCompanySources = async (companyId: string) => {
                     {Object.entries(UNIT_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                   </select>
                 </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Factor de emisión</label>
+                  <select value={safForm.emissionFactorId} onChange={(e) => setSafForm((p) => ({ ...p, emissionFactorId: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                    <option value="">— Sin factor asignado —</option>
+                    {factors.filter(f => f.isActive).map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.name} — {f.kgCO2} kgCO₂/{UNIT_LABELS[f.unit] ?? f.unit} ({SOURCE_LABELS[f.source] ?? f.source})
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">El factor determina el cálculo de emisiones al registrar consumo.</p>
+                </div>
               </div>
               <div className="flex gap-2 mt-6">
                 <button onClick={() => setShowAddSourceModal(false)}
@@ -614,6 +634,18 @@ const fetchCompanySources = async (companyId: string) => {
                 <button onClick={() => setShowSourceModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
               </div>
               <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Factor de emisión</label>
+                  <select value={sfForm.emissionFactorId} onChange={(e) => setSfForm((p) => ({ ...p, emissionFactorId: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                    <option value="">— Sin factor asignado —</option>
+                    {factors.filter(f => f.isActive).map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.name} — {f.kgCO2} kgCO₂/{UNIT_LABELS[f.unit] ?? f.unit}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Nivel de incertidumbre del FE</label>
                   <select value={sfForm.uncertaintyLevel} onChange={(e) => setSfForm((p) => ({ ...p, uncertaintyLevel: e.target.value }))}
@@ -661,10 +693,11 @@ const fetchCompanySources = async (companyId: string) => {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
                     body: JSON.stringify({
-                      uncertaintyLevel: sfForm.uncertaintyLevel,
-                      uncertaintyNote:  sfForm.uncertaintyNote || undefined,
-                      isExcluded:       sfForm.isExcluded,
-                      exclusionReason:  sfForm.exclusionReason || undefined,
+                      uncertaintyLevel:  sfForm.uncertaintyLevel,
+                      uncertaintyNote:   sfForm.uncertaintyNote || undefined,
+                      isExcluded:        sfForm.isExcluded,
+                      exclusionReason:   sfForm.exclusionReason || undefined,
+                      emissionFactorId:  sfForm.emissionFactorId || undefined,
                     }),
                   });
                   if (res.ok) {
