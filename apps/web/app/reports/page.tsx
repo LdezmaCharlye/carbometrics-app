@@ -99,7 +99,7 @@ function RemovalsSection({ token, sectionNumber, companyName }: { token: string;
   const totalRemovals = removals.reduce((acc, r) => acc + Number(r.tCO2eRemovedPerYear), 0);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 page-break">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
       <h2 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase tracking-wider">
         {sectionNumber}. Remociones y Sumideros de GEI
       </h2>
