@@ -277,53 +277,23 @@ export default function ReportsPage() {
       <style>{`
         @media print {
           .no-print { display: none !important; }
+          .print-break { page-break-before: always; }
           body { font-family: Arial, sans-serif; background: white; }
-          @page { size: letter portrait; margin: 10mm; }
+          @page { size: letter portrait; margin: 12mm; }
           main { max-width: 100% !important; padding: 0 !important; }
-
-          /* Saltos de página controlados */
           .page-break { page-break-before: always; }
           .no-break { page-break-inside: avoid; }
+          .bg-green-600 { background-color: white !important; color: black !important; border: 2px solid #16a34a !important; }
+          .bg-green-50 { background-color: white !important; }
+          .bg-gray-50 { background-color: white !important; }
+          .text-white { color: black !important; }
+          .text-green-200 { color: #166534 !important; }
           .print-section { page-break-inside: avoid; }
-
-          /* Eliminar fondo gris */
-          body, html { background: white !important; }
-          .bg-gray-100 { background: white !important; }
-          .min-h-screen { min-height: 0 !important; }
-          .py-2 { padding-top: 0 !important; padding-bottom: 0 !important; }
-
-          /* Colores para impresión */
-          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          .bg-green-600 { background-color: #16a34a !important; }
-          .bg-green-50  { background-color: #f0fdf4 !important; }
-          .bg-gray-50   { background-color: #f9fafb !important; }
-          .bg-red-50    { background-color: #fef2f2 !important; }
-          .bg-amber-50  { background-color: #fffbeb !important; }
-          .bg-blue-50   { background-color: #eff6ff !important; }
-          .bg-teal-50   { background-color: #f0fdfa !important; }
-
-          /* Reducir espacios entre secciones */
-          .space-y-4 > * + * { margin-top: 3px !important; }
-          .rounded-2xl { margin-bottom: 3px !important; }
-
-          /* Reducir padding interno de secciones */
-          .p-6 { padding: 8px !important; }
-          .p-4 { padding: 5px !important; }
-          .p-3 { padding: 4px !important; }
-          .px-8 { padding-left: 12px !important; padding-right: 12px !important; }
-          .py-8 { padding-top: 8px !important; padding-bottom: 8px !important; }
-          .py-6 { padding-top: 6px !important; padding-bottom: 6px !important; }
-          .py-4 { padding-top: 4px !important; padding-bottom: 4px !important; }
-          .mb-4 { margin-bottom: 4px !important; }
-          .mb-3 { margin-bottom: 3px !important; }
-          .mb-2 { margin-bottom: 2px !important; }
-          .mt-6 { margin-top: 4px !important; }
-          .mt-4 { margin-top: 3px !important; }
-          .gap-4 { gap: 4px !important; }
-          .gap-3 { gap: 3px !important; }
-          .gap-2 { gap: 2px !important; }
-
-          /* Tabla punto 2: reducir filas */
+          table { page-break-inside: avoid !important; }
+        }
+        .print-section { page-break-before: always; page-break-inside: avoid; }
+        .avoid-break { page-break-inside: avoid; }
+      `}</style>
 
       <header className="no-print bg-white border-b border-gray-200 px-6 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto flex items-center justify-between h-14">
@@ -415,9 +385,9 @@ export default function ReportsPage() {
                 ["Año base", String(baseYear ?? "Primer año con datos")],
                 ["Tipo de licencia", company?.licenseType ?? "—"],
               ].map(([k, v]) => (
-                <div key={k} className="bg-gray-50 rounded-xl px-3 py-2">
-                  <p className="text-xs text-gray-400">{k}</p>
-                  <p className="text-sm font-semibold text-gray-800">{v}</p>
+                <div key={k} className="bg-gray-50 rounded-xl px-3 py-1">
+                  <p className="text-xs text-gray-400 leading-tight">{k}</p>
+                  <p className="text-xs font-semibold text-gray-800 leading-tight">{v}</p>
                 </div>
               ))}
             </div>
