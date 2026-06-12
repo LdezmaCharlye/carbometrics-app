@@ -1,27 +1,22 @@
 import { Hono } from "hono";
 import { PrismaClient } from "@prisma/client";
 import { requireAuth } from "../middleware/auth";
-import * as fs from "fs";
-import * as path from "path";
-import sharp from "sharp";
+import { v2 as cloudinary } from "cloudinary";
 
 const router = new Hono();
 const prisma = new PrismaClient();
 
-// Carpeta donde se guardan las imágenes
-const UPLOADS_DIR = path.join(process.cwd(), "uploads", "evidence");
-
-// Crear carpeta si no existe
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // POST /api/upload/evidence/:logId
 router.post("/evidence/:logId", requireAuth, async (c) => {
   const payload   = c.get("jwtPayload") as any;
   const { logId } = c.req.param();
 
-  // Verificar que el log pertenece a la empresa
   const log = await prisma.consumptionLog.findFirst({
     where: { id: logId, companyId: payload.companyId },
   });
@@ -38,33 +33,26 @@ router.post("/evidence/:logId", requireAuth, async (c) => {
     const saved = [];
 
     for (const file of files) {
-      const buffer   = await file.arrayBuffer();
-      const bytes    = new Uint8Array(buffer);
-      const ext      = file.name.split(".").pop() ?? "jpg";
-      const fileName = `${logId}_${Date.now()}.${ext}`;
-      const filePath = path.join(UPLOADS_DIR, fileName);
+      const buffer = await file.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString("base64");
+      const dataUri = `data:${file.type || "image/jpeg"};base64,${base64}`;
 
-      const isImage = ["jpg","jpeg","png","webp"].includes(ext.toLowerCase());
-      if (isImage) {
-        await sharp(Buffer.from(buffer))
-          .rotate()
-          .resize({ width: 800, height: 1200, fit: 'inside', withoutEnlargement: true })
-          .jpeg({ quality: 65 })
-          .toFile(filePath);
-      } else {
-        fs.writeFileSync(filePath, bytes);
-      }
+      const result = await cloudinary.uploader.upload(dataUri, {
+        folder:         "carbometrics/evidence",
+        transformation: [
+          { width: 800, height: 1200, crop: "limit" },
+          { quality: 65 },
+          { fetch_format: "auto" },
+        ],
+        resource_type: "image",
+      });
 
-      // URL pública del archivo
-      const fileUrl = `/uploads/evidence/${fileName}`;
-
-      // Guardar en BD
       const evidence = await prisma.evidenceImage.create({
         data: {
           consumptionLogId: logId,
-          cloudinaryId:     fileName,
-          url:              fileUrl,
-          thumbnailUrl:     fileUrl,
+          cloudinaryId:     result.public_id,
+          url:              result.secure_url,
+          thumbnailUrl:     result.secure_url.replace("/upload/", "/upload/w_200,h_200,c_fill/"),
           fileName:         file.name,
           fileSize:         file.size,
           mimeType:         file.type || "image/jpeg",
@@ -81,7 +69,7 @@ router.post("/evidence/:logId", requireAuth, async (c) => {
   }
 });
 
-// GET /api/upload/evidence/:logId — listar imágenes de un registro
+// GET /api/upload/evidence/:logId
 router.get("/evidence/:logId", requireAuth, async (c) => {
   const payload   = c.get("jwtPayload") as any;
   const { logId } = c.req.param();
