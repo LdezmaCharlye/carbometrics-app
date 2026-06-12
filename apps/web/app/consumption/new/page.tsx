@@ -134,15 +134,15 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     img.onload = () => {
       imgRef.current = img;
       const canvas = canvasRef.current!;
-      const W = window.innerWidth;
-      const H = window.innerHeight - 56;
+      const W = window.screen.width;
+      const H = window.screen.height - 120;
       const scaleW = W / img.naturalWidth;
       const scaleH = H / img.naturalHeight;
-      const scale = Math.min(scaleW, scaleH, 1);
+      const scale = Math.min(scaleW, scaleH);
       canvas.width  = Math.floor(img.naturalWidth  * scale);
       canvas.height = Math.floor(img.naturalHeight * scale);
-      canvas.style.width  = canvas.width  + "px";
-      canvas.style.height = canvas.height + "px";
+      canvas.style.width  = "";
+      canvas.style.height = "";
       const pad = 20;
       cornersRef.current = [
         { x: pad,                  y: pad },
