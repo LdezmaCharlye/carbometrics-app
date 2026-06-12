@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { requireAuth } from "../middleware/auth";
 import * as fs from "fs";
 import * as path from "path";
+import sharp from "sharp";
 
 const router = new Hono();
 const prisma = new PrismaClient();
@@ -43,7 +44,15 @@ router.post("/evidence/:logId", requireAuth, async (c) => {
       const fileName = `${logId}_${Date.now()}.${ext}`;
       const filePath = path.join(UPLOADS_DIR, fileName);
 
-      fs.writeFileSync(filePath, bytes);
+      const isImage = ["jpg","jpeg","png","webp"].includes(ext.toLowerCase());
+      if (isImage) {
+        await sharp(Buffer.from(buffer))
+          .resize({ width: 1200, withoutEnlargement: true })
+          .jpeg({ quality: 70 })
+          .toFile(filePath);
+      } else {
+        fs.writeFileSync(filePath, bytes);
+      }
 
       // URL pública del archivo
       const fileUrl = `/uploads/evidence/${fileName}`;
