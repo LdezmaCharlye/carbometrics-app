@@ -6,6 +6,8 @@ import {
   Leaf, ArrowLeft, Plus, Trash2, Upload, CheckCircle,
   Loader2, ChevronRight, Car, ShieldCheck,
 } from "lucide-react";
+import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const SCOPES = [
@@ -262,6 +264,13 @@ function InventoryPage() {
   };
 
 const [zoomImage, setZoomImage] = useState<string|null>(null);
+const [cropSrc, setCropSrc] = useState<string|null>(null);
+const [crop, setCrop] = useState<Crop>();
+const [completedCrop, setCompletedCrop] = useState<any>(null);
+const [cropImageRef, setCropImageRef] = useState<HTMLImageElement|null>(null);
+const [pendingUploadLogId, setPendingUploadLogId] = useState<string|null>(null);
+const [pendingDraft, setPendingDraft] = useState<DraftRow|null>(null);
+const [cropLoading, setCropLoading] = useState(false);
   const [zoomScale, setZoomScale] = useState(1);
   const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
   const dragging = useRef(false);
@@ -291,6 +300,79 @@ const [zoomImage, setZoomImage] = useState<string|null>(null);
     window.addEventListener("keydown", handleKeyDown);
     return () => { window.removeEventListener("mouseup", handleMouseUp); window.removeEventListener("keydown", handleKeyDown); };
   }, []);
+
+  const onCropImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { width, height } = e.currentTarget;
+    const initialCrop = centerCrop(makeAspectCrop({ unit: "%", width: 90 }, 3/4, width, height), width, height);
+    setCrop(initialCrop);
+    setCropImageRef(e.currentTarget);
+  };
+
+  const getCroppedBlob = (): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      if (!cropImageRef || !completedCrop) return reject("No crop");
+      const canvas = document.createElement("canvas");
+      const scaleX = cropImageRef.naturalWidth  / cropImageRef.width;
+      const scaleY = cropImageRef.naturalHeight / cropImageRef.height;
+      canvas.width  = completedCrop.width  * scaleX;
+      canvas.height = completedCrop.height * scaleY;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(cropImageRef,
+        completedCrop.x * scaleX, completedCrop.y * scaleY,
+        completedCrop.width * scaleX, completedCrop.height * scaleY,
+        0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => blob ? resolve(blob) : reject("Canvas empty"), "image/jpeg", 0.9);
+    });
+  };
+
+  const uploadCroppedImage = async (logId: string) => {
+    setCropLoading(true);
+    try {
+      const blob = await getCroppedBlob();
+      const fd = new FormData();
+      fd.append("images", blob, "factura.jpg");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/evidence/${logId}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const images = data.files ?? (Array.isArray(data) ? data : [data]);
+        const newImage = images[0];
+        if (newImage?.url) {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+          const toAbs = (u: string) => u.startsWith("http") ? u : `${baseUrl}${u}`;
+          setSaved((prev) => prev.map((l) => l.id === logId ? {
+            ...l,
+            evidenceImages: [...l.evidenceImages, {
+              id: newImage.id ?? crypto.randomUUID(),
+              url: toAbs(newImage.url),
+              thumbnailUrl: toAbs(newImage.thumbnailUrl ?? newImage.url),
+            }]
+          } : l));
+        }
+      }
+    } catch (err) { console.error(err); }
+    setCropLoading(false);
+    setCropSrc(null);
+    setPendingUploadLogId(null);
+    setPendingDraft(null);
+  };
+
+  const uploadCroppedDraft = async (draft: DraftRow) => {
+    setCropLoading(true);
+    try {
+      const blob = await getCroppedBlob();
+      const file = new File([blob], "factura.jpg", { type: "image/jpeg" });
+      const savedDraft = { ...draft, imageFile: file };
+      await autoSave(savedDraft);
+    } catch (err) { console.error(err); }
+    setCropLoading(false);
+    setCropSrc(null);
+    setPendingUploadLogId(null);
+    setPendingDraft(null);
+  };
 
   const totalEmissions = saved.reduce((a, l) => a + l.emissionsKgCO2eq, 0) / 1000;
   const verifiedCount  = saved.filter((l) => l.isVerified).length;
@@ -326,6 +408,37 @@ const [zoomImage, setZoomImage] = useState<string|null>(null);
       </header>
 
       <main className={`px-4 py-6 space-y-4 ${step === "scope" ? "w-1/3" : step === "month" ? "max-w-xs" : "max-w-4xl mx-auto"}`}>
+{cropSrc && (
+  <div className="fixed inset-0 z-[999998] bg-black/80 flex flex-col items-center justify-center p-4">
+    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden">
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <h3 className="font-bold text-gray-900 text-sm">Recortar imagen</h3>
+        <button onClick={() => { setCropSrc(null); setPendingUploadLogId(null); setPendingDraft(null); }}
+          className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+      </div>
+      <div className="p-4 flex justify-center bg-gray-50 max-h-[60vh] overflow-auto">
+        <ReactCrop crop={crop} onChange={(c) => setCrop(c)} onComplete={(c) => setCompletedCrop(c)}>
+          <img src={cropSrc} onLoad={onCropImageLoad} alt="recortar"
+            style={{ maxWidth: "100%", maxHeight: "50vh" }} />
+        </ReactCrop>
+      </div>
+      <div className="px-4 py-3 border-t border-gray-100 flex gap-2">
+        <button onClick={() => { setCropSrc(null); setPendingUploadLogId(null); setPendingDraft(null); }}
+          className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50">
+          Cancelar
+        </button>
+        <button disabled={cropLoading} onClick={() => {
+          if (pendingUploadLogId) uploadCroppedImage(pendingUploadLogId);
+          else if (pendingDraft) uploadCroppedDraft(pendingDraft);
+        }} className="flex-1 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold flex items-center justify-center gap-2">
+          {cropLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          {cropLoading ? "Subiendo..." : "Confirmar y subir"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 {zoomImage && (
           <div
             ref={zoomContainerRef}
@@ -515,34 +628,16 @@ const [zoomImage, setZoomImage] = useState<string|null>(null);
                             ) : !log.isVerified ? (
                               <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
                                 <Upload className="w-3.5 h-3.5" /><span>Subir</span>
-                                <input type="file" accept="image/*,.pdf" className="hidden"
-                                  onChange={async (e) => {
+                                <input type="file" accept="image/*" capture="environment" className="hidden"
+                                  onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (!file) return;
-                                    const fd = new FormData();
-                                    fd.append("images", file);
-                                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/evidence/${log.id}`, {
-                                      method: "POST",
-                                      headers: { Authorization: `Bearer ${token}` },
-                                      body: fd,
-                                    });
-                                    if (res.ok) {
-                                      const data = await res.json();
-                                      const images = data.files ?? (Array.isArray(data) ? data : [data]);
-                                      const newImage = images[0];
-                                      if (newImage?.url || newImage?.thumbnailUrl) {
-                                        const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
-                                        const toAbs = (u: string) => u.startsWith("http") ? u : `${baseUrl}${u}`;
-                                        setSaved((prev) => prev.map((l) => l.id === log.id ? {
-                                          ...l,
-                                          evidenceImages: [...l.evidenceImages, {
-                                            id: newImage.id ?? crypto.randomUUID(),
-                                            url: toAbs(newImage.url ?? newImage.thumbnailUrl),
-                                            thumbnailUrl: toAbs(newImage.thumbnailUrl ?? newImage.url),
-                                          }]
-                                        } : l));
-                                      }
-                                    }
+                                    const reader = new FileReader();
+                                    reader.onload = () => {
+                                      setCropSrc(reader.result as string);
+                                      setPendingUploadLogId(log.id);
+                                    };
+                                    reader.readAsDataURL(file);
                                   }} />
                               </label>
                             ) : <span className="text-gray-300 text-xs">—</span>}
@@ -603,16 +698,20 @@ const [zoomImage, setZoomImage] = useState<string|null>(null);
                           <td className="px-3 py-2.5">
                             <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 transition text-xs">
                               <Upload className="w-3.5 h-3.5" /><span>Subir</span>
-                              <input type="file" accept="image/*,.pdf" className="hidden"
-                                onChange={async (e) => {
+                              <input type="file" accept="image/*" capture="environment" className="hidden"
+                                onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (!file) return;
                                   if (!draft.quantity || parseFloat(draft.quantity) <= 0) {
                                     alert("Ingresa la cantidad primero y presiona Enter para guardar el registro antes de subir la imagen.");
                                     return;
                                   }
-                                  const savedDraft = { ...draft, imageFile: file };
-                                  await autoSave(savedDraft);
+                                  const reader = new FileReader();
+                                  reader.onload = () => {
+                                    setCropSrc(reader.result as string);
+                                    setPendingDraft(draft);
+                                  };
+                                  reader.readAsDataURL(file);
                                 }} />
                             </label>
                           </td>
