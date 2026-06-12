@@ -510,7 +510,7 @@ export default function ReportsPage() {
           </div>
 
           {/* 5. METODOLOGÍA */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 page-break">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
             <h2 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase tracking-wider">5. Metodología de Cuantificación</h2>
             <div className="bg-gray-50 rounded-xl p-4 text-center mb-4">
               <p className="text-sm font-semibold text-gray-800">Emisiones (tCO₂eq) = Dato de actividad × Factor de emisión</p>
