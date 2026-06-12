@@ -238,36 +238,12 @@ export default function ReportsPage() {
 
   const generatePDF = async () => {
     setGenerating(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    const content = document.getElementById("report-content");
-    if (!content) { setGenerating(false); return; }
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) { setGenerating(false); return; }
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Reporte GEI — ${company?.name}</title>
-          <style>
-            * { box-sizing: border-box; margin: 0; padding: 0; }
-            body { font-family: Arial, sans-serif; background: white; color: #111; }
-            @page { size: letter portrait; margin: 12mm; }
-            .no-print { display: none !important; }
-          </style>
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" />
-        </head>
-        <body>
-          ${content.innerHTML}
-          <script>
-            window.onload = function() {
-              setTimeout(function() { window.print(); window.close(); }, 1000);
-            };
-          <\/script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      window.print();
+    } catch (e) {
+      alert("Para descargar el PDF: presiona Ctrl+P (Windows) o Cmd+P (Mac) y selecciona 'Guardar como PDF'.");
+    }
     setGenerating(false);
   };
 
