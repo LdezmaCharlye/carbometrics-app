@@ -308,12 +308,13 @@ export default function ReportsPage() {
               <p className="text-xs text-gray-400">ISO 14064-1:2018 · {company?.name}</p>
             </div>
           </div>
-          <button onClick={generatePDF} disabled={generating}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
-            {generating
-              ? <><Loader2 className="w-3.5 h-3.5 animate-spin" />Generando...</>
-              : <><Download className="w-3.5 h-3.5" />Descargar PDF</>}
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-400 hidden md:block">Usa <kbd className="bg-gray-100 border border-gray-300 rounded px-1.5 py-0.5 font-mono text-xs">Ctrl+P</kbd> → Guardar como PDF</span>
+            <button onClick={() => window.print()}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+              <Download className="w-3.5 h-3.5" />Descargar PDF
+            </button>
+          </div>
         </div>
       </header>
 
