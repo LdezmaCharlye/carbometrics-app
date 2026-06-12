@@ -69,6 +69,32 @@ router.post("/evidence/:logId", requireAuth, async (c) => {
   }
 });
 
+// DELETE /api/upload/evidence/image/:imageId
+router.delete("/evidence/image/:imageId", requireAuth, async (c) => {
+  const payload   = c.get("jwtPayload") as any;
+  const { imageId } = c.req.param();
+
+  const image = await prisma.evidenceImage.findFirst({
+    where: { id: imageId },
+    include: { consumptionLog: { select: { companyId: true } } },
+  });
+  if (!image) return c.json({ error: "Imagen no encontrada" }, 404);
+  if (image.consumptionLog.companyId !== payload.companyId) {
+    return c.json({ error: "No autorizado" }, 403);
+  }
+
+  try {
+    if (image.cloudinaryId && !image.cloudinaryId.includes("_1781")) {
+      await cloudinary.uploader.destroy(image.cloudinaryId);
+    }
+  } catch (err) {
+    console.error("Cloudinary delete error:", err);
+  }
+
+  await prisma.evidenceImage.delete({ where: { id: imageId } });
+  return c.json({ success: true });
+});
+
 // GET /api/upload/evidence/:logId
 router.get("/evidence/:logId", requireAuth, async (c) => {
   const payload   = c.get("jwtPayload") as any;
