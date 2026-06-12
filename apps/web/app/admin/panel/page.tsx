@@ -522,6 +522,22 @@ const fetchCompanySources = async (companyId: string) => {
                           }} className="text-gray-400 hover:text-green-600 transition">
                             <Pencil className="w-4 h-4" />
                           </button>
+                          <button onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!confirm(`¿Eliminar la fuente "${s.name}"? Esta acción no se puede deshacer.`)) return;
+                            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${selCompanySources.id}/sources/${s.id}`, {
+                              method: "DELETE",
+                              headers: { Authorization: `Bearer ${token}` },
+                            });
+                            if (res.ok) {
+                              setCompanySources((prev) => prev.filter((src) => src.id !== s.id));
+                              showToast("Fuente eliminada correctamente");
+                            } else {
+                              showToast("Error al eliminar la fuente", false);
+                            }
+                          }} className="text-gray-400 hover:text-red-500 transition">
+                            <X className="w-4 h-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}

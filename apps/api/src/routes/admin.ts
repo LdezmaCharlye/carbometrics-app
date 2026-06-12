@@ -425,11 +425,12 @@ router.post("/companies/:id/sources", async (c) => {
 router.patch("/companies/:companyId/sources/:sourceId", async (c) => {
   const body = await c.req.json().catch(() => null);
   const schema = z.object({
-    uncertaintyLevel: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
-    uncertaintyNote:  z.string().optional(),
-    isExcluded:       z.boolean().optional(),
-    exclusionReason:  z.string().optional(),
-    isActive:         z.boolean().optional(),
+    uncertaintyLevel:  z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+    uncertaintyNote:   z.string().optional(),
+    isExcluded:        z.boolean().optional(),
+    exclusionReason:   z.string().optional(),
+    isActive:          z.boolean().optional(),
+    emissionFactorId:  z.string().optional(),
   });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return c.json({ error: "Datos inválidos" }, 400);
@@ -444,6 +445,23 @@ router.patch("/companies/:companyId/sources/:sourceId", async (c) => {
   });
   return c.json(source);
 });
+// DELETE /api/admin/companies/:companyId/sources/:sourceId
+router.delete("/companies/:companyId/sources/:sourceId", async (c) => {
+  const { sourceId } = c.req.param();
+  try {
+    const hasLogs = await prisma.consumptionLog.count({
+      where: { emissionSourceId: sourceId },
+    });
+    if (hasLogs > 0) {
+      return c.json({ error: "No se puede eliminar una fuente con registros de consumo. Desactívala en su lugar." }, 422);
+    }
+    await prisma.emissionSource.delete({ where: { id: sourceId } });
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json({ error: "Error al eliminar la fuente" }, 500);
+  }
+});
+
 // GET /api/admin/my-license — estado de licencia para usuarios normales
 router.get("/my-license", async (c) => {
   const authHeader = c.req.header("Authorization");
