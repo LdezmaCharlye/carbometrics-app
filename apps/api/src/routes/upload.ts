@@ -47,8 +47,8 @@ router.post("/evidence/:logId", requireAuth, async (c) => {
       const isImage = ["jpg","jpeg","png","webp"].includes(ext.toLowerCase());
       if (isImage) {
         await sharp(Buffer.from(buffer))
-          .resize({ width: 500, withoutEnlargement: true })
-          .jpeg({ quality: 40 })
+          .resize({ width: 800, withoutEnlargement: true })
+          .jpeg({ quality: 55 })
           .toFile(filePath);
       } else {
         fs.writeFileSync(filePath, bytes);
