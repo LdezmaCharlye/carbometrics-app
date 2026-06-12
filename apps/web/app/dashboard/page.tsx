@@ -434,9 +434,6 @@ export default function DashboardPage() {
           })}
         </div>
 
-        {/* Remociones y Sumideros */}
-        <RemovalsCard token={token ?? ""} viewYear={viewYear} totalEmissions={totalCurrent} />
-
         {/* Gráfica */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
@@ -493,6 +490,9 @@ export default function DashboardPage() {
             </span>
           </div>
         </div>
+
+        {/* Remociones y Sumideros */}
+        <RemovalsCard token={token ?? ""} viewYear={viewYear} totalEmissions={totalCurrent} />
 
         {/* Tabla */}
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
