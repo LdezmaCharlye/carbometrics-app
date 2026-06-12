@@ -48,7 +48,18 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
   const imgRef    = useRef<HTMLImageElement | null>(null);
   const cornersRef = useRef<Point[]>([]);
   const draggingIdx = useRef<number | null>(null);
-  const HANDLE = 22;
+  const HANDLE = 20;
+  const MID_HANDLE = 14;
+
+  const getMidpoints = (corners: Point[]): Point[] => {
+    const [tl, tr, br, bl] = corners;
+    return [
+      { x: (tl.x + tr.x) / 2, y: (tl.y + tr.y) / 2 },
+      { x: (tr.x + br.x) / 2, y: (tr.y + br.y) / 2 },
+      { x: (br.x + bl.x) / 2, y: (br.y + bl.y) / 2 },
+      { x: (bl.x + tl.x) / 2, y: (bl.y + tl.y) / 2 },
+    ];
+  };
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -97,7 +108,6 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     ctx.closePath();
     ctx.stroke();
 
-    // Esquinas
     cornersRef.current.forEach((p) => {
       ctx.beginPath();
       ctx.arc(p.x, p.y, HANDLE / 2, 0, Math.PI * 2);
@@ -107,6 +117,16 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
       ctx.lineWidth = 2;
       ctx.stroke();
     });
+
+    getMidpoints(cornersRef.current).forEach((p) => {
+      ctx.beginPath();
+      ctx.roundRect(p.x - MID_HANDLE, p.y - MID_HANDLE / 2, MID_HANDLE * 2, MID_HANDLE, 4);
+      ctx.fillStyle = "#00e676";
+      ctx.fill();
+      ctx.strokeStyle = "#fff";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
   }, []);
 
   useEffect(() => {
@@ -114,10 +134,10 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     img.onload = () => {
       imgRef.current = img;
       const canvas = canvasRef.current!;
-      const maxW = Math.min(window.innerWidth, 480);
-      const maxH = window.innerHeight - 120;
-      const scaleW = maxW / img.naturalWidth;
-      const scaleH = maxH / img.naturalHeight;
+      const W = window.innerWidth;
+      const H = window.innerHeight - 56;
+      const scaleW = W / img.naturalWidth;
+      const scaleH = H / img.naturalHeight;
       const scale = Math.min(scaleW, scaleH);
       canvas.width  = Math.floor(img.naturalWidth  * scale);
       canvas.height = Math.floor(img.naturalHeight * scale);
@@ -145,20 +165,19 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     };
   };
 
-  const findClosestCorner = (p: Point): number | null => {
-    let minDist = HANDLE * 2;
-    let idx: number | null = null;
-    cornersRef.current.forEach((c, i) => {
-      const d = Math.hypot(p.x - c.x, p.y - c.y);
-      if (d < minDist) { minDist = d; idx = i; }
-    });
-    return idx;
-  };
-
   const onStart = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
     const p = getCanvasPos(e);
-    draggingIdx.current = findClosestCorner(p);
+    const corners = cornersRef.current;
+    const mids = getMidpoints(corners);
+    const allPoints = [...corners, ...mids];
+    let minDist = 60;
+    let idx: number | null = null;
+    allPoints.forEach((c, i) => {
+      const d = Math.hypot(p.x - c.x, p.y - c.y);
+      if (d < minDist) { minDist = d; idx = i; }
+    });
+    draggingIdx.current = idx;
   };
 
   const onMove = (e: React.TouchEvent | React.MouseEvent) => {
@@ -166,10 +185,26 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     if (draggingIdx.current === null) return;
     const canvas = canvasRef.current!;
     const p = getCanvasPos(e);
-    cornersRef.current[draggingIdx.current] = {
-      x: Math.max(0, Math.min(canvas.width,  p.x)),
-      y: Math.max(0, Math.min(canvas.height, p.y)),
-    };
+    const px = Math.max(0, Math.min(canvas.width,  p.x));
+    const py = Math.max(0, Math.min(canvas.height, p.y));
+    const idx = draggingIdx.current;
+    const [tl, tr, br, bl] = cornersRef.current;
+
+    if (idx < 4) {
+      cornersRef.current[idx] = { x: px, y: py };
+    } else if (idx === 4) {
+      cornersRef.current[0] = { x: tl.x, y: py };
+      cornersRef.current[1] = { x: tr.x, y: py };
+    } else if (idx === 5) {
+      cornersRef.current[1] = { x: px, y: tr.y };
+      cornersRef.current[2] = { x: px, y: br.y };
+    } else if (idx === 6) {
+      cornersRef.current[2] = { x: br.x, y: py };
+      cornersRef.current[3] = { x: bl.x, y: py };
+    } else if (idx === 7) {
+      cornersRef.current[0] = { x: px, y: tl.y };
+      cornersRef.current[3] = { x: px, y: bl.y };
+    }
     draw();
   };
 
@@ -210,17 +245,14 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓ Guardar"}
         </button>
       </div>
-      <div className="flex-1 flex items-center justify-center overflow-hidden bg-black">
+      <div className="flex-1 flex items-center justify-center bg-black overflow-hidden">
         <canvas
           ref={canvasRef}
-          style={{ maxWidth: "100%", maxHeight: "100%", touchAction: "none", display: "block" }}
+          style={{ width: "100%", height: "100%", objectFit: "contain", touchAction: "none", display: "block" }}
           onMouseDown={onStart} onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd}
           onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}
         />
       </div>
-      <p className="text-center text-white/40 text-xs py-2 flex-shrink-0">
-        Arrastra las esquinas verdes para ajustar
-      </p>
     </div>
   );
 }
