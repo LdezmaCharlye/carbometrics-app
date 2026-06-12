@@ -186,6 +186,8 @@ export default function DashboardPage() {
 
   const [viewYear,    setViewYear]    = useState(currentYear);
   const [baseYear,    setBaseYear]    = useState<number | null>(null);
+  const [yearFrom,    setYearFrom]    = useState<number>(currentYear - 9);
+  const [yearTo,      setYearTo]      = useState<number>(currentYear);
   const [summary,     setSummary]     = useState<Summary | null>(null);
   const [baseSummary, setBaseSummary] = useState<Summary | null>(null);
   const [user,        setUser]        = useState<any>(null);
@@ -199,6 +201,15 @@ export default function DashboardPage() {
     if (!token || !userStr) { router.push("/login"); return; }
     const parsedUser = JSON.parse(userStr);
     setUser(parsedUser);
+
+    // Cargar perfil de empresa para años permitidos
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/company-profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((r) => r.json()).then((company) => {
+      if (company?.yearFrom) setYearFrom(company.yearFrom);
+      if (company?.yearTo)   setYearTo(company.yearTo);
+      if (company?.yearTo)   setViewYear(company.yearTo);
+    }).catch(() => {});
 
     // Verificar estado de licencia
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/my-license`, {
@@ -357,7 +368,7 @@ export default function DashboardPage() {
           <div className="relative">
             <select value={viewYear} onChange={(e) => setViewYear(parseInt(e.target.value))}
               className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
-              {years.map((y) => <option key={y} value={y}>{y}</option>)}
+              {Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearFrom + i).reverse().map((y) => <option key={y} value={y}>{y}</option>)}
             </select>
             <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
