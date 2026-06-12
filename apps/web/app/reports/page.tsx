@@ -236,14 +236,16 @@ export default function ReportsPage() {
 
   const baseYear = company?.baseYear ?? years[0] ?? null;
 
+  useEffect(() => {
+    const handleAfterPrint = () => { window.location.reload(); };
+    window.addEventListener("afterprint", handleAfterPrint);
+    return () => window.removeEventListener("afterprint", handleAfterPrint);
+  }, []);
+
   const generatePDF = async () => {
     setGenerating(true);
     await new Promise((r) => setTimeout(r, 2000));
-    try {
-      window.print();
-    } catch (e) {
-      alert("Para descargar el PDF: presiona Ctrl+P (Windows) o Cmd+P (Mac) y selecciona 'Guardar como PDF'.");
-    }
+    window.print();
     setGenerating(false);
   };
 
