@@ -326,9 +326,29 @@ export default function ReportsPage() {
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           body, html { background: white !important; }
           .bg-gray-100 { background: white !important; }
+          .bg-gray-50 { background: white !important; }
           .min-h-screen { min-height: 0 !important; }
           .py-2 { padding: 0 !important; }
           main { background: white !important; }
+
+          /* Evitar que tablas se partan entre páginas */
+          table { page-break-inside: avoid !important; }
+          tr { page-break-inside: avoid !important; }
+          thead { display: table-header-group; }
+
+          /* Reducir espacio entre secciones */
+          .space-y-4 > * + * { margin-top: 4px !important; }
+          .rounded-2xl { margin-top: 4px !important; }
+
+          /* Reducir espacio interno de tablas */
+          td, th { padding-top: 3px !important; padding-bottom: 3px !important; }
+          .px-4.py-3 { padding-top: 3px !important; padding-bottom: 3px !important; }
+          .px-4.py-2 { padding-top: 2px !important; padding-bottom: 2px !important; }
+          .px-6.py-3 { padding-top: 3px !important; padding-bottom: 3px !important; }
+
+          /* Eliminar espacio superior de títulos */
+          h2 { margin-top: 0 !important; padding-top: 4px !important; }
+          .border-b.pb-3 { padding-bottom: 3px !important; margin-bottom: 4px !important; }
 
           /* Gráficas más pequeñas */
           .recharts-wrapper { height: 120px !important; }
