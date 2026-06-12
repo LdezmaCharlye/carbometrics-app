@@ -277,21 +277,61 @@ export default function ReportsPage() {
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          .print-break { page-break-before: always; }
-          body { font-family: Arial, sans-serif; background: white; }
-          @page { size: letter portrait; margin: 12mm; }
+          body { font-family: Arial, sans-serif; background: white; font-size: 11px; }
+          @page { size: letter portrait; margin: 10mm; }
           main { max-width: 100% !important; padding: 0 !important; }
+
+          /* Cada sección no se parte */
+          .bg-white.rounded-2xl { page-break-inside: avoid; margin-bottom: 6px !important; }
+
+          /* Reducir espaciado interno */
+          .p-6 { padding: 10px !important; }
+          .p-5 { padding: 8px !important; }
+          .p-4 { padding: 6px !important; }
+          .p-3 { padding: 5px !important; }
+          .py-7 { padding-top: 6px !important; padding-bottom: 6px !important; }
+          .py-6 { padding-top: 6px !important; padding-bottom: 6px !important; }
+          .py-4 { padding-top: 4px !important; padding-bottom: 4px !important; }
+          .py-3 { padding-top: 3px !important; padding-bottom: 3px !important; }
+          .space-y-6 > * + * { margin-top: 6px !important; }
+          .space-y-4 > * + * { margin-top: 4px !important; }
+          .space-y-3 > * + * { margin-top: 3px !important; }
+          .space-y-2 > * + * { margin-top: 2px !important; }
+          .gap-4 { gap: 6px !important; }
+          .gap-3 { gap: 4px !important; }
+          .gap-2 { gap: 3px !important; }
+          .mb-4 { margin-bottom: 6px !important; }
+          .mb-3 { margin-bottom: 4px !important; }
+          .mb-2 { margin-bottom: 3px !important; }
+          .mt-6 { margin-top: 6px !important; }
+          .mt-4 { margin-top: 4px !important; }
+          .mt-3 { margin-top: 3px !important; }
+
+          /* Texto más compacto */
+          .text-3xl { font-size: 20px !important; }
+          .text-2xl { font-size: 16px !important; }
+          .text-xl  { font-size: 14px !important; }
+          .text-lg  { font-size: 13px !important; }
+          .text-sm  { font-size: 11px !important; }
+          .text-xs  { font-size: 10px !important; }
+
+          /* Colores para impresión */
+          .bg-green-600 { background-color: #16a34a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .bg-green-50  { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .bg-gray-50   { background-color: #f9fafb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .bg-red-50    { background-color: #fef2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .bg-amber-50  { background-color: #fffbeb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .bg-blue-50   { background-color: #eff6ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .bg-teal-50   { background-color: #f0fdfa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+          /* Gráficas más pequeñas */
+          .recharts-wrapper { height: 120px !important; }
+
+          /* Saltos de página controlados */
           .page-break { page-break-before: always; }
           .no-break { page-break-inside: avoid; }
-          .bg-green-600 { background-color: white !important; color: black !important; border: 2px solid #16a34a !important; }
-          .bg-green-50 { background-color: white !important; }
-          .bg-gray-50 { background-color: white !important; }
-          .text-white { color: black !important; }
-          .text-green-200 { color: #166534 !important; }
-          .print-section { page-break-inside: avoid; }
         }
-      .print-section { page-break-before: always; page-break-inside: avoid; }
-          .avoid-break { page-break-inside: avoid; }
       `}</style>
 
       <header className="no-print bg-white border-b border-gray-200 px-6 sticky top-0 z-10">
