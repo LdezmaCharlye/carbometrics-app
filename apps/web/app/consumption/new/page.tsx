@@ -134,10 +134,8 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     img.onload = () => {
       imgRef.current = img;
       const canvas = canvasRef.current!;
-      const maxW = 360;
-      const maxH = 640;
-      const W = Math.min(window.innerWidth, maxW);
-      const H = Math.min(window.innerHeight - 56, maxH);
+      const W = window.innerWidth;
+      const H = Math.round(window.innerWidth * 1.5);
       const scaleW = W / img.naturalWidth;
       const scaleH = H / img.naturalHeight;
       const scale = Math.min(scaleW, scaleH);
@@ -173,7 +171,7 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     const corners = cornersRef.current;
     const mids = getMidpoints(corners);
     const allPoints = [...corners, ...mids];
-    let minDist = 60;
+    let minDist = 80;
     let idx: number | null = null;
     allPoints.forEach((c, i) => {
       const d = Math.hypot(p.x - c.x, p.y - c.y);
