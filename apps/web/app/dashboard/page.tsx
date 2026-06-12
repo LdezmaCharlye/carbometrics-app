@@ -208,7 +208,6 @@ export default function DashboardPage() {
     }).then((r) => r.json()).then((company) => {
       if (company?.yearFrom) setYearFrom(company.yearFrom);
       if (company?.yearTo)   setYearTo(company.yearTo);
-      if (company?.yearTo)   setViewYear(company.yearTo);
     }).catch(() => {});
 
     // Verificar estado de licencia
