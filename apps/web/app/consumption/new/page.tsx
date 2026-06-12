@@ -292,6 +292,18 @@ function InventoryPage() {
   const scaleRef        = useRef(1);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
+  const [yearFrom, setYearFrom] = useState(new Date().getFullYear() - 9);
+  const [yearTo,   setYearTo]   = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/company-profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((r) => r.json()).then((company) => {
+      if (company?.yearFrom) setYearFrom(company.yearFrom);
+      if (company?.yearTo)   setYearTo(company.yearTo);
+    }).catch(() => {});
+  }, [token]);
 
   const updateURL = (params: Record<string, string>) => {
     const url = new URL(window.location.href);
@@ -585,7 +597,7 @@ function InventoryPage() {
           </div>
           <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}
             className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+            {Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearFrom + i).reverse().map((y) => (
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
