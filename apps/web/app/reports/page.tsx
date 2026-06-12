@@ -238,7 +238,7 @@ export default function ReportsPage() {
 
   const generatePDF = async () => {
     setGenerating(true);
-    await new Promise((r) => setTimeout(r, 300));
+    await new Promise((r) => setTimeout(r, 2500));
     window.print();
     setGenerating(false);
   };
