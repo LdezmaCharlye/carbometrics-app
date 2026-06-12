@@ -229,9 +229,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!token) return;
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/oldest-year`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/company-profile`, {
       headers: { Authorization: `Bearer ${token}` },
-    }).then((r) => r.json()).then((d) => { if (d.year) setBaseYear(d.year); }).catch(() => {});
+    }).then((r) => r.json()).then((d) => { if (d.baseYear) setBaseYear(d.baseYear); }).catch(() => {});
   }, [token]);
 
   useEffect(() => {
