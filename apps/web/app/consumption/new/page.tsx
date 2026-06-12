@@ -250,9 +250,11 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
   };
 
   const confirm = () => {
-    const canvas = canvasRef.current!;
-    const img = imgRef.current!;
+    const canvas = canvasRef.current;
+    const img = imgRef.current;
+    if (!canvas || !img) { console.error("No canvas or img"); return; }
     const { x, y, w, h } = cropRef.current;
+    if (w <= 0 || h <= 0) { console.error("Invalid crop", cropRef.current); return; }
     const scaleX = img.naturalWidth  / canvas.width;
     const scaleY = img.naturalHeight / canvas.height;
     const out = document.createElement("canvas");
@@ -262,7 +264,10 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
       x * scaleX, y * scaleY, w * scaleX, h * scaleY,
       0, 0, out.width, out.height
     );
-    out.toBlob((blob) => blob && onConfirm(blob), "image/jpeg", 0.92);
+    out.toBlob((blob) => {
+      if (blob) onConfirm(blob);
+      else console.error("toBlob failed");
+    }, "image/jpeg", 0.92);
   };
 
   return (
