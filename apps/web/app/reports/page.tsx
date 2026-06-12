@@ -460,7 +460,7 @@ export default function ReportsPage() {
           </div>
 
           {/* 4. AÑO BASE */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
             <h2 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase tracking-wider">4. Selección del Año Base</h2>
             <p className="text-sm text-gray-600 mb-1">
               Año base establecido: <strong>{baseYear ?? "No definido"}</strong> —
@@ -472,8 +472,8 @@ export default function ReportsPage() {
               </div>
             )}
             {summaries.length > 0 && (
-              <div className="overflow-hidden rounded-xl border border-gray-200 mt-4">
-                <table className="w-full text-sm">
+              <div className="overflow-hidden rounded-xl border border-gray-200 mt-4" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
+                <table className="w-full text-sm" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
                   <thead>
                     <tr className="bg-gray-50 border-b border-gray-100">
                       <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase">Gestión</th>
