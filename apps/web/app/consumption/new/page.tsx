@@ -628,7 +628,7 @@ const [cropLoading, setCropLoading] = useState(false);
                             ) : !log.isVerified ? (
                               <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
                                 <Upload className="w-3.5 h-3.5" /><span>Subir</span>
-                                <input type="file" accept="image/*" capture="environment" className="hidden"
+                                <input type="file" accept="image/*" className="hidden"
                                   onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (!file) return;
@@ -698,7 +698,7 @@ const [cropLoading, setCropLoading] = useState(false);
                           <td className="px-3 py-2.5">
                             <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 transition text-xs">
                               <Upload className="w-3.5 h-3.5" /><span>Subir</span>
-                              <input type="file" accept="image/*" capture="environment" className="hidden"
+                              <input type="file" accept="image/*" className="hidden"
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (!file) return;
