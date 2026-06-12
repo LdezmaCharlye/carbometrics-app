@@ -524,6 +524,7 @@ const fetchCompanySources = async (companyId: string) => {
                           </button>
                           <button onClick={async (e) => {
                             e.stopPropagation();
+                            if (!selCompanySources) return;
                             if (!confirm(`¿Eliminar la fuente "${s.name}"? Esta acción no se puede deshacer.`)) return;
                             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${selCompanySources.id}/sources/${s.id}`, {
                               method: "DELETE",

@@ -231,7 +231,7 @@ export default function ReportsPage() {
     .finally(() => setLoading(false));
   }, [router, token]);
 
-  const baseYear = years[0] ?? null;
+  const baseYear = company?.baseYear ?? years[0] ?? null;
 
   const generatePDF = async () => {
     setGenerating(true);
@@ -422,7 +422,23 @@ export default function ReportsPage() {
                         <tr key={s.id}>
                           <td className="px-4 py-2 font-medium text-gray-700">{s.name}</td>
                           <td className="px-4 py-2 text-gray-500">{s.scope.replace("SCOPE_", "Alcance ")}</td>
-                          <td className="px-4 py-2 text-gray-400">{s.category.replace(/_/g, " ").toLowerCase()}</td>
+                          <td className="px-4 py-2 text-gray-400">{({
+                            STATIONARY_COMBUSTION: "Combustión estacionaria",
+                            MOBILE_COMBUSTION: "Combustión móvil",
+                            PROCESS_EMISSIONS: "Emisiones de proceso",
+                            FUGITIVE_EMISSIONS: "Emisiones fugitivas",
+                            PURCHASED_ELECTRICITY: "Electricidad comprada",
+                            PURCHASED_HEAT: "Calor comprado",
+                            PURCHASED_COOLING: "Enfriamiento comprado",
+                            BUSINESS_TRAVEL: "Viajes de negocio",
+                            EMPLOYEE_COMMUTING: "Transporte empleados",
+                            WASTE_DISPOSAL: "Disposición de residuos",
+                            PURCHASED_GOODS: "Bienes y servicios",
+                            UPSTREAM_TRANSPORT: "Transporte aguas arriba",
+                            DOWNSTREAM_TRANSPORT: "Transporte aguas abajo",
+                            USE_OF_SOLD_PRODUCTS: "Uso de productos vendidos",
+                            END_OF_LIFE_TREATMENT: "Tratamiento fin de vida",
+                          } as Record<string,string>)[s.category] ?? s.category.replace(/_/g, " ").toLowerCase()}</td>
                         </tr>
                       ))}
                     </tbody>
