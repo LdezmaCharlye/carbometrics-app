@@ -134,8 +134,8 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     img.onload = () => {
       imgRef.current = img;
       const canvas = canvasRef.current!;
-      const W = Math.min(window.innerWidth,  document.documentElement.clientWidth);
-      const H = Math.min(window.innerHeight, document.documentElement.clientHeight) - 56;
+      const W = 380;
+      const H = 700;
       const scaleW = W / img.naturalWidth;
       const scaleH = H / img.naturalHeight;
       const scale = Math.min(scaleW, scaleH);
