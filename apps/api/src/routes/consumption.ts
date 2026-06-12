@@ -109,6 +109,8 @@ router.post("/from-factor", requireManager, async (c) => {
     parseFloat(body.quantity) * (kgCO2 + kgCH4 * 27.9 + kgN2O * 273) * 1000
   ) / 1000;
 
+  const companyId = payload.companyId ?? source.companyId;
+
   const log = await prisma.consumptionLog.create({
     data: {
       emissionSourceId: source.id,
@@ -118,7 +120,7 @@ router.post("/from-factor", requireManager, async (c) => {
       notes:            body.notes ?? null,
       dataQuality:      body.dataQuality ?? "ESTIMATED",
       emissionsKgCO2eq,
-      companyId:        payload.companyId,
+      companyId,
       recordedById:     payload.sub,
     },
   });
