@@ -774,11 +774,18 @@ function InventoryPage() {
                                 onClick={() => setZoomImage(log.evidenceImages[0].url)}
                                 className="w-8 h-8 object-cover rounded-lg border border-gray-200 cursor-zoom-in hover:opacity-80 transition" />
                             ) : !log.isVerified ? (
-                              <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
-                                <Upload className="w-3.5 h-3.5" /><span>Subir</span>
-                                <input type="file" accept="image/*" className="hidden"
-                                  onChange={(e) => { const file = e.target.files?.[0]; if (file) openCropper(file, log.id); }} />
-                              </label>
+                              <div className="flex flex-col gap-1">
+                                <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
+                                  <Upload className="w-3 h-3" /><span>Galería</span>
+                                  <input type="file" accept="image/*" className="hidden"
+                                    onChange={(e) => { const file = e.target.files?.[0]; if (file) openCropper(file, log.id); }} />
+                                </label>
+                                <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
+                                  <Upload className="w-3 h-3" /><span>Cámara</span>
+                                  <input type="file" accept="image/*" capture="environment" className="hidden"
+                                    onChange={(e) => { const file = e.target.files?.[0]; if (file) openCropper(file, log.id); }} />
+                                </label>
+                              </div>
                             ) : <span className="text-gray-300 text-xs">—</span>}
                           </td>
                           <td className="px-3 py-2 text-center">
@@ -830,19 +837,34 @@ function InventoryPage() {
                             </select>
                           </td>
                           <td className="px-3 py-2.5">
-                            <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 transition text-xs">
-                              <Upload className="w-3.5 h-3.5" /><span>Subir</span>
-                              <input type="file" accept="image/*" className="hidden"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
-                                  if (!file) return;
-                                  if (!draft.quantity || parseFloat(draft.quantity) <= 0) {
-                                    alert("Ingresa la cantidad primero y presiona Enter para guardar el registro antes de subir la imagen.");
-                                    return;
-                                  }
-                                  openCropper(file, undefined, draft);
-                                }} />
-                            </label>
+                            <div className="flex flex-col gap-1">
+                              <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 transition text-xs">
+                                <Upload className="w-3 h-3" /><span>Galería</span>
+                                <input type="file" accept="image/*" className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    if (!draft.quantity || parseFloat(draft.quantity) <= 0) {
+                                      alert("Ingresa la cantidad primero y presiona Enter para guardar el registro antes de subir la imagen.");
+                                      return;
+                                    }
+                                    openCropper(file, undefined, draft);
+                                  }} />
+                              </label>
+                              <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 transition text-xs">
+                                <Upload className="w-3 h-3" /><span>Cámara</span>
+                                <input type="file" accept="image/*" capture="environment" className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    if (!draft.quantity || parseFloat(draft.quantity) <= 0) {
+                                      alert("Ingresa la cantidad primero y presiona Enter para guardar el registro antes de subir la imagen.");
+                                      return;
+                                    }
+                                    openCropper(file, undefined, draft);
+                                  }} />
+                              </label>
+                            </div>
                           </td>
                           <td className="px-3 py-2.5 text-center">
                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-gray-50 text-gray-300">
