@@ -248,7 +248,7 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
       <div className="flex-1 flex items-center justify-center bg-black overflow-hidden">
         <canvas
           ref={canvasRef}
-          style={{ width: "100%", height: "100%", objectFit: "contain", touchAction: "none", display: "block" }}
+          style={{ maxWidth: "100vw", maxHeight: "calc(100vh - 56px)", touchAction: "none", display: "block" }}
           onMouseDown={onStart} onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd}
           onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}
         />
