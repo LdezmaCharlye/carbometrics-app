@@ -324,6 +324,11 @@ export default function ReportsPage() {
           .bg-blue-50   { background-color: #eff6ff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           .bg-teal-50   { background-color: #f0fdfa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          body, html { background: white !important; }
+          .bg-gray-100 { background: white !important; }
+          .min-h-screen { min-height: 0 !important; }
+          .py-2 { padding: 0 !important; }
+          main { background: white !important; }
 
           /* Gráficas más pequeñas */
           .recharts-wrapper { height: 120px !important; }
