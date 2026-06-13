@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useLang } from "../../lib/LanguageContext";
+import { translate } from "../../lib/i18n";
 import {
   Leaf, LogOut, Plus, BarChart3, Factory, Zap, Truck,
   TrendingUp, TrendingDown, ChevronDown, CheckCircle, FileText, Wind,
@@ -195,6 +197,8 @@ export default function DashboardPage() {
   const [licenseAlert, setLicenseAlert] = useState<{ type: "warning" | "expired"; days: number } | null>(null);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
+const { lang, toggleLang } = useLang();
+const T = (key: string) => translate(lang, key);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -306,17 +310,23 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             <button onClick={() => router.push("/consumption/new")}
               className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition">
-              <Plus className="w-3.5 h-3.5" />Registrar consumo
+              <Plus className="w-3.5 h-3.5" />{T("dashboard.registerConsumption")}
             </button>
             <button onClick={() => router.push("/removals")}
               className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
-              <Leaf className="w-3.5 h-3.5" />Remociones
+              <Leaf className="w-3.5 h-3.5" />{T("dashboard.removals")}
             </button>
             <button onClick={() => router.push("/reports")}
               className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
-              <FileText className="w-3.5 h-3.5" />Reporte
+              <FileText className="w-3.5 h-3.5" />{T("dashboard.report")}
             </button>
             <div className="h-5 w-px bg-gray-200" />
+            <button
+              onClick={toggleLang}
+              className="text-xs font-bold px-2.5 py-1 rounded-lg border border-gray-200 text-gray-500 hover:border-green-400 hover:text-green-600 transition"
+            >
+              {lang === "es" ? "EN" : "ES"}
+            </button>
             <span className="text-xs text-gray-500">{user?.name}</span>
             <button onClick={logout} className="text-gray-400 hover:text-gray-600 transition">
               <LogOut className="w-4 h-4" />
