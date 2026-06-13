@@ -21,11 +21,11 @@ interface Summary {
 const MONTHS_SHORT = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 const MONTHS_FULL  = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 
-const SCOPE_CFG: Record<string, { label: string; sublabel: string; bar: string; icon: any }> = {
-  SCOPE_1: { label: "Alcance 1", sublabel: "Emisiones directas",         bar: "#ef4444", icon: Factory },
-  SCOPE_2: { label: "Alcance 2", sublabel: "Emisiones indirectas",       bar: "#f59e0b", icon: Zap     },
-  SCOPE_3: { label: "Alcance 3", sublabel: "Otras emisiones indirectas", bar: "#3b82f6", icon: Truck   },
-};
+const getScopeCfg = (T: (k: string) => string) => ({
+  SCOPE_1: { label: T("dashboard.scope1"), sublabel: T("dashboard.directEmissions"),   bar: "#ef4444", icon: Factory },
+  SCOPE_2: { label: T("dashboard.scope2"), sublabel: T("dashboard.indirectEmissions"), bar: "#f59e0b", icon: Zap     },
+  SCOPE_3: { label: T("dashboard.scope3"), sublabel: T("dashboard.otherIndirect"),     bar: "#3b82f6", icon: Truck   },
+});
 
 function getTotalByMonth(byMonth: Summary["byMonth"], monthNum: number) {
   return (byMonth ?? [])
@@ -251,6 +251,7 @@ const T = (key: string) => translate(lang, key);
     router.push("/login");
   };
 
+  const SCOPE_CFG = getScopeCfg(T);
   const s1 = getScopeTotal(summary?.byMonth ?? [], "SCOPE_1");
   const s2 = getScopeTotal(summary?.byMonth ?? [], "SCOPE_2");
   const s3 = getScopeTotal(summary?.byMonth ?? [], "SCOPE_3");
@@ -287,7 +288,7 @@ const T = (key: string) => translate(lang, key);
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="flex items-center gap-3 text-green-600">
         <Leaf className="w-5 h-5 animate-pulse" />
-        <span className="text-sm font-medium text-gray-500">Cargando inventario...</span>
+        <span className="text-sm font-medium text-gray-500">{T("dashboard.loading")}</span>
       </div>
     </div>
   );
@@ -368,10 +369,10 @@ const T = (key: string) => translate(lang, key);
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-              Inventario GEI {viewYear}
+              {T("dashboard.title")} {viewYear}
             </h1>
             <p className="text-sm text-gray-400 mt-0.5">
-              Gases de Efecto Invernadero · ISO 14064-1
+              {T("dashboard.subtitle")}
             </p>
           </div>
           <div className="relative">
@@ -387,7 +388,7 @@ const T = (key: string) => translate(lang, key);
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <div className="lg:col-span-1 bg-green-600 rounded-2xl p-5 flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <p className="text-green-100 text-xs font-medium uppercase tracking-wider">Total emisiones</p>
+              <p className="text-green-100 text-xs font-medium uppercase tracking-wider">{T("dashboard.totalEmissions")}</p>
               <TrendingUp className="w-4 h-4 text-green-300" />
             </div>
             <div className="mt-3">
@@ -404,11 +405,11 @@ const T = (key: string) => translate(lang, key);
             )}
             {isBaseYear && (
               <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-lg w-fit bg-white/20 text-white">
-                Año base del inventario
+                {T("dashboard.baseYear")}
               </div>
             )}
             <div className="mt-3 pt-3 border-t border-green-500">
-              <p className="text-green-200 text-xs">{summary?.totalRecords ?? 0} registros ingresados</p>
+              <p className="text-green-200 text-xs">{summary?.totalRecords ?? 0} {T("dashboard.records")}</p>
             </div>
           </div>
 
@@ -437,7 +438,7 @@ const T = (key: string) => translate(lang, key);
                 </div>
                 <div className="mt-3 space-y-1.5">
                   <div className="flex justify-between text-xs text-gray-400">
-                    <span>del total</span>
+                    <span>{T("dashboard.ofTotal")}</span>
                     <span>{pct.toFixed(1)}%</span>
                   </div>
                   <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -458,18 +459,18 @@ const T = (key: string) => translate(lang, key);
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-sm font-semibold text-gray-800">Emisiones mensuales</h2>
-              <p className="text-xs text-gray-400 mt-0.5">tCO₂eq por mes</p>
+              <h2 className="text-sm font-semibold text-gray-800">{T("dashboard.monthlyEmissions")}</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{T("dashboard.monthlySubtitle")}</p>
             </div>
             <div className="flex items-center gap-5">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm inline-block bg-green-500" />
-                <span className="text-xs text-gray-600 font-medium">Gestión {viewYear}</span>
+                <span className="text-xs text-gray-600 font-medium">{T("dashboard.management")} {viewYear}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-sm inline-block bg-gray-400" />
                 <span className="text-xs text-gray-500">
-                  {isBaseYear ? "Año base (ref.)" : `Año base ${baseYear}`}
+                  {isBaseYear ? T("dashboard.baseYearRef") : `${T("dashboard.baseYearRef").replace("(ref.)", "").trim()} ${baseYear}`}
                 </span>
               </div>
             </div>
@@ -494,19 +495,19 @@ const T = (key: string) => translate(lang, key);
           ) : (
             <div className="h-64 flex flex-col items-center justify-center text-center">
               <BarChart3 className="w-10 h-10 text-gray-200 mb-3" />
-              <p className="text-sm text-gray-400 font-medium">Sin datos para {viewYear}</p>
-              <p className="text-xs text-gray-300 mt-1">Registra consumos para ver la gráfica</p>
+              <p className="text-sm text-gray-400 font-medium">{T("dashboard.noDataYear")} {viewYear}</p>
+              <p className="text-xs text-gray-300 mt-1">{T("dashboard.registerToSeeChart")}</p>
             </div>
           )}
 
           <div className="flex items-center gap-5 mt-4 text-xs text-gray-400">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-sm bg-green-500 inline-block" />
-              Gestión {viewYear}
+              {T("dashboard.management")} {viewYear}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-sm bg-gray-400 inline-block" />
-              {isBaseYear ? "Año base (referencia)" : `Año base ${baseYear}`}
+              {isBaseYear ? T("dashboard.baseYearRef") : `${T("dashboard.baseYearRef").replace("(ref.)", "").trim()} ${baseYear}`}
             </span>
           </div>
         </div>
@@ -517,7 +518,7 @@ const T = (key: string) => translate(lang, key);
         {/* Tabla */}
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
-            <h2 className="text-sm font-semibold text-gray-800">Detalle por mes</h2>
+            <h2 className="text-sm font-semibold text-gray-800">{T("dashboard.detailByMonth")}</h2>
             <p className="text-xs text-gray-400 mt-0.5">
               {isBaseYear
                 ? `Año base ${baseYear} — referencia del inventario`
