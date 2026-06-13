@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useLang } from "../../lib/LanguageContext";
+import { translate } from "../../lib/i18n";
 
 const schema = z.object({
   email:    z.string().email("Email inválido"),
@@ -12,6 +14,9 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function LoginPage() {
+  const { lang, toggleLang } = useLang();
+  const T = (key: string) => translate(lang, key);
+
   const [showPassword, setShowPassword] = useState(false);
   const [loading,      setLoading]      = useState(false);
   const [error,        setError]        = useState("");
@@ -30,13 +35,13 @@ export default function LoginPage() {
         body:    JSON.stringify(values),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Error al iniciar sesión"); return; }
+      if (!res.ok) { setError(data.error ?? T("login.error.server")); return; }
       localStorage.setItem("token", data.token);
       localStorage.setItem("user",  JSON.stringify(data.user));
       if (data.mustChangePassword) { window.location.href = "/change-password"; return; }
       window.location.href = data.user.role === "SUPERADMIN" ? "/admin" : "/dashboard";
     } catch {
-      setError("No se pudo conectar con el servidor");
+      setError(T("login.error.server"));
     } finally {
       setLoading(false);
     }
@@ -44,19 +49,30 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+
+      {/* Botón idioma */}
+      <button
+        onClick={toggleLang}
+        className="fixed top-4 right-4 text-xs font-bold px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-green-400 hover:text-green-600 transition shadow-sm"
+      >
+        {lang === "es" ? "EN" : "ES"}
+      </button>
+
       <div className="w-full max-w-sm">
 
-        {/* Logo y nombre */}
+        {/* Logo */}
         <div className="text-center mb-8">
           <img src="/logo.png" alt="CarboMetrics" className="w-16 mx-auto mb-3" />
-          <h1 className="text-2xl font-bold text-gray-900">CarboMetrics</h1>
-          <p className="text-gray-500 text-sm mt-1">Gestión de huella de carbono</p>
+          <h1 className="text-2xl font-bold text-gray-900">{T("app.name")}</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            {lang === "es" ? "Gestión de huella de carbono" : "Carbon footprint management"}
+          </p>
         </div>
 
         {/* Bienvenido */}
         <div className="mb-6 text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Bienvenido</h2>
-          <p className="text-gray-500 text-sm mt-1">Ingresa tus credenciales para continuar</p>
+          <h2 className="text-2xl font-bold text-gray-900">{T("login.title")}</h2>
+          <p className="text-gray-500 text-sm mt-1">{T("login.subtitle")}</p>
         </div>
 
         {/* Error */}
@@ -69,10 +85,9 @@ export default function LoginPage() {
         {/* Formulario */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-          {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 text-center mb-1.5">
-              Correo electrónico
+              {T("login.email")}
             </label>
             <input
               {...register("email")}
@@ -85,10 +100,9 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Contraseña */}
           <div>
             <label className="block text-sm font-medium text-gray-700 text-center mb-1.5">
-              Contraseña
+              {T("login.password")}
             </label>
             <div className="relative">
               <input
@@ -110,15 +124,14 @@ export default function LoginPage() {
             )}
           </div>
 
-          {/* Botón */}
           <button
             type="submit"
             disabled={loading}
             className="w-full py-3 px-4 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-semibold rounded-xl transition flex items-center justify-center gap-2"
           >
             {loading
-              ? <><Loader2 className="w-4 h-4 animate-spin" />Ingresando...</>
-              : "Ingresar"
+              ? <><Loader2 className="w-4 h-4 animate-spin" />{T("login.loading")}</>
+              : T("login.submit")
             }
           </button>
 
@@ -129,7 +142,7 @@ export default function LoginPage() {
             CarboMetrics © {new Date().getFullYear()} · ISO 14064-1:2018
           </p>
           <p className="text-xs text-gray-300 mt-1">
-            Sistema de gestión de inventario GEI corporativo
+            {T("login.footer")}
           </p>
         </div>
 
