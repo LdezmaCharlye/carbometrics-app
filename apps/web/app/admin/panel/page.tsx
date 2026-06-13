@@ -132,10 +132,11 @@ const fetchCompanySources = async (companyId: string) => {
       fetch(url, { headers: { Authorization: `Bearer ${token}` } })
         .then((r) => r.json()).then((d) => setUsers(Array.isArray(d) ? d : d.data ?? [])).catch(() => {}).finally(() => setLoading(false));
     } else if (tab === "factors") {
-  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/emission-factors`, {
-    headers: { Authorization: `Bearer ${token}` },
-  }).then((r) => r.json()).then(setFactors).catch(() => {}).finally(() => setLoading(false));
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/emission-factors`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json()).then(setFactors).catch(() => {}).finally(() => setLoading(false));
       fetchCountryFactors();
+    } else if (tab === "consumption") {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/consumption?year=${selYear}${selCompany ? `&companyId=${selCompany}` : ""}`;
       fetch(url, { headers: { Authorization: `Bearer ${token}` } })
         .then((r) => r.json()).then(setLogs).catch(() => {}).finally(() => setLoading(false));
@@ -524,7 +525,6 @@ const fetchCompanySources = async (companyId: string) => {
                           </button>
                           <button onClick={async (e) => {
                             e.stopPropagation();
-                            if (!selCompanySources) return;
                             if (!confirm(`¿Eliminar la fuente "${s.name}"? Esta acción no se puede deshacer.`)) return;
                             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${selCompanySources.id}/sources/${s.id}`, {
                               method: "DELETE",
