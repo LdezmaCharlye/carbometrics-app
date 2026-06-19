@@ -307,8 +307,6 @@ footer{background:var(--black);padding:44px 5% 26px}
 .d1{transition-delay:.1s}.d2{transition-delay:.2s}
 
       `}</style>
-
-
 <nav className="nav" id="nav">
   <a href="#inicio" className="nav-logo">
     <img src="/carbo-logo.png" width="32" height="32" alt="CarboMétrica" style={{borderRadius: '8px', display: 'block'}}/>
