@@ -311,7 +311,7 @@ footer{background:var(--black);padding:44px 5% 26px}
 
 <nav className="nav" id="nav">
   <a href="#inicio" className="nav-logo">
-    <img src="/carbo-logo.png" width="32" height="32" alt="CarboMetrics" style={{borderRadius: '8px', display: 'block'}}/>
+    <img src="/carbo-logo.png" width="32" height="32" alt="CarboMétrica" style={{borderRadius: '8px', display: 'block'}}/>
     <span className="logo-name">Carbo<span>Métrica</span></span>
   </a>
   <ul className="nav-links">
