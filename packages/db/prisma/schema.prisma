@@ -33,8 +33,9 @@ model Company {
   yearTo           Int         @default(2030)
   licenseType      LicenseType @default(BASIC)
   licenseExpiresAt DateTime?
-  maxUsers         Int         @default(2)
-  maxBranches      Int         @default(1)
+  maxUsers           Int @default(1)
+  maxBranches        Int @default(1)
+  maxEmissionSources Int @default(2)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 

@@ -44,6 +44,14 @@ router.post("/", requireManager, async (c) => {
   const parsed  = sourceSchema.safeParse(body);
   if (!parsed.success) return c.json({ error: "Datos inválidos", detail: parsed.error.flatten() }, 400);
 
+  const company = await prisma.company.findUnique({
+    where: { id: payload.companyId },
+    select: { maxEmissionSources: true, _count: { select: { emissionSources: true } } },
+  });
+  if (company && company._count.emissionSources >= company.maxEmissionSources) {
+    return c.json({ error: `Límite de ${company.maxEmissionSources} fuentes de emisión alcanzado para tu plan` }, 422);
+  }
+
   const source = await prisma.emissionSource.create({
     data: { ...parsed.data, companyId: payload.companyId },
   });
