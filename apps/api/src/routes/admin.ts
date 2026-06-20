@@ -63,6 +63,7 @@ router.post("/companies", async (c) => {
 
   const maxUsers = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
   const maxBranches = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
+  const maxEmissionSources = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 7;
 
   const data: any = { ...parsed.data, maxUsers, maxBranches, maxEmissionSources };
   if (parsed.data.licenseExpiresAt) {
@@ -213,13 +214,13 @@ router.patch("/companies/:id", async (c) => {
   const yearRange   = yearTo - yearFrom + 1;
 
   if (licenseType === "BASIC"    && yearRange > 2) return c.json({ error: "Plan Básico permite máximo 2 años de inventario" }, 422);
-  if (licenseType === "STANDARD" && yearRange > 10) return c.json({ error: "Plan Estándar permite máximo 10 años de inventario" }, 422);
+  if (licenseType === "STANDARD" && yearRange > 3) return c.json({ error: "Plan Standard permite máximo 3 años de inventario" }, 422);
 
   const maxUsers = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
   const maxBranches = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
     const maxEmissionSources = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 7;
 
-  const data: any = { ...parsed.data, maxUsers, maxBranches };
+  const data: any = { ...parsed.data, maxUsers, maxBranches, maxEmissionSources };
   if (parsed.data.licenseExpiresAt === null) {
     data.licenseExpiresAt = null;
   } else if (parsed.data.licenseExpiresAt) {

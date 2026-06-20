@@ -1177,9 +1177,9 @@ const fetchCompanyBranches = async (companyId: string) => {
       {/* Selector de plan */}
       <div className="grid grid-cols-3 gap-2 mb-5">
         {[
-          { key: "BASIC",      label: "Básico",      users: 2,   years: 5,   branches: 1   },
-          { key: "STANDARD",   label: "Estándar",    users: 5,   years: 10,  branches: 5   },
-          { key: "ENTERPRISE", label: "Empresarial", users: "∞", years: "∞", branches: 10  },
+          { key: "BASIC",      label: "Básico",      users: 1,  years: 2, branches: 1,  sources: 2 },
+          { key: "STANDARD",   label: "Estándar",    users: 5,  years: 3, branches: 5,  sources: 5 },
+          { key: "ENTERPRISE", label: "Empresarial", users: 10, years: 5, branches: 10, sources: 7 },
         ].map((p) => (
           <button key={p.key} onClick={() => setCForm((prev) => ({ ...prev, licenseType: p.key }))}
             className={`rounded-xl border p-3 text-left transition ${cForm.licenseType === p.key ? "border-green-500 bg-green-50 ring-2 ring-green-500" : "border-gray-100 bg-white hover:bg-gray-50"}`}>
@@ -1187,6 +1187,7 @@ const fetchCompanyBranches = async (companyId: string) => {
             <p className="text-xs text-gray-500 mt-1">👤 máx. {p.users} usuarios</p>
             <p className="text-xs text-gray-500">📅 máx. {p.years} años</p>
             <p className="text-xs text-gray-500">🏢 máx. {p.branches} instalaciones</p>
+            <p className="text-xs text-gray-500">🧪 máx. {p.sources} fuentes GEI</p>
           </button>
         ))}
       </div>
@@ -1279,7 +1280,7 @@ const fetchCompanyBranches = async (companyId: string) => {
         {/* Validación visual del rango */}
         {cForm.yearFrom && cForm.yearTo && (() => {
           const range = parseInt(cForm.yearTo) - parseInt(cForm.yearFrom) + 1;
-          const maxRange = cForm.licenseType === "BASIC" ? 5 : cForm.licenseType === "STANDARD" ? 10 : 999;
+          const maxRange = cForm.licenseType === "BASIC" ? 2 : cForm.licenseType === "STANDARD" ? 3 : 5;
           const ok = range >= 1 && range <= maxRange;
           const planLabel = cForm.licenseType === "BASIC" ? "Básico" : cForm.licenseType === "STANDARD" ? "Estándar" : "Empresarial";
           return (
