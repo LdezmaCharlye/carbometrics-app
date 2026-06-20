@@ -343,6 +343,7 @@ function InventoryPage() {
       const list = (Array.isArray(d) ? d : []).filter((b: Branch) => b.isActive);
       setBranches(list);
       const branchId = new URLSearchParams(window.location.search).get("branchId");
+      console.log("DEBUG branches:", { branchId, ids: list.map((b: Branch) => b.id) });
       if (branchId && list.some((b: Branch) => b.id === branchId)) setSelectedBranchId(branchId);
     }).catch(() => {});
   }, [token]);
@@ -351,6 +352,7 @@ function InventoryPage() {
     if (!selectedSource || selectedMonth === null) return;
     setLoadingSaved(true);
     try {
+      console.log("DEBUG loadSaved:", selectedBranchId);
       const branchQS = selectedBranchId ? `&branchId=${selectedBranchId}` : "";
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/consumption/list?year=${selectedYear}&month=${selectedMonth}&emissionSourceId=${selectedSource.id}${branchQS}`,
