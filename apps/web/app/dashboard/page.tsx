@@ -5,7 +5,7 @@ import { useLang } from "../../lib/LanguageContext";
 import { translate } from "../../lib/i18n";
 import {
   Leaf, LogOut, Plus, BarChart3, Factory, Zap, Truck,
-  TrendingUp, TrendingDown, ChevronDown, CheckCircle, FileText, Wind,
+  TrendingUp, TrendingDown, ChevronDown, CheckCircle, FileText, Wind, Building2,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -320,6 +320,10 @@ const T = (key: string) => translate(lang, key);
             <button onClick={() => router.push("/reports")}
               className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
               <FileText className="w-3.5 h-3.5" />{T("dashboard.report")}
+            </button>
+            <button onClick={() => router.push("/instalaciones")}
+              className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
+              <Building2 className="w-3.5 h-3.5" />Instalaciones
             </button>
             <div className="h-5 w-px bg-gray-200" />
             <button
