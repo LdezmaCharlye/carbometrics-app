@@ -30,7 +30,7 @@ type Tab = "companies" | "licenses" | "users" | "factors" | "consumption";
 interface Company {
   id: string; name: string; taxId: string; industry: string; country: string;
   isActive: boolean; licenseType: string; licenseExpiresAt: string | null;
-  maxUsers: number; reportingYear: number;
+  maxUsers: number; maxBranches: number; reportingYear: number;
   _count: { users: number };
 }
 interface User {
@@ -83,6 +83,10 @@ const [showSourceModal, setShowSourceModal]     = useState(false);
 const [sfForm, setSfForm]                       = useState({ uncertaintyLevel: "MEDIUM", uncertaintyNote: "", isExcluded: false, exclusionReason: "", emissionFactorId: "" });
 const [showAddSourceModal, setShowAddSourceModal] = useState(false);
 const [safForm, setSafForm] = useState({ name: "", description: "", scope: "SCOPE_1", category: "STATIONARY_COMBUSTION", unit: "LITER", emissionFactorId: "" });
+const [selCompanyBranches, setSelCompanyBranches] = useState<Company | null>(null);
+const [companyBranches, setCompanyBranches]       = useState<any[]>([]);
+const [showAddBranchModal, setShowAddBranchModal] = useState(false);
+const [abForm, setAbForm] = useState({ name: "", address: "", city: "", country: "BO" });
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
   const showToast = (msg: string, ok = true) => {
@@ -111,6 +115,13 @@ const fetchCompanySources = async (companyId: string) => {
       headers: { Authorization: `Bearer ${token}` },
     }).then((r) => r.json()).then(setFactors).catch(() => {});
   }
+};
+
+const fetchCompanyBranches = async (companyId: string) => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${companyId}/branches`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.ok) setCompanyBranches(await res.json());
 };
 
   const fetchCountryFactors = async () => {
@@ -421,6 +432,13 @@ const fetchCompanySources = async (companyId: string) => {
                         }} title="Ver fuentes" className="text-gray-400 hover:text-blue-600 transition">
                           <FlaskConical className="w-4 h-4" />
                         </button>
+                        <button onClick={(e) => {
+                          e.stopPropagation();
+                          setSelCompanyBranches(c);
+                          fetchCompanyBranches(c.id);
+                        }} title="Ver instalaciones" className="text-gray-400 hover:text-teal-600 transition">
+                          <Building2 className="w-4 h-4" />
+                        </button>
                         <button onClick={(e) => { e.stopPropagation(); toggleCompany(c.id, c.isActive); }}>
                           {c.isActive
                             ? <ToggleRight className="w-5 h-5 text-green-500" />
@@ -549,6 +567,47 @@ const fetchCompanySources = async (companyId: string) => {
           </div>
         )}
 
+        {/* ── PANEL INSTALACIONES DE EMPRESA ───────────────────────────── */}
+        {selCompanyBranches && (
+          <div className="fixed inset-0 z-[70] overflow-y-auto bg-black/50 backdrop-blur-sm p-4" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-auto my-8">
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <div>
+                  <h3 className="font-bold text-gray-900">Instalaciones — {selCompanyBranches.name}</h3>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    {companyBranches.length} instalación(es) · límite del plan: {selCompanyBranches.maxBranches ?? "—"} (como admin puedes superarlo)
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => { setShowAddBranchModal(true); setAbForm({ name: "", address: "", city: "", country: "BO" }); }}
+                    className="flex items-center gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg transition">
+                    <Plus className="w-3.5 h-3.5" />Nueva instalación
+                  </button>
+                  <button onClick={() => { setSelCompanyBranches(null); setCompanyBranches([]); }}
+                    className="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+              </div>
+              <div className="divide-y divide-gray-50 max-h-[60vh] overflow-y-auto">
+                {companyBranches.length === 0 ? (
+                  <div className="px-6 py-10 text-center text-gray-400 text-sm">Sin instalaciones registradas</div>
+                ) : companyBranches.map((b) => (
+                  <div key={b.id} className="px-6 py-3.5 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{b.name}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {[b.address, b.city, b.country].filter(Boolean).join(", ") || "Sin dirección"}
+                      </p>
+                    </div>
+                    {!b.isActive && (
+                      <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Inactiva</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Modal nueva fuente */}
         {showAddSourceModal && (
           <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/50 backdrop-blur-sm p-4">
@@ -637,6 +696,59 @@ const fetchCompanySources = async (companyId: string) => {
                     showToast(err.error ?? "Error al crear fuente", false);
                   }
                 }} className="flex-1 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition">Crear fuente</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal nueva instalación */}
+        {showAddBranchModal && (
+          <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-auto my-8">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-bold text-gray-900">Nueva instalación — {selCompanyBranches?.name}</h3>
+                <button onClick={() => setShowAddBranchModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Nombre *</label>
+                  <input type="text" value={abForm.name} onChange={(e) => setAbForm((p) => ({ ...p, name: e.target.value }))}
+                    placeholder="Ej: Planta La Paz"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Dirección</label>
+                  <input type="text" value={abForm.address} onChange={(e) => setAbForm((p) => ({ ...p, address: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Ciudad</label>
+                  <input type="text" value={abForm.city} onChange={(e) => setAbForm((p) => ({ ...p, city: e.target.value }))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-700">
+                  Como administrador puedes crear instalaciones sin límite, incluso si superan el plan contratado por la empresa.
+                </div>
+              </div>
+              <div className="flex gap-2 mt-6">
+                <button onClick={() => setShowAddBranchModal(false)}
+                  className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition">Cancelar</button>
+                <button onClick={async () => {
+                  if (!abForm.name) { showToast("El nombre es obligatorio", false); return; }
+                  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${selCompanyBranches!.id}/branches`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(abForm),
+                  });
+                  if (res.ok) {
+                    setShowAddBranchModal(false);
+                    fetchCompanyBranches(selCompanyBranches!.id);
+                    showToast("Instalación creada correctamente");
+                  } else {
+                    const err = await res.json();
+                    showToast(err.error ?? "Error al crear instalación", false);
+                  }
+                }} className="flex-1 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition">Crear instalación</button>
               </div>
             </div>
           </div>
@@ -1064,15 +1176,16 @@ const fetchCompanySources = async (companyId: string) => {
       {/* Selector de plan */}
       <div className="grid grid-cols-3 gap-2 mb-5">
         {[
-          { key: "BASIC",      label: "Básico",      users: 2,   years: 5   },
-          { key: "STANDARD",   label: "Estándar",    users: 5,   years: 10  },
-          { key: "ENTERPRISE", label: "Empresarial", users: "∞", years: "∞" },
+          { key: "BASIC",      label: "Básico",      users: 2,   years: 5,   branches: 1   },
+          { key: "STANDARD",   label: "Estándar",    users: 5,   years: 10,  branches: 5   },
+          { key: "ENTERPRISE", label: "Empresarial", users: "∞", years: "∞", branches: 10  },
         ].map((p) => (
           <button key={p.key} onClick={() => setCForm((prev) => ({ ...prev, licenseType: p.key }))}
             className={`rounded-xl border p-3 text-left transition ${cForm.licenseType === p.key ? "border-green-500 bg-green-50 ring-2 ring-green-500" : "border-gray-100 bg-white hover:bg-gray-50"}`}>
             <p className="text-xs font-bold text-gray-700">{p.label}</p>
             <p className="text-xs text-gray-500 mt-1">👤 máx. {p.users} usuarios</p>
             <p className="text-xs text-gray-500">📅 máx. {p.years} años</p>
+            <p className="text-xs text-gray-500">🏢 máx. {p.branches} instalaciones</p>
           </button>
         ))}
       </div>
