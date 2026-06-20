@@ -47,6 +47,9 @@ const companySchema = z.object({
   yearFrom:         z.number().int().min(2000).default(2020),
   yearTo:           z.number().int().min(2000).default(2025),
   reportingYear:    z.number().int().default(new Date().getFullYear()),
+  extraUsers:           z.number().int().min(0).default(0),
+  extraYears:           z.number().int().min(0).default(0),
+  extraEmissionSources: z.number().int().min(0).default(0),
 });
 
 router.post("/companies", async (c) => {
@@ -54,16 +57,18 @@ router.post("/companies", async (c) => {
   const parsed = companySchema.safeParse(body);
   if (!parsed.success) return c.json({ error: "Datos inválidos", detail: parsed.error.flatten() }, 400);
 
-  const { licenseType, yearFrom, yearTo } = parsed.data;
+  const { licenseType, yearFrom, yearTo, extraUsers, extraYears, extraEmissionSources } = parsed.data;
   const yearRange = yearTo - yearFrom + 1;
 
-  if (licenseType === "BASIC"    && yearRange > 2) return c.json({ error: "Plan Básico permite máximo 2 años de inventario" }, 422);
-  if (licenseType === "STANDARD"   && yearRange > 3) return c.json({ error: "Plan Standard permite máximo 3 años de inventario" }, 422);
-    if (licenseType === "ENTERPRISE" && yearRange > 5) return c.json({ error: "Plan Corporativo permite máximo 5 años de inventario" }, 422);
+  const baseMaxYears = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 3 : 5;
+  const maxRange = baseMaxYears + extraYears;
+  if (yearRange > maxRange) return c.json({ error: `Este plan permite máximo ${maxRange} año(s) de inventario (incluyendo adicionales)` }, 422);
 
-  const maxUsers = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
+  const baseMaxUsers = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
+  const maxUsers = baseMaxUsers + extraUsers;
   const maxBranches = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
-  const maxEmissionSources = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 7;
+  const baseMaxSources = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 7;
+  const maxEmissionSources = baseMaxSources + extraEmissionSources;
 
   const data: any = { ...parsed.data, maxUsers, maxBranches, maxEmissionSources };
   if (parsed.data.licenseExpiresAt) {
@@ -92,6 +97,9 @@ router.patch("/companies/:id", async (c) => {
     yearFrom:         z.number().int().optional(),
     yearTo:           z.number().int().optional(),
     reportingYear:    z.number().int().optional(),
+    extraUsers:           z.number().int().min(0).optional(),
+    extraYears:           z.number().int().min(0).optional(),
+    extraEmissionSources: z.number().int().min(0).optional(),
   });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return c.json({ error: "Datos inválidos" }, 400);
@@ -116,13 +124,19 @@ router.patch("/companies/:id", async (c) => {
   const yearFrom    = parsed.data.yearFrom    ?? current.yearFrom;
   const yearTo      = parsed.data.yearTo      ?? current.yearTo;
   const yearRange   = yearTo - yearFrom + 1;
+  const extraUsers           = parsed.data.extraUsers           ?? current.extraUsers;
+  const extraYears           = parsed.data.extraYears           ?? current.extraYears;
+  const extraEmissionSources = parsed.data.extraEmissionSources ?? current.extraEmissionSources;
 
-  if (licenseType === "BASIC"    && yearRange > 2) return c.json({ error: "Plan Básico permite máximo 2 años de inventario" }, 422);
-  if (licenseType === "STANDARD" && yearRange > 3) return c.json({ error: "Plan Standard permite máximo 3 años de inventario" }, 422);
+  const baseMaxYears = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 3 : 5;
+  const maxRange = baseMaxYears + extraYears;
+  if (yearRange > maxRange) return c.json({ error: `Este plan permite máximo ${maxRange} año(s) de inventario (incluyendo adicionales)` }, 422);
 
-  const maxUsers = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
+  const baseMaxUsers = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
+  const maxUsers = baseMaxUsers + extraUsers;
   const maxBranches = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
-  const maxEmissionSources = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 7;
+  const baseMaxSources = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 7;
+  const maxEmissionSources = baseMaxSources + extraEmissionSources;
 
   const data: any = { ...parsed.data, maxUsers, maxBranches, maxEmissionSources };
   if (parsed.data.licenseExpiresAt === null) {

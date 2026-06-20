@@ -36,6 +36,9 @@ model Company {
   maxUsers           Int @default(1)
   maxBranches        Int @default(1)
   maxEmissionSources Int @default(2)
+  extraUsers           Int @default(0)
+  extraYears           Int @default(0)
+  extraEmissionSources Int @default(0)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
