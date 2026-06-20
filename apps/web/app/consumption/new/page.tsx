@@ -19,6 +19,7 @@ const UNIT_LABELS: Record<string, string> = {
 };
 
 interface Source { id: string; name: string; unit: string; scope: string; kgCO2: number; kgCH4: number; kgN2O: number; }
+interface Branch { id: string; name: string; isActive: boolean; }
 interface SavedLog {
   id: string; quantity: number; notes: string | null; dataQuality: string;
   isVerified: boolean; emissionsKgCO2eq: number;
@@ -272,6 +273,8 @@ function InventoryPage() {
   const [selectedMonth,  setSelectedMonth] = useState<number|null>(searchParams.get("month") ? parseInt(searchParams.get("month")!) : null);
   const [selectedSource, setSelectedSource] = useState<Source|null>(null);
   const [sources,        setSources]       = useState<Source[]>([]);
+  const [branches,         setBranches]         = useState<Branch[]>([]);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [drafts,         setDrafts]        = useState<DraftRow[]>([newDraft()]);
   const [saved,          setSaved]         = useState<SavedLog[]>([]);
   const [loadingSaved,   setLoadingSaved]  = useState(false);
@@ -331,6 +334,18 @@ function InventoryPage() {
   }, [router, token]);
 
   const scopeSources = sources.filter((s) => s.scope === selectedScope);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((r) => r.json()).then((d) => {
+      const list = (Array.isArray(d) ? d : []).filter((b: Branch) => b.isActive);
+      setBranches(list);
+      const branchId = new URLSearchParams(window.location.search).get("branchId");
+      if (branchId && list.some((b: Branch) => b.id === branchId)) setSelectedBranchId(branchId);
+    }).catch(() => {});
+  }, [token]);
 
   const loadSaved = useCallback(async () => {
     if (!selectedSource || selectedMonth === null) return;
@@ -445,6 +460,7 @@ function InventoryPage() {
           quantity: parseFloat(draft.quantity),
           notes: notesParts.length ? notesParts.join(" | ") : undefined,
           dataQuality: draft.dataQuality,
+          branchId: selectedBranchId || undefined,
         }),
       });
       if (res.ok) {
@@ -644,6 +660,19 @@ function InventoryPage() {
                 ))}
               </select>
             </div>
+            {branches.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Instalación (opcional)</label>
+                <select value={selectedBranchId}
+                  onChange={(e) => { setSelectedBranchId(e.target.value); updateURL({ branchId: e.target.value }); }}
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                  <option value="">— Toda la empresa —</option>
+                  {branches.map((b) => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">Mes de registro</label>
               <div className="flex flex-col gap-2">

@@ -26,24 +26,39 @@ router.get("/oldest-year", requireAuth, async (c) => {
 router.get("/summary", requireAuth, async (c) => {
   const payload   = c.get("jwtPayload") as any;
   const year      = parseInt(c.req.query("year") ?? String(new Date().getFullYear()));
+  const branchId  = c.req.query("branchId") || undefined;
   const companyId = payload.companyId;
   if (!companyId) return c.json({ totalTCO2eq: 0, totalRecords: 0, byMonth: [] });
 
-  const byMonth = await prisma.$queryRaw<any[]>`
-    SELECT
-      cl.month,
-      es.scope,
-      SUM(cl."emissionsKgCO2eq") AS total_kg
-    FROM consumption_logs cl
-    JOIN emission_sources es ON es.id = cl."emissionSourceId"
-    WHERE cl."companyId" = ${companyId}
-      AND cl.year = ${year}
-    GROUP BY cl.month, es.scope
-    ORDER BY cl.month
-  `;
+  const byMonth = branchId
+    ? await prisma.$queryRaw<any[]>`
+        SELECT
+          cl.month,
+          es.scope,
+          SUM(cl."emissionsKgCO2eq") AS total_kg
+        FROM consumption_logs cl
+        JOIN emission_sources es ON es.id = cl."emissionSourceId"
+        WHERE cl."companyId" = ${companyId}
+          AND cl.year = ${year}
+          AND cl."branchId" = ${branchId}
+        GROUP BY cl.month, es.scope
+        ORDER BY cl.month
+      `
+    : await prisma.$queryRaw<any[]>`
+        SELECT
+          cl.month,
+          es.scope,
+          SUM(cl."emissionsKgCO2eq") AS total_kg
+        FROM consumption_logs cl
+        JOIN emission_sources es ON es.id = cl."emissionSourceId"
+        WHERE cl."companyId" = ${companyId}
+          AND cl.year = ${year}
+        GROUP BY cl.month, es.scope
+        ORDER BY cl.month
+      `;
 
   const totals = await prisma.consumptionLog.aggregate({
-    where: { companyId, year },
+    where: branchId ? { companyId, year, branchId } : { companyId, year },
     _sum:   { emissionsKgCO2eq: true },
     _count: { id: true },
   });
@@ -121,6 +136,7 @@ router.post("/from-factor", requireManager, async (c) => {
       dataQuality:      body.dataQuality ?? "ESTIMATED",
       emissionsKgCO2eq,
       companyId,
+      branchId:         body.branchId || null,
       recordedById:     payload.sub,
     },
   });
@@ -135,6 +151,7 @@ const logSchema = z.object({
   quantity:         z.number().positive(),
   notes:            z.string().optional(),
   dataQuality:      z.enum(["DIGITAL_INVOICE", "PHYSICAL_INVOICE", "MEASURED", "CALCULATED", "ESTIMATED"]).optional(),
+  branchId:         z.string().optional(),
 });
 
 router.post("/", requireManager, async (c) => {

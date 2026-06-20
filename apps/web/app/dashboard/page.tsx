@@ -193,6 +193,8 @@ export default function DashboardPage() {
   const [summary,     setSummary]     = useState<Summary | null>(null);
   const [baseSummary, setBaseSummary] = useState<Summary | null>(null);
   const [user,        setUser]        = useState<any>(null);
+  const [branches,         setBranches]         = useState<{ id: string; name: string }[]>([]);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [loading,      setLoading]      = useState(true);
   const [licenseAlert, setLicenseAlert] = useState<{ type: "warning" | "expired"; days: number } | null>(null);
 
@@ -225,11 +227,16 @@ const T = (key: string) => translate(lang, key);
       }
     }).catch(() => {});
 
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then((r) => r.json()).then((d) => setBranches(Array.isArray(d) ? d.filter((b: any) => b.isActive) : [])).catch(() => {});
+
     setLoading(true);
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/summary?year=${viewYear}`, {
+    const branchQS = selectedBranchId ? `&branchId=${selectedBranchId}` : "";
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/summary?year=${viewYear}${branchQS}`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then((r) => r.json()).then(setSummary).catch(() => {}).finally(() => setLoading(false));
-  }, [router, token, viewYear]);
+  }, [router, token, viewYear, selectedBranchId]);
 
   useEffect(() => {
     if (!token) return;
@@ -240,10 +247,11 @@ const T = (key: string) => translate(lang, key);
 
   useEffect(() => {
     if (!token || !baseYear || baseYear === viewYear) { setBaseSummary(null); return; }
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/summary?year=${baseYear}`, {
+    const branchQS = selectedBranchId ? `&branchId=${selectedBranchId}` : "";
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/summary?year=${baseYear}${branchQS}`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then((r) => r.json()).then(setBaseSummary).catch(() => {});
-  }, [token, baseYear, viewYear]);
+  }, [token, baseYear, viewYear, selectedBranchId]);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -379,12 +387,24 @@ const T = (key: string) => translate(lang, key);
               {T("dashboard.subtitle")}
             </p>
           </div>
-          <div className="relative">
-            <select value={viewYear} onChange={(e) => setViewYear(parseInt(e.target.value))}
-              className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
-              {Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearFrom + i).reverse().map((y) => <option key={y} value={y}>{y}</option>)}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <div className="flex items-center gap-2">
+            {branches.length > 0 && (
+              <div className="relative">
+                <select value={selectedBranchId} onChange={(e) => setSelectedBranchId(e.target.value)}
+                  className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
+                  <option value="">Todas las instalaciones</option>
+                  {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            )}
+            <div className="relative">
+              <select value={viewYear} onChange={(e) => setViewYear(parseInt(e.target.value))}
+                className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
+                {Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearFrom + i).reverse().map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
           </div>
         </div>
 
