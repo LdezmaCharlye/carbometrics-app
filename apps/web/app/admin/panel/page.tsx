@@ -32,6 +32,7 @@ interface Company {
   isActive: boolean; licenseType: string; licenseExpiresAt: string | null;
   maxUsers: number; maxBranches: number; reportingYear: number;
   orgBoundaryType?: string; yearFrom?: number; yearTo?: number; baseYear?: number | null;
+  extraUsers?: number; extraYears?: number; extraEmissionSources?: number;
   _count: { users: number };
 }
 interface User {
@@ -71,7 +72,7 @@ export default function AdminPanelPage() {
 
   const [uForm, setUForm] = useState({ email: "", name: "", password: "", role: "MANAGER", companyId: "" });
   const [fForm, setFForm] = useState({ name: "", fuelType: "", unit: "LITER", kgCO2: "", kgCH4: "", kgN2O: "", source: "IPCC_AR6", region: "GLOBAL", year: String(new Date().getFullYear()) });
-  const [cForm, setCForm] = useState({ name: "", taxId: "", industry: "", country: "BO", orgBoundaryType: "OPERATIONAL_CONTROL", baseYear: "", baseYearRecalcNote: "", licenseType: "BASIC", yearFrom: String(new Date().getFullYear() - 1), yearTo: String(new Date().getFullYear()), reportingYear: String(new Date().getFullYear()), licenseExpiresAt: "" });
+  const [cForm, setCForm] = useState({ name: "", taxId: "", industry: "", country: "BO", orgBoundaryType: "OPERATIONAL_CONTROL", baseYear: "", baseYearRecalcNote: "", licenseType: "BASIC", yearFrom: String(new Date().getFullYear() - 1), yearTo: String(new Date().getFullYear()), reportingYear: String(new Date().getFullYear()), licenseExpiresAt: "", extraUsers: "0", extraYears: "0", extraEmissionSources: "0" });
 const [countryFactors, setCountryFactors]         = useState<any[]>([]);
 const [factorsSubTab, setFactorsSubTab]           = useState<"global" | "country">("global");
 const [editCountryFactor, setEditCountryFactor]   = useState<any | null>(null);
@@ -163,6 +164,9 @@ const fetchCompanyBranches = async (companyId: string) => {
   country: cForm.country, orgBoundaryType: cForm.orgBoundaryType, licenseType: cForm.licenseType,
   yearFrom: parseInt(cForm.yearFrom), yearTo: parseInt(cForm.yearTo),
   reportingYear: parseInt(cForm.reportingYear),
+  extraUsers: parseInt(cForm.extraUsers) || 0,
+  extraYears: parseInt(cForm.extraYears) || 0,
+  extraEmissionSources: parseInt(cForm.extraEmissionSources) || 0,
   ...(cForm.baseYear ? { baseYear: parseInt(cForm.baseYear) } : {}),
   ...(cForm.baseYearRecalcNote ? { baseYearRecalcNote: cForm.baseYearRecalcNote } : {}),
 };
@@ -179,7 +183,7 @@ const fetchCompanyBranches = async (companyId: string) => {
     if (!res.ok) { const d = await res.json(); showToast(d.error ?? "Error al guardar", false); return; }
     showToast(editCompany ? "Empresa actualizada" : "Empresa creada");
     setShowCompanyModal(false); setEditCompany(null);
-    setCForm({ name: "", taxId: "", industry: "", country: "BO", orgBoundaryType: "", baseYear: "", baseYearRecalcNote: "", licenseType: "BASIC", yearFrom: "", yearTo: "", reportingYear: String(new Date().getFullYear()), licenseExpiresAt: "" });
+    setCForm({ name: "", taxId: "", industry: "", country: "BO", orgBoundaryType: "", baseYear: "", baseYearRecalcNote: "", licenseType: "BASIC", yearFrom: "", yearTo: "", reportingYear: String(new Date().getFullYear()), licenseExpiresAt: "", extraUsers: "0", extraYears: "0", extraEmissionSources: "0" });
     loadCompanies();
   };
 
@@ -195,6 +199,9 @@ const fetchCompanyBranches = async (companyId: string) => {
     licenseExpiresAt: c.licenseExpiresAt ? c.licenseExpiresAt.split("T")[0] : "",
     baseYear: c.baseYear ? String(c.baseYear) : "",
     baseYearRecalcNote: "",
+    extraUsers: String(c.extraUsers ?? 0),
+    extraYears: String(c.extraYears ?? 0),
+    extraEmissionSources: String(c.extraEmissionSources ?? 0),
   });
     setShowCompanyModal(true);
   };
@@ -1294,18 +1301,43 @@ const fetchCompanyBranches = async (companyId: string) => {
         {/* Validación visual del rango */}
         {cForm.yearFrom && cForm.yearTo && (() => {
           const range = parseInt(cForm.yearTo) - parseInt(cForm.yearFrom) + 1;
-          const maxRange = cForm.licenseType === "BASIC" ? 2 : cForm.licenseType === "STANDARD" ? 3 : 5;
+          const baseMaxRange = cForm.licenseType === "BASIC" ? 2 : cForm.licenseType === "STANDARD" ? 3 : 5;
+          const maxRange = baseMaxRange + (parseInt(cForm.extraYears) || 0);
           const ok = range >= 1 && range <= maxRange;
           const planLabel = cForm.licenseType === "BASIC" ? "Básico" : cForm.licenseType === "STANDARD" ? "Estándar" : "Empresarial";
           return (
             <div className={`col-span-2 rounded-xl p-3 text-xs font-medium flex items-center gap-2 ${ok ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-600 border border-red-200"}`}>
               {ok ? "✅" : "⚠️"}
               {ok
-                ? `Rango válido: ${range} año(s) de inventario (máx. ${maxRange} para plan ${planLabel})`
-                : `El plan ${planLabel} permite máximo ${maxRange} años. Rango actual: ${range} años.`}
+                ? `Rango válido: ${range} año(s) de inventario (máx. ${maxRange} para plan ${planLabel}${(parseInt(cForm.extraYears) || 0) > 0 ? " + adicionales" : ""})`
+                : `El plan ${planLabel} permite máximo ${maxRange} años (incluyendo adicionales). Rango actual: ${range} años.`}
             </div>
           );
         })()}
+
+        <div className="col-span-2 border-t border-gray-100 pt-4 mt-1">
+          <p className="text-xs font-bold text-gray-600 mb-2">Adicionales contratados</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">+ Usuarios</label>
+              <input type="number" min="0" value={cForm.extraUsers}
+                onChange={(e) => setCForm((p) => ({ ...p, extraUsers: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">+ Años</label>
+              <input type="number" min="0" value={cForm.extraYears}
+                onChange={(e) => setCForm((p) => ({ ...p, extraYears: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">+ Fuentes GEI</label>
+              <input type="number" min="0" value={cForm.extraEmissionSources}
+                onChange={(e) => setCForm((p) => ({ ...p, extraEmissionSources: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+            </div>
+          </div>
+        </div>
 
         <div>
           <label className="block text-xs font-medium text-gray-600 mb-1">Año de reporte principal</label>
