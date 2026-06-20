@@ -61,8 +61,9 @@ router.post("/companies", async (c) => {
   if (licenseType === "STANDARD" && yearRange > 10) return c.json({ error: "Plan Estándar permite máximo 10 años de inventario" }, 422);
 
   const maxUsers = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 999;
+  const maxBranches = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
 
-  const data: any = { ...parsed.data, maxUsers };
+  const data: any = { ...parsed.data, maxUsers, maxBranches };
   if (parsed.data.licenseExpiresAt) {
     data.licenseExpiresAt = new Date(parsed.data.licenseExpiresAt);
   } else {
@@ -214,8 +215,9 @@ router.patch("/companies/:id", async (c) => {
   if (licenseType === "STANDARD" && yearRange > 10) return c.json({ error: "Plan Estándar permite máximo 10 años de inventario" }, 422);
 
   const maxUsers = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 999;
+  const maxBranches = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
 
-  const data: any = { ...parsed.data, maxUsers };
+  const data: any = { ...parsed.data, maxUsers, maxBranches };
   if (parsed.data.licenseExpiresAt === null) {
     data.licenseExpiresAt = null;
   } else if (parsed.data.licenseExpiresAt) {
@@ -484,6 +486,36 @@ router.get("/my-license", async (c) => {
   } catch {
     return c.json({ error: "Token inválido" }, 401);
   }
+});
+
+// GET /api/admin/companies/:id/branches
+router.get("/companies/:id/branches", async (c) => {
+  const branches = await prisma.branch.findMany({
+    where:   { companyId: c.req.param("id") },
+    orderBy: { createdAt: "asc" },
+  });
+  return c.json(branches);
+});
+
+// POST /api/admin/companies/:id/branches — sin límite, el admin puede exceder el plan
+router.post("/companies/:id/branches", async (c) => {
+  const companyId = c.req.param("id");
+  const body = await c.req.json().catch(() => null);
+  const schema = z.object({
+    name:    z.string().min(2),
+    address: z.string().optional(),
+    city:    z.string().optional(),
+    country: z.string().default("BO"),
+  });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return c.json({ error: "Datos inválidos", detail: parsed.error.flatten() }, 400);
+
+  const company = await prisma.company.findUnique({ where: { id: companyId } });
+  if (!company) return c.json({ error: "Empresa no encontrada" }, 404);
+
+  const branchData: any = { ...parsed.data, companyId };
+  const branch = await prisma.branch.create({ data: branchData });
+  return c.json(branch, 201);
 });
 
 export { router as adminRouter };

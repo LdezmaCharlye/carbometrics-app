@@ -8,6 +8,7 @@ import { adminRouter } from "./routes/admin";
 import { consumptionRouter } from "./routes/consumption";
 import { sourcesRouter } from "./routes/emission-sources";
 import { uploadRouter } from "./routes/upload";
+import { branchesRouter } from "./routes/branches";
 
 const app = new Hono();
 
@@ -69,6 +70,7 @@ app.route("/api/admin", adminRouter);
 app.route("/api/consumption", consumptionRouter);
 app.route("/api/sources", sourcesRouter);
 app.route("/api/upload", uploadRouter);
+app.route("/api/branches", branchesRouter);
 // Servir imágenes subidas localmente
 app.use("/uploads/*", async (c) => {
   const { serveStatic } = await import("@hono/node-server/serve-static");
