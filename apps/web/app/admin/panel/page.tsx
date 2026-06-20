@@ -31,6 +31,7 @@ interface Company {
   id: string; name: string; taxId: string; industry: string; country: string;
   isActive: boolean; licenseType: string; licenseExpiresAt: string | null;
   maxUsers: number; maxBranches: number; reportingYear: number;
+  orgBoundaryType?: string; yearFrom?: number; yearTo?: number; baseYear?: number | null;
   _count: { users: number };
 }
 interface User {

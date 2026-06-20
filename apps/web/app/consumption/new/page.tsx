@@ -351,8 +351,9 @@ function InventoryPage() {
     if (!selectedSource || selectedMonth === null) return;
     setLoadingSaved(true);
     try {
+      const branchQS = selectedBranchId ? `&branchId=${selectedBranchId}` : "";
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/consumption/list?year=${selectedYear}&month=${selectedMonth}&emissionSourceId=${selectedSource.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/consumption/list?year=${selectedYear}&month=${selectedMonth}&emissionSourceId=${selectedSource.id}${branchQS}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
@@ -374,7 +375,7 @@ function InventoryPage() {
       })));
     } catch {}
     setLoadingSaved(false);
-  }, [selectedSource, selectedMonth, selectedYear, token]);
+  }, [selectedSource, selectedMonth, selectedYear, selectedBranchId, token]);
 
   useEffect(() => { if (step === "table") loadSaved(); }, [step, loadSaved]);
 
