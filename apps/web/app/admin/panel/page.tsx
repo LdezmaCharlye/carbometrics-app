@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import {
   Leaf, LogOut, Users, FlaskConical, FileText, Building2, BadgeCheck,
   Plus, X, ChevronDown, CheckCircle, AlertCircle,
-  Pencil, ToggleLeft, ToggleRight, ArrowLeft,
+  Pencil, ToggleLeft, ToggleRight, ArrowLeft, Trash2,
 } from "lucide-react";
 
 const UNIT_LABELS: Record<string, string> = {
@@ -207,6 +207,17 @@ const fetchCompanyBranches = async (companyId: string) => {
     });
     setCompanies((prev) => prev.map((c) => c.id === id ? { ...c, isActive: !isActive } : c));
     showToast(!isActive ? "Empresa activada" : "Empresa desactivada");
+  };
+
+  const deleteCompany = async (id: string, name: string) => {
+    if (!confirm(`¿Seguro que quieres eliminar "${name}" para siempre? Esto borrará TODOS sus datos (usuarios, instalaciones, fuentes, registros de consumo). Esta acción no se puede deshacer.`)) return;
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) { showToast("No se pudo eliminar la empresa", false); return; }
+    setCompanies((prev) => prev.filter((c) => c.id !== id));
+    showToast("Empresa eliminada permanentemente");
   };
 
   // Crear usuario
@@ -444,6 +455,9 @@ const fetchCompanyBranches = async (companyId: string) => {
                           {c.isActive
                             ? <ToggleRight className="w-5 h-5 text-green-500" />
                             : <ToggleLeft  className="w-5 h-5 text-gray-300" />}
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); deleteCompany(c.id, c.name); }} title="Eliminar empresa" className="text-gray-400 hover:text-red-600 transition">
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </td>

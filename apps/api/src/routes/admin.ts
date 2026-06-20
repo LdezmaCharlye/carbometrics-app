@@ -137,6 +137,17 @@ router.patch("/companies/:id", async (c) => {
   return c.json(company);
 });
 
+// DELETE /api/admin/companies/:id
+router.delete("/companies/:id", async (c) => {
+  const id = c.req.param("id");
+  try {
+    await prisma.company.delete({ where: { id } });
+    return c.json({ success: true });
+  } catch (error) {
+    return c.json({ error: "No se pudo eliminar la empresa. Es posible que tenga datos relacionados que lo impiden." }, 500);
+  }
+});
+
 // POST /api/admin/users
 const userSchema = z.object({
   email:     z.string().email(),
