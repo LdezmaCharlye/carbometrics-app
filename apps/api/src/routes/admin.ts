@@ -73,103 +73,7 @@ router.post("/companies", async (c) => {
   }
 
   const company = await prisma.company.create({ data });
-
-  // Buscar FE de electricidad del país (fallback a GLOBAL)
-  const countryFE = await prisma.countryEmissionFactor.findFirst({
-    where: { countryCode: parsed.data.country, isActive: true },
-  }) ?? await prisma.countryEmissionFactor.findFirst({
-    where: { countryCode: "GLOBAL", isActive: true },
-  });
-
-  const kgCO2perKwh = countryFE?.kgCO2perKwh ?? 0.493;
-
-  // Crear EmissionFactor de electricidad específico para esta empresa
-  const electricityFactor = await prisma.emissionFactor.create({
-    data: {
-      name:     `Electricidad red — ${parsed.data.country}`,
-      fuelType: "ELECTRICITY_GRID",
-      unit:     "KWH",
-      kgCO2:    kgCO2perKwh,
-      kgCH4:    0,
-      kgN2O:    0,
-      source:   "CUSTOM",
-      region:   parsed.data.country,
-      year:     countryFE?.year ?? 2023,
-    },
-  });
-
-  // Fuentes de emisión predefinidas
-  await prisma.emissionSource.createMany({
-    data: [
-      {
-        name:             "Electricidad red eléctrica",
-        description:      `Factor: ${kgCO2perKwh} kgCO₂/kWh — ${countryFE?.source ?? "IEA 2023"}`,
-        scope:            "SCOPE_2",
-        category:         "PURCHASED_ELECTRICITY",
-        unit:             "KWH",
-        companyId:        company.id,
-        emissionFactorId: electricityFactor.id,
-      },
-      {
-        name:        "Diésel — combustión estacionaria",
-        description: "Factor: 2.68 kgCO₂/L — IPCC AR6",
-        scope:       "SCOPE_1",
-        category:    "STATIONARY_COMBUSTION",
-        unit:        "LITER",
-        companyId:   company.id,
-      },
-      {
-        name:        "Gasolina — vehículos",
-        description: "Factor: 2.31 kgCO₂/L — IPCC AR6",
-        scope:       "SCOPE_1",
-        category:    "MOBILE_COMBUSTION",
-        unit:        "LITER",
-        companyId:   company.id,
-      },
-      {
-        name:        "GLP / Gas licuado",
-        description: "Factor: 2.98 kgCO₂/kg — IPCC AR6",
-        scope:       "SCOPE_1",
-        category:    "STATIONARY_COMBUSTION",
-        unit:        "KG",
-        companyId:   company.id,
-      },
-      {
-        name:        "Viajes aéreos",
-        description: "Factor: 0.255 kgCO₂/km-pax — IPCC AR6",
-        scope:       "SCOPE_3",
-        category:    "BUSINESS_TRAVEL",
-        unit:        "KM_PASSENGER",
-        companyId:   company.id,
-      },
-      {
-        name:        "Gases refrigerantes (HFCs)",
-        description: "Factor: 1430 kgCO₂eq/kg — R-134a — IPCC AR6",
-        scope:       "SCOPE_1",
-        category:    "FUGITIVE_EMISSIONS",
-        unit:        "KG",
-        companyId:   company.id,
-      },
-      {
-        name:        "Gases fluorados (PFCs)",
-        description: "Factor: 7390 kgCO₂eq/kg — CF4 — IPCC AR6",
-        scope:       "SCOPE_1",
-        category:    "FUGITIVE_EMISSIONS",
-        unit:        "KG",
-        companyId:   company.id,
-      },
-      {
-        name:        "Hexafluoruro de azufre (SF6)",
-        description: "Factor: 23500 kgCO2eq/kg — IPCC AR6",
-        scope:       "SCOPE_1",
-        category:    "FUGITIVE_EMISSIONS",
-        unit:        "KG",
-        companyId:   company.id,
-      },
-    ],
-  });
-
-  return c.json({ ...company, sourcesCreated: 8 }, 201);
+  return c.json(company, 201);
 });
 
 // PATCH /api/admin/companies/:id
@@ -218,7 +122,7 @@ router.patch("/companies/:id", async (c) => {
 
   const maxUsers = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
   const maxBranches = licenseType === "BASIC" ? 1 : licenseType === "STANDARD" ? 5 : 10;
-    const maxEmissionSources = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 7;
+  const maxEmissionSources = licenseType === "BASIC" ? 2 : licenseType === "STANDARD" ? 5 : 7;
 
   const data: any = { ...parsed.data, maxUsers, maxBranches, maxEmissionSources };
   if (parsed.data.licenseExpiresAt === null) {

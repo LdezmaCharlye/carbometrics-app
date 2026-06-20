@@ -17,47 +17,6 @@ router.get("/", requireAuth, async (c) => {
   return c.json(sources);
 });
 
-// POST /api/sources — crear fuente de emisión
-const sourceSchema = z.object({
-  name:            z.string().min(2),
-  description:     z.string().optional(),
-  assetCode:       z.string().optional(),
-  scope:           z.enum(["SCOPE_1", "SCOPE_2", "SCOPE_3"]),
-  category:        z.enum([
-    "STATIONARY_COMBUSTION","MOBILE_COMBUSTION","PROCESS_EMISSIONS","FUGITIVE_EMISSIONS",
-    "PURCHASED_ELECTRICITY","PURCHASED_HEAT","PURCHASED_COOLING",
-    "BUSINESS_TRAVEL","EMPLOYEE_COMMUTING","WASTE_DISPOSAL","PURCHASED_GOODS",
-    "UPSTREAM_TRANSPORT","DOWNSTREAM_TRANSPORT","USE_OF_SOLD_PRODUCTS","END_OF_LIFE_TREATMENT"
-  ]),
-  unit:            z.enum(["LITER","GALLON_US","M3","KG","TON","KWH","MWH","KM","KM_PASSENGER","TON_KM","TON_WASTE","USD"]),
-  emissionFactorId:  z.string().optional(),
-  branchId:          z.string().optional(),
-  uncertaintyLevel:  z.enum(["LOW", "MEDIUM", "HIGH"]).default("MEDIUM"),
-  uncertaintyNote:   z.string().optional(),
-  isExcluded:        z.boolean().default(false),
-  exclusionReason:   z.string().optional(),
-});
-
-router.post("/", requireManager, async (c) => {
-  const payload = c.get("jwtPayload") as any;
-  const body    = await c.req.json().catch(() => null);
-  const parsed  = sourceSchema.safeParse(body);
-  if (!parsed.success) return c.json({ error: "Datos inválidos", detail: parsed.error.flatten() }, 400);
-
-  const company = await prisma.company.findUnique({
-    where: { id: payload.companyId },
-    select: { maxEmissionSources: true, _count: { select: { emissionSources: true } } },
-  });
-  if (company && company._count.emissionSources >= company.maxEmissionSources) {
-    return c.json({ error: `Límite de ${company.maxEmissionSources} fuentes de emisión alcanzado para tu plan` }, 422);
-  }
-
-  const source = await prisma.emissionSource.create({
-    data: { ...parsed.data, companyId: payload.companyId },
-  });
-  return c.json(source, 201);
-});
-
 // GET /api/sources/factors — fuentes ACTIVAS de la empresa con su factor de emisión
 router.get("/factors", requireAuth, async (c) => {
   const payload = c.get("jwtPayload") as any;
@@ -84,6 +43,7 @@ router.get("/factors", requireAuth, async (c) => {
     kgN2O: s.emissionFactor?.kgN2O ?? 0,
   })));
 });
+
 // PATCH /api/sources/:id
 router.patch("/:id", requireManager, async (c) => {
   const payload = c.get("jwtPayload") as any;
