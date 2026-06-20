@@ -580,47 +580,21 @@ function InventoryPage() {
         />
       )}
 
-      {zoomImage && (
-        <div ref={zoomContainerRef} style={{ position: "fixed", inset: 0, zIndex: 999999, backgroundColor: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "grab", userSelect: "none" }}
-          onContextMenu={(e) => { e.preventDefault(); setZoomImage(null); posRef.current = { x: 0, y: 0 }; scaleRef.current = 1; }}
-          onMouseDown={(e) => { if (e.button !== 0) return; e.preventDefault(); dragging.current = true; lastPos.current = { x: e.clientX, y: e.clientY }; (e.currentTarget as HTMLElement).style.cursor = "grabbing"; }}
-          onMouseMove={(e) => { if (!dragging.current) return; const dx = e.clientX - lastPos.current.x; const dy = e.clientY - lastPos.current.y; posRef.current = { x: posRef.current.x + dx, y: posRef.current.y + dy }; lastPos.current = { x: e.clientX, y: e.clientY }; if (imgRef.current) imgRef.current.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px) scale(${scaleRef.current})`; }}
-          onMouseUp={() => { dragging.current = false; if (zoomContainerRef.current) zoomContainerRef.current.style.cursor = "grab"; }}
-          onClick={() => { setZoomImage(null); posRef.current = { x: 0, y: 0 }; scaleRef.current = 1; }}
-        >
-          <img ref={imgRef} src={zoomImage} alt="evidencia" draggable={false}
-            style={{ transform: "translate(0px, 0px) scale(1)", transformOrigin: "center center", maxWidth: "90vw", maxHeight: "90vh", userSelect: "none", pointerEvents: "none" }} />
-        </div>
-      )}
-
-      <header className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto w-full flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button onClick={() => step === "scope" ? router.push("/dashboard") : setStep(step === "table" ? "month" : "scope")}
-              className="text-gray-400 hover:text-gray-600"><ArrowLeft className="w-5 h-5" /></button>
-            <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-              <Leaf className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-gray-900">CarboMetrics</h1>
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <span className={step === "scope" ? "text-green-600 font-medium" : ""}>Alcance</span>
-                <ChevronRight className="w-3 h-3" />
-                <span className={step === "month" ? "text-green-600 font-medium" : ""}>Mes</span>
-                <ChevronRight className="w-3 h-3" />
-                <span className={step === "table" ? "text-green-600 font-medium" : ""}>Datos</span>
+      <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 hover:opacity-80 transition">
+              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+                <Leaf className="w-4 h-4 text-white" />
               </div>
-            </div>
-          </div>
-          <select value={selectedYear} onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-            {Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearFrom + i).reverse().map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-        </div>
-      </header>
-
+              <div>
+                <h1 className="font-bold text-gray-900">CarboMetrics</h1>
+                <div className="flex items-center gap-1 text-xs text-gray-500">
+                  <span className={step === "scope" ? "text-green-600 font-medium" : ""}>Alcance</span>
+                  <ChevronRight className="w-3 h-3" />
+                  <span className={step === "month" ? "text-green-600 font-medium" : ""}>Mes</span>
+                  <ChevronRight className="w-3 h-3" />
+                  <span className={step === "table" ? "text-green-600 font-medium" : ""}>Datos</span>
+                </div>
+              </div>
+            </button>
       <main className={`px-4 py-6 space-y-4 ${step === "scope" ? "w-1/3" : step === "month" ? "max-w-xs" : "max-w-4xl mx-auto"}`}>
 
         {step === "scope" && (
