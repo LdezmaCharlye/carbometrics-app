@@ -134,7 +134,7 @@ export default function InstalacionesPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between h-14">
-          <div className="flex items-center gap-2.5">
+          <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2.5 hover:opacity-80 transition">
             <div className="w-7 h-7 bg-green-600 rounded-lg flex items-center justify-center">
               <Leaf className="w-3.5 h-3.5 text-white" />
             </div>
@@ -142,7 +142,7 @@ export default function InstalacionesPage() {
               <p className="text-sm font-bold text-gray-900 leading-tight">CarboMetrics</p>
               <p className="text-xs text-gray-400 leading-tight">{user?.company}</p>
             </div>
-          </div>
+          </button>
           <div className="flex items-center gap-3">
             <button onClick={() => router.push("/dashboard")}
               className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
