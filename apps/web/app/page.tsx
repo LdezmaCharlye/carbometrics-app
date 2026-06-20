@@ -37,12 +37,48 @@ export default function Home() {
 
     // Contact form submit button feedback
     const submitBtn = document.getElementById("submitBtn");
-    const onSubmitClick = function () {
-      this.textContent = "¡Enviado! \u2713";
-      this.style.background = "#145f25";
+    const onSubmitClick = async function () {
+      const name = document.getElementById("ctcName")?.value || "";
+      const email = document.getElementById("ctcEmail")?.value || "";
+      const company = document.getElementById("ctcCompany")?.value || "";
+      const product = document.getElementById("ctcProduct")?.value || "";
+      const plan = document.getElementById("ctcPlan")?.value || "";
+      const message = document.getElementById("ctcMessage")?.value || "";
+      if (!name || !email || !message) {
+        alert("Por favor completa al menos nombre, email y mensaje.");
+        return;
+      }
+      this.disabled = true;
+      this.textContent = "Enviando...";
+      try {
+        const res = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            access_key: "6ac231df-7674-4e76-828a-c154f6873286",
+            subject: `Nuevo contacto de ${name} - CarboMetrics`,
+            name,
+            email,
+            empresa: company,
+            producto_interes: product,
+            plan_interes: plan,
+            message,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          this.textContent = "\u00a1Enviado! \u2713";
+          this.style.background = "#145f25";
+        } else {
+          this.textContent = "Error, intenta de nuevo";
+        }
+      } catch {
+        this.textContent = "Error, intenta de nuevo";
+      }
       setTimeout(() => {
         this.textContent = "Enviar mensaje \u2192";
         this.style.background = "";
+        this.disabled = false;
       }, 3000);
     };
     submitBtn?.addEventListener("click", onSubmitClick);
@@ -634,12 +670,12 @@ footer{background:var(--black);padding:44px 5% 26px}
       </div>
     </div>
     <div className="contact-form rv">
-      <div className="form-group"><label>Nombre</label><input type="text" placeholder="Tu nombre completo"/></div>
-      <div className="form-group"><label>Email</label><input type="email" placeholder="tu@empresa.com"/></div>
-      <div className="form-group"><label>Empresa / Organización</label><input type="text" placeholder="Nombre de tu organización"/></div>
+      <div className="form-group"><label>Nombre</label><input type="text" id="ctcName" placeholder="Tu nombre completo"/></div>
+      <div className="form-group"><label>Email</label><input type="email" id="ctcEmail" placeholder="tu@empresa.com"/></div>
+      <div className="form-group"><label>Empresa / Organización</label><input type="text" id="ctcCompany" placeholder="Nombre de tu organización"/></div>
       <div className="form-group">
         <label>Producto de interés</label>
-        <select>
+        <select id="ctcProduct">
           <option>CarboMetrics — Huella de carbono</option>
           <option>HydroMetrics — Huella hídrica</option>
           <option>Ambos</option>
@@ -647,13 +683,13 @@ footer{background:var(--black);padding:44px 5% 26px}
       </div>
       <div className="form-group">
         <label>Plan de interés</label>
-        <select>
+        <select id="ctcPlan">
           <option>Básico — $50/mes</option>
           <option>Standard — $100/mes</option>
           <option>Corporativo — $150/mes</option>
         </select>
       </div>
-      <div className="form-group"><label>Mensaje</label><textarea placeholder="Cuéntanos sobre tu organización y objetivos climáticos..."></textarea></div>
+      <div className="form-group"><label>Mensaje</label><textarea id="ctcMessage" placeholder="Cuéntanos sobre tu organización y objetivos climáticos..."></textarea></div>
       <button className="btn-submit" id="submitBtn">Enviar mensaje →</button>
     </div>
   </div>
