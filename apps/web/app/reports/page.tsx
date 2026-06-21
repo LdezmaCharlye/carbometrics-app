@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Leaf, ArrowLeft, Download, Loader2, ShieldCheck, ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
+import { QRCodeSVG } from "qrcode.react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Cell,
@@ -188,6 +189,7 @@ export default function ReportsPage() {
   const [reportId,   setReportId]   = useState("");
   const [branches,         setBranches]         = useState<{ id: string; name: string }[]>([]);
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const [publicUrl,  setPublicUrl]  = useState("");
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
@@ -253,7 +255,30 @@ export default function ReportsPage() {
 
   const generatePDF = async () => {
     setGenerating(true);
-    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      const removalsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/removals-by-company`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json()).catch(() => ({ data: [] }));
+
+      const branchName = selectedBranchId ? (branches.find((b) => b.id === selectedBranchId)?.name ?? null) : null;
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/reports/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          branchId: selectedBranchId || "",
+          branchName,
+          data: { company, years, summaries, logs, removals: removalsRes.data ?? [], reportId, preparedDate, branchName },
+        }),
+      }).then((r) => r.json());
+
+      if (res?.id) {
+        setPublicUrl(`https://carbometrics.site/reports/view/${res.id}`);
+        await new Promise((r) => setTimeout(r, 400));
+      }
+    } catch (err) {
+      console.error("Error generando reporte público:", err);
+    }
     window.print();
     setGenerating(false);
   };
@@ -330,9 +355,10 @@ export default function ReportsPage() {
               </div>
             )}
             <span className="text-xs text-gray-400 hidden md:block">Usa <kbd className="bg-gray-100 border border-gray-300 rounded px-1.5 py-0.5 font-mono text-xs">Ctrl+P</kbd> → Guardar como PDF</span>
-            <button onClick={() => window.print()}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
-              <Download className="w-3.5 h-3.5" />Descargar PDF
+            <button onClick={generatePDF} disabled={generating}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+              {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              {generating ? "Generando..." : "Descargar PDF"}
             </button>
           </div>
         </div>
@@ -381,6 +407,14 @@ export default function ReportsPage() {
                 <span>·</span>
                 <span>Fecha: <strong className="text-gray-600">{preparedDate}</strong></span>
               </div>
+              {publicUrl && (
+                <div className="mt-6 flex flex-col items-center gap-1.5">
+                  <div className="bg-white border border-gray-200 rounded-xl p-2">
+                    <QRCodeSVG value={publicUrl} size={88} level="M" />
+                  </div>
+                  <p className="text-xs text-gray-400">Escanea para ver y descargar este reporte en línea</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -903,17 +937,10 @@ export default function ReportsPage() {
                     </p>
                   </div>
                 </div>
-                {/* QR decorativo */}
+                {/* QR real */}
                 <div className="flex flex-col items-center gap-1">
-                  <div className="w-16 h-16 bg-white border-2 border-gray-200 rounded-xl p-1.5 grid grid-cols-7 gap-px">
-                    {Array.from({ length: 49 }).map((_, i) => {
-                      const corner = [0,1,2,3,4,5,6,7,13,14,20,21,27,28,34,35,41,42,43,44,45,46,47,48].includes(i);
-                      const center = [16,17,18,22,24,30,31,32].includes(i);
-                      const data   = [8,10,15,19,23,25,29,33,37,38,40].includes(i);
-                      return (
-                        <div key={i} className={`rounded-sm ${corner || center || data ? "bg-gray-800" : "bg-transparent"}`} />
-                      );
-                    })}
+                  <div className="w-16 h-16 bg-white border-2 border-gray-200 rounded-xl p-1.5 flex items-center justify-center">
+                    {publicUrl ? <QRCodeSVG value={publicUrl} size={56} level="M" /> : <div className="w-14 h-14 bg-gray-100 rounded" />}
                   </div>
                   <p className="text-xs text-gray-400 font-mono">{reportId}</p>
                 </div>
