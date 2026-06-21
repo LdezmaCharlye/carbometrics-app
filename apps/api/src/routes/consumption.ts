@@ -2,10 +2,17 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
 import { requireAuth, requireManager } from "../middleware/auth";
+import { v2 as cloudinary } from "cloudinary";
 
 const router = new Hono();
 const prisma = new PrismaClient();
 const prismaFull = new (require("@prisma/client").PrismaClient)();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 function calcEmissions(qty: number, f: { kgCO2: number; kgCH4: number; kgN2O: number }) {
   return Math.round((qty * (f.kgCO2 + f.kgCH4 * 27.9 + f.kgN2O * 273)) * 1000) / 1000;
@@ -302,13 +309,49 @@ router.post("/reports/generate", requireAuth, async (c) => {
   }
 });
 
+// POST /api/consumption/reports/upload-pdf/:id — sube el PDF generado y lo asocia al reporte
+router.post("/reports/upload-pdf/:id", requireAuth, async (c) => {
+  const payload = c.get("jwtPayload") as any;
+  const { id } = c.req.param();
+
+  const report = await prisma.publicReport.findFirst({ where: { id, companyId: payload.companyId } });
+  if (!report) return c.json({ error: "Reporte no encontrado" }, 404);
+
+  try {
+    const formData = await c.req.formData();
+    const file = formData.get("pdf") as File;
+    if (!file) return c.json({ error: "Sin archivo" }, 400);
+
+    const buffer = await file.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString("base64");
+    const dataUri = `data:application/pdf;base64,${base64}`;
+
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: "carbometrics/reports",
+      resource_type: "raw",
+      public_id: `report-${id}`,
+      overwrite: true,
+    });
+
+    const updated = await prisma.publicReport.update({
+      where: { id },
+      data: { pdfUrl: result.secure_url },
+    });
+
+    return c.json({ pdfUrl: updated.pdfUrl });
+  } catch (error) {
+    console.error("Error subiendo PDF:", error);
+    return c.json({ error: "Error al subir el PDF" }, 500);
+  }
+});
+
 // GET /api/consumption/reports/public/:id — vista pública, sin autenticación
 router.get("/reports/public/:id", async (c) => {
   const { id } = c.req.param();
   try {
     const report = await prisma.publicReport.findUnique({ where: { id } });
     if (!report) return c.json({ error: "Reporte no encontrado" }, 404);
-    return c.json({ data: report.data, branchName: report.branchName, generatedAt: report.generatedAt });
+    return c.json({ data: report.data, branchName: report.branchName, generatedAt: report.generatedAt, pdfUrl: report.pdfUrl });
   } catch (error) {
     return c.json({ error: "Error al obtener el reporte" }, 500);
   }

@@ -348,6 +348,7 @@ model PublicReport {
   branchId    String   @default("")
   branchName  String?
   data        Json
+  pdfUrl      String?
   createdAt   DateTime @default(now())
   generatedAt DateTime @updatedAt
 
