@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Leaf, Download } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import {
@@ -13,13 +14,16 @@ function getScopeTotal(byMonth: any[], scope: string) {
   return (byMonth ?? []).filter((r) => r.scope === scope).reduce((acc: number, r: any) => acc + Number(r.total_kg), 0) / 1000;
 }
 
-export default function PublicReportPage({ params }: { params: { id: string } }) {
+export default function PublicReportPage() {
+  const params = useParams();
+  const id = params?.id as string;
   const [report,  setReport]  = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState(false);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/reports/public/${params.id}`)
+    if (!id) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/reports/public/${id}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) { setError(true); return; }
@@ -27,7 +31,7 @@ export default function PublicReportPage({ params }: { params: { id: string } })
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [params.id]);
+  }, [id]);
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
