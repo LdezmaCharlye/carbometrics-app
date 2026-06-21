@@ -600,7 +600,16 @@ function InventoryPage() {
         {step === "scope" && (
           <div>
             <h2 className="text-xl font-bold text-gray-900 mb-1">¿Qué tipo de emisión vas a registrar?</h2>
-            <p className="text-gray-500 text-sm mb-3">Año seleccionado: <strong>{selectedYear}</strong></p>
+            <div className="mb-3">
+              <label className="block text-xs font-medium text-gray-500 mb-1">Año</label>
+              <select value={selectedYear}
+                onChange={(e) => { const y = parseInt(e.target.value); setSelectedYear(y); updateURL({ year: String(y) }); }}
+                className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                {Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearTo - i).map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
             <div className="flex flex-col gap-2">
               {SCOPES.map((scope) => {
                 const count = sources.filter((s) => s.scope === scope.id).length;
