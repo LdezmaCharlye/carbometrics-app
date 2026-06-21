@@ -300,7 +300,7 @@ router.post("/reports/generate", requireAuth, async (c) => {
   try {
     const report = await prisma.publicReport.upsert({
       where:  { companyId_branchId: { companyId: payload.companyId, branchId } },
-      update: { data: body.data, branchName },
+      update: { data: body.data, branchName, pdfUrl: null },
       create: { companyId: payload.companyId, branchId, branchName, data: body.data },
     });
     return c.json({ id: report.id, generatedAt: report.generatedAt });
