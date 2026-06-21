@@ -413,6 +413,7 @@ export default function ReportsPage() {
                     <QRCodeSVG value={publicUrl} size={130} level="M" />
                   </div>
                   <p className="text-xs text-gray-400 whitespace-nowrap">Ver reporte en línea</p>
+                  <p className="text-[8px] text-gray-300 whitespace-nowrap">{publicUrl}</p>
                 </div>
               )}
             </div>
