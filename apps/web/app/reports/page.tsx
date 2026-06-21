@@ -384,7 +384,7 @@ export default function ReportsPage() {
                 <p className="text-white font-mono font-bold text-sm">{reportId}</p>
               </div>
             </div>
-            <div className="px-8 py-8 text-center">
+            <div className="relative px-8 py-8 text-center">
               <p className="text-xs font-semibold text-green-600 uppercase tracking-widest mb-2">Inventario de Gases de Efecto Invernadero</p>
               <h1 className="text-3xl font-bold text-gray-900 mb-1">REPORTE DE EMISIONES GEI</h1>
               <p className="text-xl text-gray-500 mb-4">
@@ -408,11 +408,11 @@ export default function ReportsPage() {
                 <span>Fecha: <strong className="text-gray-600">{preparedDate}</strong></span>
               </div>
               {publicUrl && (
-                <div className="mt-6 flex flex-col items-center gap-1.5">
-                  <div className="bg-white border border-gray-200 rounded-xl p-2">
-                    <QRCodeSVG value={publicUrl} size={88} level="M" />
+                <div className="absolute right-8 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1">
+                  <div className="bg-white border border-gray-200 rounded-xl p-1.5">
+                    <QRCodeSVG value={publicUrl} size={72} level="M" />
                   </div>
-                  <p className="text-xs text-gray-400">Escanea para ver y descargar este reporte en línea</p>
+                  <p className="text-xs text-gray-400 max-w-[100px] leading-tight">Escanea para ver y descargar</p>
                 </div>
               )}
             </div>
