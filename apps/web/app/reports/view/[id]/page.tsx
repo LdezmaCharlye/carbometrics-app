@@ -151,7 +151,7 @@ export default function PublicReportPage() {
 
           {/* PORTADA */}
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-            <div className="bg-green-600 px-8 py-6 flex items-center justify-between">
+            <div className="bg-green-600 rounded-t-2xl px-8 py-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
                   <img src="/logo.png" alt="CarboMetrics" className="w-8 h-8 object-contain" />
