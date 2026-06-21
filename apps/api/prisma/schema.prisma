@@ -46,6 +46,7 @@ model Company {
   users           User[]
   emissionSources EmissionSource[]
   ghgInventories  GhgInventory[]
+  publicReports   PublicReport[]
 
   @@map("companies")
 }
@@ -301,4 +302,19 @@ model CountryEmissionFactor {
   updatedAt   DateTime @updatedAt
 
   @@map("country_emission_factors")
+}
+
+model PublicReport {
+  id          String   @id @default(cuid())
+  branchId    String   @default("")
+  branchName  String?
+  data        Json
+  createdAt   DateTime @default(now())
+  generatedAt DateTime @updatedAt
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, branchId])
+  @@map("public_reports")
 }

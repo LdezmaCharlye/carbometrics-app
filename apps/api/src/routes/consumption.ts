@@ -278,6 +278,42 @@ router.get("/company-profile", requireAuth, async (c) => {
   return c.json(company);
 });
 
+// ─── REPORTES PÚBLICOS (QR) ────────────────────────────────────────────────
+
+// POST /api/consumption/reports/generate — genera/actualiza la ficha pública de reporte
+router.post("/reports/generate", requireAuth, async (c) => {
+  const payload = c.get("jwtPayload") as any;
+  const body = await c.req.json().catch(() => null);
+  if (!body || !body.data) return c.json({ error: "Faltan datos" }, 400);
+
+  const branchId   = body.branchId || "";
+  const branchName = body.branchName || null;
+
+  try {
+    const report = await prisma.publicReport.upsert({
+      where:  { companyId_branchId: { companyId: payload.companyId, branchId } },
+      update: { data: body.data, branchName },
+      create: { companyId: payload.companyId, branchId, branchName, data: body.data },
+    });
+    return c.json({ id: report.id, generatedAt: report.generatedAt });
+  } catch (error) {
+    console.error("Error generando reporte público:", error);
+    return c.json({ error: "Error al generar el reporte" }, 500);
+  }
+});
+
+// GET /api/consumption/reports/public/:id — vista pública, sin autenticación
+router.get("/reports/public/:id", async (c) => {
+  const { id } = c.req.param();
+  try {
+    const report = await prisma.publicReport.findUnique({ where: { id } });
+    if (!report) return c.json({ error: "Reporte no encontrado" }, 404);
+    return c.json({ data: report.data, branchName: report.branchName, generatedAt: report.generatedAt });
+  } catch (error) {
+    return c.json({ error: "Error al obtener el reporte" }, 500);
+  }
+});
+
 // ─── REMOCIONES Y SUMIDEROS ───────────────────────────────────────────────
 
 // GET /api/consumption/removals-by-company
