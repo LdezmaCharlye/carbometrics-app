@@ -27,6 +27,7 @@ export default function PublicReportPage() {
       .then((r) => r.json())
       .then((d) => {
         if (d.error) { setError(true); return; }
+        if (d.pdfUrl) { window.location.href = d.pdfUrl; return; }
         setReport(d);
       })
       .catch(() => setError(true))

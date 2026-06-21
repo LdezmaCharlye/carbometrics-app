@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Leaf, ArrowLeft, Download, Loader2, ShieldCheck, ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { QRCodeSVG } from "qrcode.react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -274,12 +275,57 @@ export default function ReportsPage() {
 
       if (res?.id) {
         setPublicUrl(`https://carbometrics.site/reports/view/${res.id}`);
-        await new Promise((r) => setTimeout(r, 400));
+        await new Promise((r) => setTimeout(r, 700));
+
+        const element = document.getElementById("report-content");
+        if (element) {
+          const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+          const imgData = canvas.toDataURL("image/jpeg", 0.92);
+
+          const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
+          const pageWidth  = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          const imgWidthMm  = pageWidth;
+          const imgHeightMm = (canvas.height * imgWidthMm) / canvas.width;
+
+          let heightLeft = imgHeightMm;
+          let position   = 0;
+
+          pdf.addImage(imgData, "JPEG", 0, position, imgWidthMm, imgHeightMm);
+          heightLeft -= pageHeight;
+
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeightMm;
+            pdf.addPage();
+            pdf.addImage(imgData, "JPEG", 0, position, imgWidthMm, imgHeightMm);
+            heightLeft -= pageHeight;
+          }
+
+          const blob = pdf.output("blob");
+
+          const localUrl = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = localUrl;
+          a.download = `reporte-${reportId}.pdf`;
+          a.click();
+          URL.revokeObjectURL(localUrl);
+
+          try {
+            const fd = new FormData();
+            fd.append("pdf", blob, `reporte-${reportId}.pdf`);
+            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/reports/upload-pdf/${res.id}`, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}` },
+              body: fd,
+            });
+          } catch (uploadErr) {
+            console.error("Error subiendo PDF al servidor:", uploadErr);
+          }
+        }
       }
     } catch (err) {
-      console.error("Error generando reporte público:", err);
+      console.error("Error generando reporte:", err);
     }
-    window.print();
     setGenerating(false);
   };
 
