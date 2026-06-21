@@ -362,8 +362,11 @@ router.post("/reports/generate-pdf/:id", requireAuth, async (c) => {
     });
     const page = await browser.newPage();
     await page.setViewport({ width: 1024, height: 1400 });
-    await page.goto(`https://carbometrics.site/reports/view/${id}`, { waitUntil: "networkidle0", timeout: 60000 });
-    await page.waitForSelector("#report-content");
+    console.log(`[PDF ${id}] Navegando a la pagina publica...`);
+    await page.goto(`https://carbometrics.site/reports/view/${id}`, { waitUntil: "domcontentloaded", timeout: 60000 });
+    console.log(`[PDF ${id}] Pagina cargada (DOM), esperando contenido del reporte...`);
+    await page.waitForSelector("#report-content", { timeout: 45000 });
+    console.log(`[PDF ${id}] Contenido encontrado, generando PDF...`);
     await new Promise((r) => setTimeout(r, 1500));
 
     const pdfBuffer = await page.pdf({
