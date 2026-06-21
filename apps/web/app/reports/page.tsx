@@ -408,11 +408,11 @@ export default function ReportsPage() {
                 <span>Fecha: <strong className="text-gray-600">{preparedDate}</strong></span>
               </div>
               {publicUrl && (
-                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-col items-center gap-1.5">
+                <div className="absolute right-6 bottom-8 flex flex-col items-center gap-1.5">
                   <div className="bg-white border border-gray-200 rounded-xl p-2">
                     <QRCodeSVG value={publicUrl} size={130} level="M" />
                   </div>
-                  <p className="text-xs text-gray-400 max-w-[140px] leading-tight">Escanea para ver y descargar</p>
+                  <p className="text-xs text-gray-400 whitespace-nowrap">Escanea para ver y descargar</p>
                 </div>
               )}
             </div>
