@@ -273,26 +273,12 @@ export default function ReportsPage() {
 
       if (res?.id) {
         setPublicUrl(`https://carbometrics.site/reports/view/${res.id}`);
-
-        const pdfRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/reports/generate-pdf/${res.id}`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-        }).then((r) => r.json());
-
-        if (pdfRes?.pdfUrl) {
-          const fileRes  = await fetch(pdfRes.pdfUrl);
-          const blob     = await fileRes.blob();
-          const localUrl = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = localUrl;
-          a.download = `reporte-${reportId}.pdf`;
-          a.click();
-          URL.revokeObjectURL(localUrl);
-        }
+        await new Promise((r) => setTimeout(r, 400));
       }
     } catch (err) {
-      console.error("Error generando reporte:", err);
+      console.error("Error generando reporte público:", err);
     }
+    window.print();
     setGenerating(false);
   };
 
