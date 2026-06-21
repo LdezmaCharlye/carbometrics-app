@@ -2,8 +2,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Leaf, ArrowLeft, Download, Loader2, ShieldCheck, ChevronDown } from "lucide-react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas-pro";
 import { QRCodeSVG } from "qrcode.react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -275,52 +273,21 @@ export default function ReportsPage() {
 
       if (res?.id) {
         setPublicUrl(`https://carbometrics.site/reports/view/${res.id}`);
-        await new Promise((r) => setTimeout(r, 700));
 
-        const element = document.getElementById("report-content");
-        if (element) {
-          const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-          const imgData = canvas.toDataURL("image/jpeg", 0.92);
+        const pdfRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/reports/generate-pdf/${res.id}`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }).then((r) => r.json());
 
-          const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
-          const pageWidth  = pdf.internal.pageSize.getWidth();
-          const pageHeight = pdf.internal.pageSize.getHeight();
-          const imgWidthMm  = pageWidth;
-          const imgHeightMm = (canvas.height * imgWidthMm) / canvas.width;
-
-          let heightLeft = imgHeightMm;
-          let position   = 0;
-
-          pdf.addImage(imgData, "JPEG", 0, position, imgWidthMm, imgHeightMm);
-          heightLeft -= pageHeight;
-
-          while (heightLeft > 0) {
-            position = heightLeft - imgHeightMm;
-            pdf.addPage();
-            pdf.addImage(imgData, "JPEG", 0, position, imgWidthMm, imgHeightMm);
-            heightLeft -= pageHeight;
-          }
-
-          const blob = pdf.output("blob");
-
+        if (pdfRes?.pdfUrl) {
+          const fileRes  = await fetch(pdfRes.pdfUrl);
+          const blob     = await fileRes.blob();
           const localUrl = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = localUrl;
           a.download = `reporte-${reportId}.pdf`;
           a.click();
           URL.revokeObjectURL(localUrl);
-
-          try {
-            const fd = new FormData();
-            fd.append("pdf", blob, `reporte-${reportId}.pdf`);
-            await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/reports/upload-pdf/${res.id}`, {
-              method: "POST",
-              headers: { Authorization: `Bearer ${token}` },
-              body: fd,
-            });
-          } catch (uploadErr) {
-            console.error("Error subiendo PDF al servidor:", uploadErr);
-          }
         }
       }
     } catch (err) {
@@ -400,7 +367,6 @@ export default function ReportsPage() {
                 <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             )}
-            <span className="text-xs text-gray-400 hidden md:block">Usa <kbd className="bg-gray-100 border border-gray-300 rounded px-1.5 py-0.5 font-mono text-xs">Ctrl+P</kbd> → Guardar como PDF</span>
             <button onClick={generatePDF} disabled={generating}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
               {generating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
@@ -459,7 +425,6 @@ export default function ReportsPage() {
                     <QRCodeSVG value={publicUrl} size={130} level="M" />
                   </div>
                   <p className="text-xs text-gray-400 whitespace-nowrap">Ver reporte en línea</p>
-                  <p className="text-[8px] text-gray-300 whitespace-nowrap">{publicUrl}</p>
                 </div>
               )}
             </div>
@@ -499,7 +464,6 @@ export default function ReportsPage() {
           </div>
 
           {/* 3. LÍMITES */}
-          {/* page-break antes del punto 3 */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
             <h2 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase tracking-wider">3. Límites de la Organización</h2>
             <p className="text-sm text-gray-600 mb-4">
