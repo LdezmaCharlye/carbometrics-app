@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Leaf, ArrowLeft, Download, Loader2, ShieldCheck } from "lucide-react";
+import { Leaf, ArrowLeft, Download, Loader2, ShieldCheck, ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -186,6 +186,8 @@ export default function ReportsPage() {
   const [loading,    setLoading]    = useState(true);
   const [generating, setGenerating] = useState(false);
   const [reportId,   setReportId]   = useState("");
+  const [branches,         setBranches]         = useState<{ id: string; name: string }[]>([]);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
@@ -195,6 +197,9 @@ export default function ReportsPage() {
 
   useEffect(() => {
     if (!token) { router.push("/login"); return; }
+    setLoading(true);
+
+    const branchQS = selectedBranchId ? `&branchId=${selectedBranchId}` : "";
 
     Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/company-profile`, {
@@ -203,9 +208,13 @@ export default function ReportsPage() {
       fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/all-years`, {
         headers: { Authorization: `Bearer ${token}` },
       }).then((r) => r.json()),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json()).catch(() => []),
     ])
-    .then(async ([companyData, yearsData]) => {
+    .then(async ([companyData, yearsData, branchesData]) => {
       setCompany(companyData);
+      setBranches(Array.isArray(branchesData) ? branchesData.filter((b: any) => b.isActive) : []);
       const allYears: number[] = yearsData.years ?? [];
       const yearFrom = companyData?.yearFrom ?? 0;
       const yearTo   = companyData?.yearTo   ?? 9999;
@@ -214,7 +223,7 @@ export default function ReportsPage() {
 
       const results = await Promise.all(
         ys.map((y) =>
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/summary?year=${y}`, {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/summary?year=${y}${branchQS}`, {
             headers: { Authorization: `Bearer ${token}` },
           }).then((r) => r.json()).then((s) => ({ ...s, year: y }))
         )
@@ -223,7 +232,7 @@ export default function ReportsPage() {
 
       const allLogs = await Promise.all(
         ys.map((y) =>
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/list?year=${y}`, {
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/list?year=${y}${branchQS}`, {
             headers: { Authorization: `Bearer ${token}` },
           }).then((r) => r.json())
         )
@@ -232,7 +241,7 @@ export default function ReportsPage() {
     })
     .catch(() => {})
     .finally(() => setLoading(false));
-  }, [router, token]);
+  }, [router, token, selectedBranchId]);
 
   const baseYear = company?.baseYear ?? years[0] ?? null;
 
@@ -310,6 +319,16 @@ export default function ReportsPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {branches.length > 0 && (
+              <div className="relative">
+                <select value={selectedBranchId} onChange={(e) => setSelectedBranchId(e.target.value)}
+                  className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
+                  <option value="">Todas las instalaciones</option>
+                  {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
+            )}
             <span className="text-xs text-gray-400 hidden md:block">Usa <kbd className="bg-gray-100 border border-gray-300 rounded px-1.5 py-0.5 font-mono text-xs">Ctrl+P</kbd> → Guardar como PDF</span>
             <button onClick={() => window.print()}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
@@ -349,6 +368,11 @@ export default function ReportsPage() {
                 <p className="text-2xl font-bold text-green-700">{company?.name}</p>
                 <p className="text-sm text-gray-500 mt-1">{company?.industry} · {company?.country}</p>
                 <p className="text-xs text-gray-400 mt-0.5">NIT / Tax ID: {company?.taxId}</p>
+                {branches.length > 0 && (
+                  <p className="text-xs font-semibold text-green-600 mt-2">
+                    {selectedBranchId ? `Instalación: ${branches.find((b) => b.id === selectedBranchId)?.name ?? ""}` : "Todas las instalaciones"}
+                  </p>
+                )}
               </div>
               <div className="mt-6 flex items-center justify-center gap-6 text-xs text-gray-400">
                 <span>Norma: <strong className="text-gray-600">ISO 14064-1:2018</strong></span>
