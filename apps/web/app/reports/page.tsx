@@ -399,16 +399,18 @@ export default function ReportsPage() {
                 <span>·</span>
                 <span>Fecha: <strong className="text-gray-600">{preparedDate}</strong></span>
               </div>
-              {publicUrl && (
-                <div className="absolute right-6 top-28 flex flex-col items-center gap-1">
-                  <div className="bg-white border border-gray-200 rounded-xl p-2">
-                    <QRCodeSVG value={publicUrl} size={130} level="M" />
-                  </div>
-                  <p className="text-xs text-gray-400 whitespace-nowrap">Ver reporte en línea</p>
-                </div>
-              )}
             </div>
           </div>
+
+          {/* QR */}
+          {publicUrl && (
+            <div className="flex flex-col items-center gap-1.5 py-2" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
+              <div className="bg-white border border-gray-200 rounded-xl p-2 inline-block">
+                <QRCodeSVG value={publicUrl} size={100} level="M" />
+              </div>
+              <p className="text-xs text-gray-400 whitespace-nowrap">Ver reporte en línea</p>
+            </div>
+          )}
 
           {/* 1. PRESENTACIÓN */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
