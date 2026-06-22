@@ -264,12 +264,14 @@ const T = (key: string) => translate(lang, key);
 
   const acceptTerms = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/accept-terms`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/accept-terms`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      localStorage.setItem("termsAccepted", "true");
-      setShowTerms(false);
+      if (res.ok) {
+        localStorage.removeItem("termsAccepted");
+        setShowTerms(false);
+      }
     } catch {}
   };
 
@@ -716,6 +718,15 @@ const T = (key: string) => translate(lang, key);
           )}
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="max-w-6xl mx-auto px-6 py-4 mt-2 border-t border-gray-100 flex items-center justify-between">
+        <p className="text-xs text-gray-300">CarboMetrics © {new Date().getFullYear()} · ISO 14064-1:2018</p>
+        <a href="/terms" target="_blank"
+          className="text-xs text-gray-400 hover:text-green-600 transition underline underline-offset-2">
+          Términos y condiciones
+        </a>
+      </footer>
     </div>
   );
 }
