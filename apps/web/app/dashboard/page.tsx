@@ -197,6 +197,8 @@ export default function DashboardPage() {
   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
   const [loading,      setLoading]      = useState(true);
   const [licenseAlert, setLicenseAlert] = useState<{ type: "warning" | "expired"; days: number } | null>(null);
+  const [showTerms,    setShowTerms]    = useState(false);
+  const [termsChecked, setTermsChecked] = useState(false);
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
 const { lang, toggleLang } = useLang();
@@ -207,6 +209,7 @@ const T = (key: string) => translate(lang, key);
     if (!token || !userStr) { router.push("/login"); return; }
     const parsedUser = JSON.parse(userStr);
     setUser(parsedUser);
+    if (localStorage.getItem("termsAccepted") === "false") setShowTerms(true);
 
     // Cargar perfil de empresa para años permitidos
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/consumption/company-profile`, {
@@ -256,7 +259,19 @@ const T = (key: string) => translate(lang, key);
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem("termsAccepted");
     router.push("/login");
+  };
+
+  const acceptTerms = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/accept-terms`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      localStorage.setItem("termsAccepted", "true");
+      setShowTerms(false);
+    } catch {}
   };
 
   const SCOPE_CFG = getScopeCfg(T);
@@ -303,6 +318,71 @@ const T = (key: string) => translate(lang, key);
 
   return (
     <div className="min-h-screen bg-gray-50">
+
+      {showTerms && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
+          <div style={{ background: "white", borderRadius: "16px", width: "100%", maxWidth: "560px", overflow: "hidden", border: "0.5px solid #e5e7eb" }}>
+            <div style={{ background: "#16a34a", padding: "1.25rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ width: "34px", height: "34px", background: "rgba(255,255,255,0.2)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Leaf style={{ color: "white", width: "17px", height: "17px" }} />
+                </div>
+                <div>
+                  <p style={{ color: "white", fontWeight: 500, fontSize: "14px", margin: 0 }}>CarboMetrics</p>
+                  <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "11px", margin: 0 }}>por Carbométrica</p>
+                </div>
+              </div>
+              <span style={{ background: "rgba(255,255,255,0.2)", color: "white", fontSize: "11px", padding: "3px 10px", borderRadius: "20px" }}>Vigente desde junio 2026</span>
+            </div>
+
+            <div style={{ padding: "1.25rem 1.5rem 0" }}>
+              <p style={{ fontSize: "16px", fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>Términos y condiciones de uso</p>
+              <p style={{ fontSize: "12px", color: "#6b7280", margin: "0 0 1rem", lineHeight: 1.6 }}>Antes de comenzar, te pedimos leer nuestros términos. Solo necesitas aceptarlos una vez.</p>
+
+              <div style={{ border: "0.5px solid #e5e7eb", borderRadius: "8px", height: "300px", overflowY: "auto", padding: "1rem", background: "#f9fafb", fontSize: "12px", color: "#6b7280", lineHeight: 1.65 }}>
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>Bienvenido a CarboMetrics</p>
+                <p style={{ margin: "0 0 1rem" }}>CarboMetrics es una herramienta desarrollada por <strong style={{ color: "#111827" }}>Carbométrica</strong>, empresa especialista en medición de huella de carbono. Está diseñada para que tu organización mida, registre y reporte sus emisiones de gases de efecto invernadero (GEI) de forma simple, ordenada y alineada a estándares internacionales como <strong style={{ color: "#111827" }}>ISO 14064-1:2018</strong> y el <strong style={{ color: "#111827" }}>GHG Protocol Corporate Standard</strong>. Nos comprometemos a ofrecerte una herramienta confiable, segura y en constante mejora.</p>
+
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>1. El servicio</p>
+                <p style={{ margin: "0 0 1rem" }}>CarboMetrics te permite registrar datos de actividad, calcular emisiones automáticamente y generar reportes GEI de referencia. Los reportes son documentos de gestión interna — cuando necesites verificación oficial de tercera parte, debe realizarla un verificador acreditado conforme a ISO 14064-3. El acceso es gestionado por Carbométrica y las credenciales son personales e intransferibles.</p>
+
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>2. Tus datos son tuyos</p>
+                <p style={{ margin: "0 0 1rem" }}>La información que ingresas en CarboMetrics es tuya. Carbométrica no la vende ni comparte con terceros. La exactitud de los reportes depende de los datos que registres — nosotros nos encargamos de los cálculos. Te recomendamos conservar copias propias de tus facturas y evidencias como respaldo independiente.</p>
+
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>3. Seguridad y continuidad</p>
+                <p style={{ margin: "0 0 1rem" }}>Implementamos acceso cifrado, autenticación segura y respaldos periódicos. Pueden ocurrir interrupciones breves por mantenimiento o causas externas. En caso de cualquier incidente, te notificamos de inmediato y trabajamos para resolverlo lo antes posible.</p>
+
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>4. Mejoras continuas</p>
+                <p style={{ margin: "0 0 1rem" }}>CarboMetrics se actualiza regularmente con nuevas funcionalidades y factores de emisión actualizados (IPCC, DEFRA, EPA). Te avisaremos con anticipación sobre cualquier cambio importante que afecte tu uso del servicio.</p>
+
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>5. Condiciones de uso</p>
+                <p style={{ margin: "0 0 1rem" }}>El acceso a CarboMetrics es exclusivo para la gestión de emisiones GEI de tu organización y no puede cederse a terceros sin autorización de Carbométrica.</p>
+
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>6. Pagos y planes</p>
+                <p style={{ margin: "0 0 1rem" }}>Los detalles de tu plan y condiciones de renovación se acuerdan directamente con Carbométrica. Ante cualquier cambio comercial, te notificaremos con al menos 30 días de anticipación.</p>
+
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>7. Aspectos legales</p>
+                <p style={{ margin: "0 0 1rem" }}>Carbométrica actúa como proveedor de la herramienta. Las decisiones que tu organización tome en base a los reportes son de tu responsabilidad. Estos términos se rigen por las leyes de Bolivia, con jurisdicción en Cochabamba.</p>
+
+                <p style={{ fontWeight: 500, color: "#111827", margin: "0 0 4px" }}>¿Tienes preguntas?</p>
+                <p style={{ margin: 0 }}>Escríbenos a <span style={{ color: "#16a34a" }}>carbometrica@gmail.com</span> — estamos para ayudarte.</p>
+              </div>
+            </div>
+
+            <div style={{ padding: "1rem 1.5rem", borderTop: "0.5px solid #e5e7eb", marginTop: "1rem", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", flex: 1 }}>
+                <input type="checkbox" checked={termsChecked} onChange={(e) => setTermsChecked(e.target.checked)}
+                  style={{ width: "15px", height: "15px", accentColor: "#16a34a", cursor: "pointer" }} />
+                <span style={{ fontSize: "12px", color: "#6b7280" }}>He leído y acepto los términos y condiciones</span>
+              </label>
+              <button onClick={() => { if (termsChecked) acceptTerms(); }}
+                style={{ background: termsChecked ? "#16a34a" : "#9ca3af", color: "white", border: "none", borderRadius: "8px", padding: "8px 20px", fontSize: "13px", fontWeight: 500, cursor: termsChecked ? "pointer" : "not-allowed", whiteSpace: "nowrap", minWidth: "120px" }}>
+                Acepto y continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6">

@@ -64,6 +64,7 @@ router.post("/login", async (c) => {
   return c.json({
     token,
     mustChangePassword: user.mustChangePassword,
+    termsAccepted: !!user.termsAcceptedAt,
     user: {
       id:        user.id,
       name:      user.name,
@@ -123,4 +124,17 @@ router.post("/change-password", requireAuth, async (c) => {
 
   return c.json({ message: "Contraseña actualizada correctamente" });
 });
+router.post("/accept-terms", requireAuth, async (c) => {
+  const payload = c.get("jwtPayload") as any;
+  try {
+    await prisma.user.update({
+      where: { id: payload.sub },
+      data: { termsAcceptedAt: new Date() },
+    });
+    return c.json({ ok: true });
+  } catch {
+    return c.json({ error: "Error al guardar aceptación" }, 500);
+  }
+});
+
 export { router as authRouter };

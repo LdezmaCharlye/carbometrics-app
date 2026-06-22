@@ -38,6 +38,7 @@ export default function LoginPage() {
       if (!res.ok) { setError(data.error ?? T("login.error.server")); return; }
       localStorage.setItem("token", data.token);
       localStorage.setItem("user",  JSON.stringify(data.user));
+      localStorage.setItem("termsAccepted", data.termsAccepted ? "true" : "false");
       if (data.mustChangePassword) { window.location.href = "/change-password"; return; }
       window.location.href = data.user.role === "SUPERADMIN" ? "/admin" : "/dashboard";
     } catch {

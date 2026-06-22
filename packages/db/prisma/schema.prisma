@@ -86,6 +86,7 @@ model User {
   isActive           Boolean   @default(true)
   mustChangePassword Boolean   @default(true)
   lastLoginAt        DateTime?
+  termsAcceptedAt    DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
