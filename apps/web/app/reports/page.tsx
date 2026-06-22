@@ -402,26 +402,26 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* QR */}
-          {publicUrl && (
-            <div className="flex flex-col items-center justify-center gap-3 py-8" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
-              <div className="bg-white border-2 border-gray-200 rounded-2xl p-4 inline-block shadow-sm">
-                <QRCodeSVG value={publicUrl} size={180} level="M" />
+          {/* QR + 1. PRESENTACIÓN — bloque único para que queden juntos en hoja 1 */}
+          <div style={{pageBreakInside: 'avoid', breakInside: 'avoid'}} className="space-y-4">
+            {publicUrl && (
+              <div className="flex flex-col items-center justify-center gap-2 py-4">
+                <div className="bg-white border-2 border-gray-200 rounded-2xl p-3 inline-block shadow-sm">
+                  <QRCodeSVG value={publicUrl} size={150} level="M" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold text-gray-600">Ver reporte en línea</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Escanea para ver o descargar este reporte</p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-gray-600">Ver reporte en línea</p>
-                <p className="text-xs text-gray-400 mt-0.5">Escanea para ver o descargar este reporte</p>
+            )}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h2 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase tracking-wider">1. Presentación</h2>
+              <div className="space-y-2 text-sm text-gray-600 leading-relaxed">
+                <p>El presente informe expone el inventario de gases de efecto invernadero (GEI) de <strong>{company?.name}</strong>, elaborado conforme a los requisitos de la norma <strong>ISO 14064-1:2018</strong> y el <strong>GHG Protocol Corporate Standard</strong>.</p>
+                <p>El inventario cubre {years.length > 1 ? `las gestiones ${years.join(", ")}` : `la gestión ${years[0]}`}, con año base <strong>{baseYear ?? "no definido"}</strong>. La verificación de tercera parte deberá ser realizada por un verificador acreditado conforme a la norma ISO 14064-3.</p>
+                <p>Este documento ha sido generado digitalmente por el sistema CarboMetrics el <strong>{preparedDate}</strong>, con número de referencia <strong>{reportId}</strong>.</p>
               </div>
-            </div>
-          )}
-
-          {/* 1. PRESENTACIÓN */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
-            <h2 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase tracking-wider">1. Presentación</h2>
-            <div className="space-y-2 text-sm text-gray-600 leading-relaxed">
-              <p>El presente informe expone el inventario de gases de efecto invernadero (GEI) de <strong>{company?.name}</strong>, elaborado conforme a los requisitos de la norma <strong>ISO 14064-1:2018</strong> y el <strong>GHG Protocol Corporate Standard</strong>.</p>
-              <p>El inventario cubre {years.length > 1 ? `las gestiones ${years.join(", ")}` : `la gestión ${years[0]}`}, con año base <strong>{baseYear ?? "no definido"}</strong>. La verificación de tercera parte deberá ser realizada por un verificador acreditado conforme a la norma ISO 14064-3.</p>
-              <p>Este documento ha sido generado digitalmente por el sistema CarboMetrics el <strong>{preparedDate}</strong>, con número de referencia <strong>{reportId}</strong>.</p>
             </div>
           </div>
 
