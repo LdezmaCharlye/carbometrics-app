@@ -273,7 +273,7 @@ export default function ReportsPage() {
 
       if (res?.id) {
         setPublicUrl(`https://carbometrics.site/reports/view/${res.id}`);
-        await new Promise((r) => setTimeout(r, 400));
+        await new Promise((r) => setTimeout(r, 1500));
       }
     } catch (err) {
       console.error("Error generando reporte público:", err);
