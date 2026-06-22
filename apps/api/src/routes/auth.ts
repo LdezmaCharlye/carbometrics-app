@@ -127,12 +127,37 @@ router.post("/change-password", requireAuth, async (c) => {
 router.post("/accept-terms", requireAuth, async (c) => {
   const payload = c.get("jwtPayload") as any;
   try {
+    const user = await prisma.user.findUnique({
+      where:   { id: payload.sub },
+      include: { company: { select: { name: true } } },
+    });
+    if (!user) return c.json({ error: "Usuario no encontrado" }, 404);
+
+    const ip        = c.req.header("x-forwarded-for")?.split(",")[0]?.trim()
+                   ?? c.req.header("x-real-ip")
+                   ?? "desconocida";
+    const userAgent = c.req.header("user-agent") ?? "desconocido";
+
     await prisma.user.update({
       where: { id: payload.sub },
-      data: { termsAcceptedAt: new Date() },
+      data:  { termsAcceptedAt: new Date() },
     });
+
+    await prisma.termsAcceptanceLog.create({
+      data: {
+        userId:       user.id,
+        userName:     user.name,
+        userEmail:    user.email,
+        companyId:    user.companyId,
+        companyName:  user.company.name,
+        ipAddress:    ip,
+        userAgent:    userAgent,
+        termsVersion: "v1.0-junio-2026",
+      },
+    });
+
     return c.json({ ok: true });
-  } catch {
+  } catch (e) {
     return c.json({ error: "Error al guardar aceptación" }, 500);
   }
 });

@@ -48,6 +48,7 @@ model Company {
   ghgInventories  GhgInventory[]
   removalProjects RemovalProject[]
   publicReports   PublicReport[]
+  termsLogs       TermsAcceptanceLog[]
 
   @@map("companies")
 }
@@ -96,6 +97,7 @@ model User {
   branch          Branch?          @relation(fields: [branchId], references: [id])
   consumptionLogs         ConsumptionLog[] @relation("RecordedBy")
   verifiedConsumptionLogs ConsumptionLog[] @relation("VerifiedBy")
+  termsLogs               TermsAcceptanceLog[]
 
   @@map("users")
 }
@@ -358,4 +360,24 @@ model PublicReport {
 
   @@unique([companyId, branchId])
   @@map("public_reports")
+}
+
+model TermsAcceptanceLog {
+  id           String   @id @default(cuid())
+  userId       String
+  userName     String
+  userEmail    String
+  companyId    String
+  companyName  String
+  ipAddress    String?
+  userAgent    String?
+  termsVersion String   @default("v1.0-junio-2026")
+  acceptedAt   DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([acceptedAt])
+  @@map("terms_acceptance_logs")
 }

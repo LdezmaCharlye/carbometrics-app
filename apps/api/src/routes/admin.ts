@@ -450,4 +450,14 @@ router.post("/companies/:id/branches", async (c) => {
   return c.json(branch, 201);
 });
 
+// GET /api/admin/terms-logs
+router.get("/terms-logs", async (c) => {
+  const companyId = c.req.query("companyId");
+  const logs = await prisma.termsAcceptanceLog.findMany({
+    where:   companyId ? { companyId } : {},
+    orderBy: { acceptedAt: "desc" },
+  });
+  return c.json(logs);
+});
+
 export { router as adminRouter };

@@ -25,7 +25,7 @@ const LICENSE_COLORS: Record<string, string> = {
 };
 const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
-type Tab = "companies" | "licenses" | "users" | "factors" | "consumption";
+type Tab = "companies" | "licenses" | "users" | "factors" | "consumption" | "tyc";
 
 interface Company {
   id: string; name: string; taxId: string; industry: string; country: string;
@@ -59,6 +59,7 @@ export default function AdminPanelPage() {
   const [users,      setUsers]      = useState<User[]>([]);
   const [factors,    setFactors]    = useState<Factor[]>([]);
   const [logs,       setLogs]       = useState<Log[]>([]);
+  const [tycLogs,    setTycLogs]    = useState<any[]>([]);
   const [selCompany, setSelCompany] = useState("");
   const [selYear,    setSelYear]    = useState(new Date().getFullYear());
   const [loading,    setLoading]    = useState(false);
@@ -153,6 +154,10 @@ const fetchCompanyBranches = async (companyId: string) => {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/consumption?year=${selYear}${selCompany ? `&companyId=${selCompany}` : ""}`;
       fetch(url, { headers: { Authorization: `Bearer ${token}` } })
         .then((r) => r.json()).then(setLogs).catch(() => {}).finally(() => setLoading(false));
+    } else if (tab === "tyc") {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/terms-logs${selCompany ? `?companyId=${selCompany}` : ""}`;
+      fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.json()).then(setTycLogs).catch(() => {}).finally(() => setLoading(false));
     }
   }, [tab, selCompany, selYear, token]);
 
@@ -314,6 +319,7 @@ const fetchCompanyBranches = async (companyId: string) => {
     { key: "users",     label: "Usuarios",            icon: Users       },
     { key: "factors",   label: "Factores de emisión", icon: FlaskConical},
     { key: "consumption",label:"Registros de consumo",icon: FileText    },
+    { key: "tyc",        label:"Registro TyC",        icon: BadgeCheck  },
   ] as { key: Tab; label: string; icon: any }[];
 
   return (
@@ -364,7 +370,7 @@ const fetchCompanyBranches = async (companyId: string) => {
 
         {/* Filtros */}
         <div className="flex items-center gap-3 flex-wrap">
-          {(tab === "users" || tab === "consumption") && (
+          {(tab === "users" || tab === "consumption" || tab === "tyc") && (
             <div className="relative">
               <select value={selCompany} onChange={(e) => setSelCompany(e.target.value)}
                 className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
@@ -1138,6 +1144,67 @@ const fetchCompanyBranches = async (companyId: string) => {
           </div>
         )}
 
+        {/* ── REGISTRO TYC ─────────────────────────────────────────────── */}
+        {tab === "tyc" && (
+          <div className="space-y-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 text-xs text-amber-700 flex items-center gap-2">
+              <BadgeCheck className="w-4 h-4 flex-shrink-0" />
+              Este registro es permanente y sirve como evidencia legal de aceptación de términos. Cada fila incluye IP, dispositivo, versión y fecha exacta.
+            </div>
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Fecha y hora</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Usuario</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Empresa</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Dirección IP</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Versión TyC</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Dispositivo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {loading ? (
+                    <tr><td colSpan={6} className="px-5 py-10 text-center text-gray-400 text-sm">Cargando...</td></tr>
+                  ) : tycLogs.length === 0 ? (
+                    <tr><td colSpan={6} className="px-5 py-10 text-center text-gray-400 text-sm">No hay registros de aceptación aún</td></tr>
+                  ) : tycLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-gray-50 transition">
+                      <td className="px-5 py-3.5">
+                        <p className="text-xs font-semibold text-gray-800">
+                          {new Date(log.acceptedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {new Date(log.acceptedAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                        </p>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <p className="text-xs font-medium text-gray-800">{log.userName}</p>
+                        <p className="text-xs text-gray-400">{log.userEmail}</p>
+                      </td>
+                      <td className="px-4 py-3.5 text-xs text-gray-600">{log.companyName}</td>
+                      <td className="px-4 py-3.5">
+                        <span className="text-xs font-mono bg-gray-100 text-gray-700 px-2 py-0.5 rounded">{log.ipAddress ?? "—"}</span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">{log.termsVersion}</span>
+                      </td>
+                      <td className="px-4 py-3.5 text-xs text-gray-400 max-w-xs truncate" title={log.userAgent ?? ""}>
+                        {log.userAgent
+                          ? log.userAgent.includes("Chrome") ? "🖥 Chrome"
+                          : log.userAgent.includes("Firefox") ? "🖥 Firefox"
+                          : log.userAgent.includes("Safari") ? "📱 Safari"
+                          : log.userAgent.includes("Edge") ? "🖥 Edge"
+                          : log.userAgent.substring(0, 40)
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
         {/* ── CONSUMO ──────────────────────────────────────────────────── */}
         {tab === "consumption" && (
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
