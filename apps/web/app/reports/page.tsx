@@ -411,7 +411,7 @@ export default function ReportsPage() {
           </div>
 
           {/* 1. PRESENTACIÓN */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
             <h2 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase tracking-wider">1. Presentación</h2>
             <div className="space-y-2 text-sm text-gray-600 leading-relaxed">
               <p>El presente informe expone el inventario de gases de efecto invernadero (GEI) de <strong>{company?.name}</strong>, elaborado conforme a los requisitos de la norma <strong>ISO 14064-1:2018</strong> y el <strong>GHG Protocol Corporate Standard</strong>.</p>
@@ -421,7 +421,7 @@ export default function ReportsPage() {
           </div>
 
           {/* 2. ORGANIZACIÓN */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
             <h2 className="text-sm font-bold text-gray-900 border-b border-gray-100 pb-3 mb-4 uppercase tracking-wider">2. Descripción de la Organización</h2>
             <div className="grid grid-cols-3 gap-2">
               {[
