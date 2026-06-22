@@ -404,11 +404,14 @@ export default function ReportsPage() {
 
           {/* QR */}
           {publicUrl && (
-            <div className="flex flex-col items-center gap-1.5 py-2" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
-              <div className="bg-white border border-gray-200 rounded-xl p-2 inline-block">
-                <QRCodeSVG value={publicUrl} size={100} level="M" />
+            <div className="flex flex-col items-center justify-center gap-3 py-8" style={{pageBreakInside: 'avoid', breakInside: 'avoid'}}>
+              <div className="bg-white border-2 border-gray-200 rounded-2xl p-4 inline-block shadow-sm">
+                <QRCodeSVG value={publicUrl} size={180} level="M" />
               </div>
-              <p className="text-xs text-gray-400 whitespace-nowrap">Ver reporte en línea</p>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-gray-600">Ver reporte en línea</p>
+                <p className="text-xs text-gray-400 mt-0.5">Escanea para ver o descargar este reporte</p>
+              </div>
             </div>
           )}
 
