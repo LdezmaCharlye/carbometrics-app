@@ -571,6 +571,33 @@ function InventoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
+      {zoomImage && (
+        <div
+          ref={zoomContainerRef}
+          className="fixed inset-0 z-[999997] bg-black/80 flex items-center justify-center cursor-grab active:cursor-grabbing"
+          onClick={(e) => { if (e.target === e.currentTarget) { setZoomImage(null); posRef.current = { x: 0, y: 0 }; scaleRef.current = 1; } }}
+          onMouseDown={(e) => { dragging.current = true; lastPos.current = { x: e.clientX, y: e.clientY }; }}
+          onMouseMove={(e) => {
+            if (!dragging.current || !imgRef.current) return;
+            posRef.current = { x: posRef.current.x + e.clientX - lastPos.current.x, y: posRef.current.y + e.clientY - lastPos.current.y };
+            lastPos.current = { x: e.clientX, y: e.clientY };
+            imgRef.current.style.transform = `translate(${posRef.current.x}px, ${posRef.current.y}px) scale(${scaleRef.current})`;
+          }}
+          onMouseUp={() => { dragging.current = false; }}
+          onMouseLeave={() => { dragging.current = false; }}
+        >
+          <button onClick={() => { setZoomImage(null); posRef.current = { x: 0, y: 0 }; scaleRef.current = 1; }}
+            className="absolute top-4 right-4 text-white bg-black/50 rounded-full w-9 h-9 flex items-center justify-center text-lg hover:bg-black/80 z-10">
+            ✕
+          </button>
+          <img
+            ref={imgRef}
+            src={zoomImage}
+            alt="evidencia"
+            style={{ transform: `translate(0px, 0px) scale(1)`, maxWidth: "90vw", maxHeight: "90vh", objectFit: "contain", userSelect: "none", pointerEvents: "none" }}
+          />
+        </div>
+      )}
       {cropSrc && (
         <ImageCropper
           src={cropSrc}
