@@ -246,12 +246,6 @@ export default function ReportsPage() {
 
   const baseYear = company?.baseYear ?? years[0] ?? null;
 
-  useEffect(() => {
-    const handleAfterPrint = () => { window.location.reload(); };
-    window.addEventListener("afterprint", handleAfterPrint);
-    return () => window.removeEventListener("afterprint", handleAfterPrint);
-  }, []);
-
   const generatePDF = async () => {
     setGenerating(true);
     try {
