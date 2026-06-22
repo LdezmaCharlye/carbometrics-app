@@ -3,7 +3,6 @@ import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
 import { requireAuth, requireManager } from "../middleware/auth";
 import { v2 as cloudinary } from "cloudinary";
-import puppeteer from "puppeteer";
 
 const router = new Hono();
 const prisma = new PrismaClient();
@@ -343,60 +342,6 @@ router.post("/reports/upload-pdf/:id", requireAuth, async (c) => {
   } catch (error) {
     console.error("Error subiendo PDF:", error);
     return c.json({ error: "Error al subir el PDF" }, 500);
-  }
-});
-
-// POST /api/consumption/reports/generate-pdf/:id — genera el PDF real con un navegador invisible
-router.post("/reports/generate-pdf/:id", requireAuth, async (c) => {
-  const payload = c.get("jwtPayload") as any;
-  const { id } = c.req.param();
-
-  const report = await prisma.publicReport.findFirst({ where: { id, companyId: payload.companyId } });
-  if (!report) return c.json({ error: "Reporte no encontrado" }, 404);
-
-  let browser;
-  try {
-    browser = await puppeteer.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1024, height: 1400 });
-    console.log(`[PDF ${id}] Navegando a la pagina publica...`);
-    await page.goto(`https://carbometrics.site/reports/view/${id}`, { waitUntil: "domcontentloaded", timeout: 60000 });
-    console.log(`[PDF ${id}] Pagina cargada (DOM), esperando contenido del reporte...`);
-    await page.waitForSelector("#report-content", { timeout: 45000 });
-    console.log(`[PDF ${id}] Contenido encontrado, generando PDF...`);
-    await new Promise((r) => setTimeout(r, 1500));
-
-    const pdfBuffer = await page.pdf({
-      format: "letter",
-      printBackground: true,
-      margin: { top: "12mm", bottom: "12mm", left: "12mm", right: "12mm" },
-    });
-
-    await browser.close();
-
-    const base64 = Buffer.from(pdfBuffer).toString("base64");
-    const dataUri = `data:application/pdf;base64,${base64}`;
-
-    const result = await cloudinary.uploader.upload(dataUri, {
-      folder: "carbometrics/reports",
-      resource_type: "raw",
-      public_id: `report-${id}`,
-      overwrite: true,
-    });
-
-    const updated = await prisma.publicReport.update({
-      where: { id },
-      data: { pdfUrl: result.secure_url },
-    });
-
-    return c.json({ pdfUrl: updated.pdfUrl });
-  } catch (error) {
-    if (browser) await browser.close().catch(() => {});
-    console.error("Error generando PDF con Puppeteer:", error);
-    return c.json({ error: "Error al generar el PDF" }, 500);
   }
 });
 
