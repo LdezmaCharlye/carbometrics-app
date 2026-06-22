@@ -359,7 +359,8 @@ export default function ReportsPage() {
       <div className="bg-gray-100 min-h-screen py-2">
         <main id="report-content" className="max-w-3xl mx-auto px-4 py-6 space-y-4">
 
-          {/* PORTADA */}
+          {/* PORTADA + QR + PRESENTACIÓN — todo en hoja 1 */}
+          <div style={{pageBreakInside: 'avoid', breakInside: 'avoid'}} className="space-y-4">
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
             <div className="bg-green-600 rounded-t-2xl px-8 py-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -402,12 +403,10 @@ export default function ReportsPage() {
             </div>
           </div>
 
-          {/* QR + 1. PRESENTACIÓN — bloque único para que queden juntos en hoja 1 */}
-          <div style={{pageBreakInside: 'avoid', breakInside: 'avoid'}} className="space-y-4">
-            {publicUrl && (
-              <div className="flex flex-col items-center justify-center gap-2 py-4">
+          {publicUrl && (
+              <div className="flex flex-col items-center justify-center gap-2 py-3">
                 <div className="bg-white border-2 border-gray-200 rounded-2xl p-3 inline-block shadow-sm">
-                  <QRCodeSVG value={publicUrl} size={150} level="M" />
+                  <QRCodeSVG value={publicUrl} size={110} level="M" />
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-semibold text-gray-600">Ver reporte en línea</p>
