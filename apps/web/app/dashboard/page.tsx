@@ -259,7 +259,6 @@ const T = (key: string) => translate(lang, key);
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    localStorage.removeItem("termsAccepted");
     router.push("/login");
   };
 
