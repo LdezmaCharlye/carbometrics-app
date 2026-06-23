@@ -16,10 +16,13 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
   const [sale,    setSale]    = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState("");
+  const [saleId,  setSaleId]  = useState("");
 
   useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : "";
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales/${params.id}`, {
+    const id = window.location.pathname.split("/").pop() ?? "";
+    setSaleId(id);
+    const token = localStorage.getItem("token") ?? "";
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales/${id}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
       .then(r => r.json())
