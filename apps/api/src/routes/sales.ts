@@ -1,9 +1,11 @@
 import { Hono } from "hono";
 import { z } from "zod";
+import { Resend } from "resend";
 import { prisma } from "../lib/prisma";
 import { requireSuperAdmin } from "../middleware/auth";
 
 const router = new Hono();
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const PLAN_PRICES: Record<string, number> = {
   BASIC: 50, STANDARD: 100, ENTERPRISE: 150,
@@ -105,6 +107,108 @@ router.patch("/:id", requireSuperAdmin, async (c) => {
     where: { id: c.req.param("id") },
     data,
   });
+
+  if (parsed.data.status === "PAID" && sale.clientEmail) {
+    const PLAN_LABELS: Record<string,string> = {
+      BASIC: "Plan Básico", STANDARD: "Plan Standard", ENTERPRISE: "Plan Corporativo",
+    };
+    const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
+                    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const receiptUrl = `https://carbometrics.site/receipts/${sale.id}`;
+    const planLabel  = PLAN_LABELS[sale.plan] ?? sale.plan;
+    const periodo    = `${MONTHS[sale.periodMonth - 1]} ${sale.periodYear}`;
+
+    try {
+      await resend.emails.send({
+        from:    "CarboMetrics <noreply@carbometrics.site>",
+        to:      [sale.clientEmail],
+        subject: `✅ Pago confirmado — ${sale.number} · CarboMetrics`,
+        html: `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="background:white;border-radius:16px;border:1px solid #e5e7eb;overflow:hidden;max-width:600px">
+        <tr>
+          <td style="background:#16a34a;padding:24px 32px">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td><img src="https://carbometrics.site/Carboм%C3%A9trica2.jpg" alt="CarboMétrica" height="50" style="display:block"></td>
+                <td align="right"><span style="background:rgba(255,255,255,0.2);color:white;font-size:12px;padding:4px 12px;border-radius:999px">✅ Pago confirmado</span></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px">
+            <p style="font-size:16px;color:#111827;font-weight:600;margin:0 0 8px">Hola, ${sale.companyName} 👋</p>
+            <p style="font-size:14px;color:#6b7280;margin:0 0 24px">Confirmamos la recepción de tu pago por el servicio de CarboMetrics. Gracias por tu confianza.</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:24px">
+              <tr><td style="padding:16px 20px;border-bottom:1px solid #f3f4f6">
+                <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                  <td style="font-size:12px;color:#9ca3af;text-transform:uppercase">Nº Recibo</td>
+                  <td align="right" style="font-size:13px;font-weight:600;color:#111827;font-family:monospace">${sale.number}</td>
+                </tr></table>
+              </td></tr>
+              <tr><td style="padding:12px 20px;border-bottom:1px solid #f3f4f6">
+                <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                  <td style="font-size:13px;color:#6b7280">Plan contratado</td>
+                  <td align="right" style="font-size:13px;font-weight:500;color:#111827">${planLabel}</td>
+                </tr></table>
+              </td></tr>
+              <tr><td style="padding:12px 20px;border-bottom:1px solid #f3f4f6">
+                <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                  <td style="font-size:13px;color:#6b7280">Período</td>
+                  <td align="right" style="font-size:13px;color:#111827">${periodo}</td>
+                </tr></table>
+              </td></tr>
+              <tr><td style="padding:12px 20px;border-bottom:1px solid #f3f4f6">
+                <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                  <td style="font-size:13px;color:#6b7280">Subtotal</td>
+                  <td align="right" style="font-size:13px;color:#111827">$${sale.subtotalUSD.toFixed(2)}</td>
+                </tr></table>
+              </td></tr>
+              <tr><td style="padding:12px 20px;border-bottom:1px solid #f3f4f6">
+                <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                  <td style="font-size:13px;color:#6b7280">IVA (13%)</td>
+                  <td align="right" style="font-size:13px;color:#111827">$${sale.ivaUSD.toFixed(2)}</td>
+                </tr></table>
+              </td></tr>
+              <tr><td style="padding:16px 20px;background:#f0fdf4;border-radius:0 0 12px 12px">
+                <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                  <td style="font-size:15px;font-weight:700;color:#111827">Total pagado</td>
+                  <td align="right" style="font-size:20px;font-weight:700;color:#16a34a">$${sale.totalUSD.toFixed(2)} USD</td>
+                </tr></table>
+              </td></tr>
+            </table>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px">
+              <tr><td align="center">
+                <a href="${receiptUrl}" style="display:inline-block;background:#16a34a;color:white;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:10px">📄 Ver recibo completo</a>
+              </td></tr>
+            </table>
+            <p style="font-size:13px;color:#6b7280;margin:0 0 4px">¿Tenés alguna consulta? Escribinos a:</p>
+            <p style="font-size:13px;color:#16a34a;margin:0">carbometrica@gmail.com</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#f9fafb;padding:16px 32px;border-top:1px solid #f3f4f6;text-align:center">
+            <p style="font-size:11px;color:#9ca3af;margin:0">CarboMetrics · carbometrics.site · Cochabamba, Bolivia</p>
+            <p style="font-size:11px;color:#d1d5db;margin:4px 0 0">Email automático — no respondas directamente a este mensaje.</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+      });
+    } catch (emailError) {
+      console.error("Error enviando email:", emailError);
+    }
+  }
+
   return c.json(sale);
 });
 
