@@ -25,7 +25,7 @@ const LICENSE_COLORS: Record<string, string> = {
 };
 const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
-type Tab = "companies" | "licenses" | "users" | "factors" | "consumption" | "tyc";
+type Tab = "companies" | "licenses" | "users" | "factors" | "consumption" | "tyc" | "sales";
 
 interface Company {
   id: string; name: string; taxId: string; industry: string; country: string;
@@ -45,6 +45,16 @@ interface Factor {
   kgCO2: number; kgCH4: number; kgN2O: number;
   source: string; region: string; year: number; isActive: boolean;
 }
+interface Sale {
+  id: string; number: string; companyId: string; companyName: string;
+  companyTaxId: string; plan: string; periodMonth: number; periodYear: number;
+  baseAmountUSD: number; extrasAmountUSD: number;
+  extraUsers: number; extraYears: number; extraSources: number;
+  subtotalUSD: number; ivaPercent: number; ivaUSD: number; totalUSD: number;
+  method: string; status: string; notes: string | null;
+  dueDate: string | null; paidAt: string | null; clientEmail: string | null;
+  createdAt: string;
+}
 interface Log {
   id: string; year: number; month: number; quantity: number;
   emissionsKgCO2eq: number; notes: string | null; isVerified: boolean;
@@ -60,6 +70,13 @@ export default function AdminPanelPage() {
   const [factors,    setFactors]    = useState<Factor[]>([]);
   const [logs,       setLogs]       = useState<Log[]>([]);
   const [tycLogs,    setTycLogs]    = useState<any[]>([]);
+  const [sales,      setSales]      = useState<Sale[]>([]);
+  const [showSaleModal, setShowSaleModal] = useState(false);
+  const [saleForm,   setSaleForm]   = useState({
+    companyId: "", plan: "STANDARD", periodMonth: new Date().getMonth() + 1,
+    periodYear: new Date().getFullYear(), extraUsers: 0, extraYears: 0,
+    extraSources: 0, method: "TRANSFER", dueDate: "", clientEmail: "", notes: "",
+  });
   const [selCompany, setSelCompany] = useState("");
   const [selYear,    setSelYear]    = useState(new Date().getFullYear());
   const [loading,    setLoading]    = useState(false);
@@ -158,6 +175,10 @@ const fetchCompanyBranches = async (companyId: string) => {
       const url = `${process.env.NEXT_PUBLIC_API_URL}/api/admin/terms-logs${selCompany ? `?companyId=${selCompany}` : ""}`;
       fetch(url, { headers: { Authorization: `Bearer ${token}` } })
         .then((r) => r.json()).then(setTycLogs).catch(() => {}).finally(() => setLoading(false));
+    } else if (tab === "sales") {
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/sales${selCompany ? `?companyId=${selCompany}` : ""}`;
+      fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => r.json()).then(setSales).catch(() => {}).finally(() => setLoading(false));
     }
   }, [tab, selCompany, selYear, token]);
 
@@ -320,6 +341,7 @@ const fetchCompanyBranches = async (companyId: string) => {
     { key: "factors",   label: "Factores de emisión", icon: FlaskConical},
     { key: "consumption",label:"Registros de consumo",icon: FileText    },
     { key: "tyc",        label:"Registro TyC",        icon: BadgeCheck  },
+    { key: "sales",      label:"Ventas",               icon: FileText    },
   ] as { key: Tab; label: string; icon: any }[];
 
   return (
@@ -370,7 +392,7 @@ const fetchCompanyBranches = async (companyId: string) => {
 
         {/* Filtros */}
         <div className="flex items-center gap-3 flex-wrap">
-          {(tab === "users" || tab === "consumption" || tab === "tyc") && (
+          {(tab === "users" || tab === "consumption" || tab === "tyc" || tab === "sales") && (
             <div className="relative">
               <select value={selCompany} onChange={(e) => setSelCompany(e.target.value)}
                 className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
@@ -406,6 +428,12 @@ const fetchCompanyBranches = async (companyId: string) => {
               <button onClick={() => { setEditFactor(null); setShowFactorModal(true); }}
                 className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
                 <Plus className="w-3.5 h-3.5" />Nuevo factor
+              </button>
+            )}
+            {tab === "sales" && (
+              <button onClick={() => setShowSaleModal(true)}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+                <Plus className="w-3.5 h-3.5" />Nueva venta
               </button>
             )}
           </div>
@@ -1205,6 +1233,226 @@ const fetchCompanyBranches = async (companyId: string) => {
             </div>
           </div>
         )}
+        {/* ── VENTAS ───────────────────────────────────────────────────── */}
+        {tab === "sales" && (() => {
+          const PLAN_LABELS: Record<string,string> = { BASIC:"Plan Básico", STANDARD:"Plan Standard", ENTERPRISE:"Plan Corporativo" };
+          const METHOD_LABELS: Record<string,string> = { TRANSFER:"Transferencia", QR_BOLIVIA:"QR Bolivia", STRIPE:"Stripe", CASH:"Efectivo" };
+          const MONTHS_SHORT = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+          const paid    = sales.filter(s => s.status === "PAID");
+          const pending = sales.filter(s => s.status === "PENDING");
+          const overdue = sales.filter(s => s.status === "OVERDUE");
+          const sumUSD  = (arr: Sale[]) => arr.reduce((a,s) => a + s.totalUSD, 0);
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-4 gap-4">
+                {[
+                  { label:"Cobrado este mes", value:`$${sumUSD(paid).toFixed(2)}`, sub:`${paid.length} pagos`, color:"text-green-600" },
+                  { label:"Por cobrar", value:`$${sumUSD(pending).toFixed(2)}`, sub:`${pending.length} pendientes`, color:"text-amber-500" },
+                  { label:"Vencidos", value:`$${sumUSD(overdue).toFixed(2)}`, sub:`${overdue.length} empresa(s)`, color:"text-red-500" },
+                  { label:"Total ventas", value:String(sales.length), sub:"registradas", color:"text-gray-500" },
+                ].map(k => (
+                  <div key={k.label} className="bg-white rounded-2xl border border-gray-200 p-5">
+                    <p className="text-xs text-gray-400 mb-1">{k.label}</p>
+                    <p className={`text-2xl font-bold ${k.color}`}>{k.value}</p>
+                    <p className="text-xs text-gray-400 mt-1">{k.sub}</p>
+                  </div>
+                ))}
+              </div>
+              {overdue.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 text-xs text-amber-700 flex items-center gap-2">
+                  ⚠ {overdue.map(s => s.companyName).join(", ")} — pago(s) vencido(s)
+                </div>
+              )}
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100">
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Nº Recibo</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Empresa</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Plan / Período</th>
+                      <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total USD</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Método</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
+                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {loading ? (
+                      <tr><td colSpan={7} className="px-5 py-10 text-center text-gray-400 text-sm">Cargando...</td></tr>
+                    ) : sales.length === 0 ? (
+                      <tr><td colSpan={7} className="px-5 py-10 text-center text-gray-400 text-sm">No hay ventas registradas</td></tr>
+                    ) : sales.map(s => (
+                      <tr key={s.id} className="hover:bg-gray-50 transition">
+                        <td className="px-5 py-3.5 text-xs font-mono text-gray-600">{s.number}</td>
+                        <td className="px-4 py-3.5">
+                          <p className="text-xs font-medium text-gray-800">{s.companyName}</p>
+                          {s.clientEmail && <p className="text-xs text-gray-400">{s.clientEmail}</p>}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <p className="text-xs font-medium text-gray-700">{PLAN_LABELS[s.plan] ?? s.plan}</p>
+                          <p className="text-xs text-gray-400">{MONTHS_SHORT[s.periodMonth-1]} {s.periodYear}</p>
+                        </td>
+                        <td className="px-4 py-3.5 text-right font-bold text-gray-900">${s.totalUSD.toFixed(2)}</td>
+                        <td className="px-4 py-3.5 text-xs text-gray-500">{METHOD_LABELS[s.method] ?? s.method}</td>
+                        <td className="px-4 py-3.5">
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                            s.status === "PAID" ? "bg-green-100 text-green-700" :
+                            s.status === "OVERDUE" ? "bg-red-100 text-red-600" :
+                            s.status === "CANCELLED" ? "bg-gray-100 text-gray-500" :
+                            "bg-amber-100 text-amber-700"
+                          }`}>
+                            {s.status === "PAID" ? "Pagado" : s.status === "OVERDUE" ? "Vencido" : s.status === "CANCELLED" ? "Cancelado" : "Pendiente"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <button onClick={() => router.push(`/receipts/${s.id}`)}
+                              className="text-xs text-gray-400 hover:text-green-600 border border-gray-200 hover:border-green-400 px-2 py-1 rounded-lg transition">
+                              Ver recibo
+                            </button>
+                            {s.status !== "PAID" && (
+                              <button onClick={async () => {
+                                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales/${s.id}`, {
+                                  method: "PATCH",
+                                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                  body: JSON.stringify({ status: "PAID" }),
+                                });
+                                if (res.ok) { setSales(prev => prev.map(x => x.id === s.id ? { ...x, status: "PAID" } : x)); showToast("Marcado como pagado"); }
+                              }} className="text-xs text-white bg-green-600 hover:bg-green-700 px-2 py-1 rounded-lg transition">
+                                ✓ Pagado
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* ── MODAL NUEVA VENTA ─────────────────────────────────────────── */}
+        {showSaleModal && (() => {
+          const PLAN_PRICES: Record<string,number> = { BASIC:50, STANDARD:100, ENTERPRISE:150 };
+          const base   = PLAN_PRICES[saleForm.plan] ?? 50;
+          const extras = (saleForm.extraUsers * 15) + (saleForm.extraYears * 20) + (saleForm.extraSources * 15);
+          const sub    = base + extras;
+          const iva    = Math.round(sub * 0.13 * 100) / 100;
+          const total  = Math.round((sub + iva) * 100) / 100;
+          return (
+            <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm p-4">
+              <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg mx-auto my-8">
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="font-bold text-gray-900">Nueva venta</h3>
+                  <button onClick={() => setShowSaleModal(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Empresa *</label>
+                    <select value={saleForm.companyId} onChange={e => setSaleForm(p => ({...p, companyId: e.target.value}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                      <option value="">— Seleccionar empresa —</option>
+                      {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Plan *</label>
+                    <select value={saleForm.plan} onChange={e => setSaleForm(p => ({...p, plan: e.target.value}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                      <option value="BASIC">Básico — $50/mes</option>
+                      <option value="STANDARD">Standard — $100/mes</option>
+                      <option value="ENTERPRISE">Corporativo — $150/mes</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Método de cobro</label>
+                    <select value={saleForm.method} onChange={e => setSaleForm(p => ({...p, method: e.target.value}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                      <option value="TRANSFER">Transferencia bancaria</option>
+                      <option value="QR_BOLIVIA">QR Bolivia</option>
+                      <option value="STRIPE">Stripe (tarjeta)</option>
+                      <option value="CASH">Efectivo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Mes</label>
+                    <select value={saleForm.periodMonth} onChange={e => setSaleForm(p => ({...p, periodMonth: parseInt(e.target.value)}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                      {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"].map((m,i) => <option key={i} value={i+1}>{m}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Año</label>
+                    <select value={saleForm.periodYear} onChange={e => setSaleForm(p => ({...p, periodYear: parseInt(e.target.value)}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                      {[2025,2026,2027].map(y => <option key={y} value={y}>{y}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">+ Usuarios extra</label>
+                    <input type="number" min="0" value={saleForm.extraUsers} onChange={e => setSaleForm(p => ({...p, extraUsers: parseInt(e.target.value)||0}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                    <p className="text-xs text-gray-400 mt-0.5">$15 c/u</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">+ Años extra</label>
+                    <input type="number" min="0" value={saleForm.extraYears} onChange={e => setSaleForm(p => ({...p, extraYears: parseInt(e.target.value)||0}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                    <p className="text-xs text-gray-400 mt-0.5">$20 c/u</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">+ Fuentes extra</label>
+                    <input type="number" min="0" value={saleForm.extraSources} onChange={e => setSaleForm(p => ({...p, extraSources: parseInt(e.target.value)||0}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                    <p className="text-xs text-gray-400 mt-0.5">$15 c/u</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Fecha límite de pago</label>
+                    <input type="date" value={saleForm.dueDate} onChange={e => setSaleForm(p => ({...p, dueDate: e.target.value}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Email del cliente (para el recibo)</label>
+                    <input type="email" placeholder="contacto@empresa.com" value={saleForm.clientEmail} onChange={e => setSaleForm(p => ({...p, clientEmail: e.target.value}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Notas internas</label>
+                    <textarea rows={2} placeholder="Ej: acordado descuento, pago en cuotas..." value={saleForm.notes} onChange={e => setSaleForm(p => ({...p, notes: e.target.value}))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none" />
+                  </div>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 mt-3">
+                  <div className="flex justify-between text-xs text-gray-500 mb-1"><span>Subtotal</span><span>${sub.toFixed(2)}</span></div>
+                  <div className="flex justify-between text-xs text-gray-500 mb-2"><span>IVA 13%</span><span>${iva.toFixed(2)}</span></div>
+                  <div className="flex justify-between text-sm font-bold text-gray-900 border-t border-green-200 pt-2"><span>Total</span><span className="text-green-700">${total.toFixed(2)} USD</span></div>
+                </div>
+                <div className="flex gap-2 mt-5">
+                  <button onClick={() => setShowSaleModal(false)}
+                    className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition">Cancelar</button>
+                  <button onClick={async () => {
+                    if (!saleForm.companyId) { showToast("Seleccioná una empresa", false); return; }
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                      body: JSON.stringify({ ...saleForm }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { showToast(data.error ?? "Error al crear venta", false); return; }
+                    showToast(`Venta creada — ${data.number}`);
+                    setShowSaleModal(false);
+                    setSales(prev => [data, ...prev]);
+                    router.push(`/receipts/${data.id}`);
+                  }} className="flex-1 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition">
+                    Crear y ver recibo →
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
         {/* ── CONSUMO ──────────────────────────────────────────────────── */}
         {tab === "consumption" && (
           <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">

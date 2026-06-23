@@ -49,6 +49,7 @@ model Company {
   removalProjects RemovalProject[]
   publicReports   PublicReport[]
   termsLogs       TermsAcceptanceLog[]
+  sales           Sale[]
 
   @@map("companies")
 }
@@ -380,4 +381,51 @@ model TermsAcceptanceLog {
   @@index([companyId])
   @@index([acceptedAt])
   @@map("terms_acceptance_logs")
+}
+
+model Sale {
+  id              String     @id @default(cuid())
+  number          String     @unique
+  companyId       String
+  companyName     String
+  companyTaxId    String
+  plan            String
+  periodMonth     Int
+  periodYear      Int
+  baseAmountUSD   Float
+  extrasAmountUSD Float      @default(0)
+  extraUsers      Int        @default(0)
+  extraYears      Int        @default(0)
+  extraSources    Int        @default(0)
+  subtotalUSD     Float
+  ivaPercent      Float      @default(13)
+  ivaUSD          Float
+  totalUSD        Float
+  method          SaleMethod @default(TRANSFER)
+  status          SaleStatus @default(PENDING)
+  notes           String?
+  dueDate         DateTime?
+  paidAt          DateTime?
+  clientEmail     String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@map("sales")
+}
+
+enum SaleMethod {
+  TRANSFER
+  QR_BOLIVIA
+  STRIPE
+  CASH
+}
+
+enum SaleStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
 }
