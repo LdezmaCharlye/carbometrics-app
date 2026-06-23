@@ -66,8 +66,8 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
         </button>
       </div>
 
-      <div style={{background:"#f3f4f6",minHeight:"calc(100vh - 49px)",padding:"24px 16px",display:"flex",justifyContent:"center"}}>
-        <div style={{background:"white",borderRadius:"16px",border:"1px solid #e5e7eb",width:"100%",maxWidth:"700px",padding:"28px 40px"}}>
+      <div style={{background:"#f3f4f6",minHeight:"calc(100vh - 49px)",padding:"24px 16px",display:"flex",justifyContent:"center",alignItems:"flex-start"}}>
+        <div style={{background:"white",borderRadius:"16px",border:"1px solid #e5e7eb",width:"700px",minWidth:"700px",maxWidth:"700px",padding:"28px 40px",aspectRatio:"8.5/11",overflow:"hidden",position:"relative"}}>
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"16px"}}>
             <div style={{display:"flex",alignItems:"center"}}>
