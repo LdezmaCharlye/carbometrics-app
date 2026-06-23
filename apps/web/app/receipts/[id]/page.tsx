@@ -70,17 +70,8 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
         <div style={{background:"white",borderRadius:"16px",border:"1px solid #e5e7eb",width:"100%",maxWidth:"700px",padding:"44px 52px"}}>
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px"}}>
-            <div style={{display:"flex",alignItems:"center",gap:"16px"}}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
-                <rect width="60" height="60" rx="13" fill="#22c55e"/>
-                <path d="M30 48C22 44 14 37 14 27C14 19 21 13 30 13C39 13 46 19 46 27C46 35 40 40 36 43" fill="none"/>
-                <path d="M38 15C38 15 44 21 42 31C40 39 33 44 28 47C24 44 18 40 16 33C14 26 17 19 22 16C22 16 26 24 30 27C34 30 38 15 38 15Z" fill="white"/>
-                <path d="M30 27C30 27 28 33 26 37C24 41 22 44 22 44C22 44 20 39 21 34C22 29 26 25 30 27Z" fill="#16a34a" opacity="0.5"/>
-              </svg>
-              <div>
-                <div style={{fontSize:"26px",fontWeight:300,color:"#3d3d3d",letterSpacing:"-0.3px"}}>CarboMétrica</div>
-                <div style={{fontSize:"12px",color:"#9ca3af",marginTop:"1px",fontStyle:"italic"}}>Expertos en medición de Huella de Carbono.</div>
-              </div>
+            <div style={{display:"flex",alignItems:"center"}}>
+              <img src="/Carbométrica2.jpg" alt="CarboMétrica" style={{height:"60px",objectFit:"contain"}} />
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontSize:"22px",fontWeight:700,color:"#111827"}}>Recibo de pago</div>
