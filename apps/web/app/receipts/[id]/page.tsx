@@ -50,6 +50,7 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
         @media print {
           .no-print { display: none !important; }
           body { margin: 0; background: white; }
+          @page { size: letter; margin: 1.5cm; }
         }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
       `}</style>
@@ -69,19 +70,20 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
         <div style={{background:"white",borderRadius:"16px",border:"1px solid #e5e7eb",width:"100%",maxWidth:"700px",padding:"44px 52px"}}>
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px"}}>
-            <div style={{display:"flex",alignItems:"center",gap:"14px"}}>
-              <div style={{width:"54px",height:"54px",background:"#16a34a",borderRadius:"12px",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-                </svg>
-              </div>
+            <div style={{display:"flex",alignItems:"center",gap:"16px"}}>
+              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
+                <rect width="60" height="60" rx="13" fill="#22c55e"/>
+                <path d="M30 48C22 44 14 37 14 27C14 19 21 13 30 13C39 13 46 19 46 27C46 35 40 40 36 43" fill="none"/>
+                <path d="M38 15C38 15 44 21 42 31C40 39 33 44 28 47C24 44 18 40 16 33C14 26 17 19 22 16C22 16 26 24 30 27C34 30 38 15 38 15Z" fill="white"/>
+                <path d="M30 27C30 27 28 33 26 37C24 41 22 44 22 44C22 44 20 39 21 34C22 29 26 25 30 27Z" fill="#16a34a" opacity="0.5"/>
+              </svg>
               <div>
-                <div style={{fontSize:"24px",fontWeight:700,color:"#111827",letterSpacing:"-0.5px"}}>CarboMétrica</div>
-                <div style={{fontSize:"12px",color:"#9ca3af",marginTop:"2px"}}>Expertos en medición de Huella de Carbono.</div>
+                <div style={{fontSize:"26px",fontWeight:300,color:"#3d3d3d",letterSpacing:"-0.3px"}}>CarboMétrica</div>
+                <div style={{fontSize:"12px",color:"#9ca3af",marginTop:"1px",fontStyle:"italic"}}>Expertos en medición de Huella de Carbono.</div>
               </div>
             </div>
             <div style={{textAlign:"right"}}>
-              <div style={{fontSize:"22px",fontWeight:700,color:"#111827"}}>Factura</div>
+              <div style={{fontSize:"22px",fontWeight:700,color:"#111827"}}>Recibo de pago</div>
               <div style={{fontSize:"14px",color:"#6b7280",marginTop:"2px"}}>Nº {sale.number}</div>
               <div style={{
                 display:"inline-block",marginTop:"6px",fontSize:"12px",fontWeight:600,padding:"3px 14px",borderRadius:"999px",
@@ -176,7 +178,7 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
           <div style={{display:"grid",gridTemplateColumns:"auto 1fr",gap:"40px",alignItems:"flex-end"}}>
             <div style={{textAlign:"center"}}>
               <QRCodeSVG value={receiptUrl} size={120} />
-              <div style={{fontSize:"11px",color:"#9ca3af",marginTop:"6px"}}>Factura electrónica</div>
+              <div style={{fontSize:"11px",color:"#9ca3af",marginTop:"6px"}}>Recibo electrónico</div>
             </div>
             <div style={{marginLeft:"auto",minWidth:"220px"}}>
               <div style={{display:"flex",justifyContent:"space-between",padding:"6px 0",fontSize:"13px",color:"#6b7280"}}>
@@ -202,8 +204,9 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
 
           <hr style={{border:"none",borderTop:"1px solid #f3f4f6",marginBottom:"16px"}} />
 
-          <div style={{textAlign:"center",fontSize:"12px",color:"#374151",fontWeight:500}}>
-            Esta factura contribuye al desarrollo del país, el uso ilícito de esta será sancionado de acuerdo a la ley.
+          <div style={{textAlign:"center",fontSize:"12px",color:"#9ca3af"}}>
+            Este recibo es un comprobante interno de pago emitido por Carbométrica.<br/>
+            carbometrica@gmail.com · Cochabamba, Bolivia
           </div>
 
         </div>
