@@ -49,8 +49,8 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
       <style>{`
         @media print {
           .no-print { display: none !important; }
-          body { margin: 0; background: white; }
-          @page { size: letter; margin: 1.5cm; }
+          body { margin: 0; background: white; -webkit-print-color-adjust: exact; }
+          @page { size: letter; margin: 1cm; }
         }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
       `}</style>
@@ -66,10 +66,10 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
         </button>
       </div>
 
-      <div style={{background:"#f3f4f6",minHeight:"calc(100vh - 49px)",padding:"32px 16px",display:"flex",justifyContent:"center"}}>
-        <div style={{background:"white",borderRadius:"16px",border:"1px solid #e5e7eb",width:"100%",maxWidth:"700px",padding:"44px 52px"}}>
+      <div style={{background:"#f3f4f6",minHeight:"calc(100vh - 49px)",padding:"24px 16px",display:"flex",justifyContent:"center"}}>
+        <div style={{background:"white",borderRadius:"16px",border:"1px solid #e5e7eb",width:"100%",maxWidth:"700px",padding:"28px 40px"}}>
 
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"28px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"16px"}}>
             <div style={{display:"flex",alignItems:"center"}}>
               <img src="/Carbométrica2.jpg" alt="CarboMétrica" style={{height:"60px",objectFit:"contain"}} />
             </div>
@@ -86,9 +86,9 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
             </div>
           </div>
 
-          <hr style={{border:"none",borderTop:"1px solid #f3f4f6",marginBottom:"24px"}} />
+          <hr style={{border:"none",borderTop:"1px solid #f3f4f6",marginBottom:"14px"}} />
 
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"40px",marginBottom:"24px"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"24px",marginBottom:"14px"}}>
             <div>
               <div style={{fontSize:"12px",color:"#9ca3af",marginBottom:"6px",textTransform:"uppercase",letterSpacing:"0.05em"}}>Emisor</div>
               <div style={{fontSize:"15px",fontWeight:700,color:"#111827"}}>CarboMétrica</div>
@@ -184,7 +184,7 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
             </div>
           </div>
 
-          <div style={{background:"#f9fafb",borderRadius:"10px",padding:"12px 16px",margin:"24px 0 20px",fontSize:"13px",color:"#6b7280"}}>
+          <div style={{background:"#f9fafb",borderRadius:"10px",padding:"10px 14px",margin:"14px 0 12px",fontSize:"13px",color:"#6b7280"}}>
             <strong style={{color:"#374151"}}>Método de pago: </strong>{METHOD_LABELS[sale.method] ?? sale.method}
             {sale.method === "TRANSFER" && (
               <div style={{marginTop:"4px",fontSize:"12px"}}>
