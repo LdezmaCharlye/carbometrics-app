@@ -71,7 +71,7 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
 
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"16px"}}>
             <div style={{display:"flex",alignItems:"center"}}>
-              <img src="/Carbométrica2.jpg" alt="CarboMétrica" style={{height:"60px",objectFit:"contain"}} />
+              <img src="/Carbométrica2.jpg" alt="CarboMétrica" style={{height:"90px",objectFit:"contain"}} />
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontSize:"22px",fontWeight:700,color:"#111827"}}>Recibo de pago</div>
