@@ -1263,6 +1263,42 @@ const fetchCompanyBranches = async (companyId: string) => {
                   ⚠ {overdue.map(s => s.companyName).join(", ")} — pago(s) vencido(s)
                 </div>
               )}
+              <div className="flex items-center gap-2 flex-wrap">
+                {[2025, 2026, 2027].map(year => (
+                  <button key={year} onClick={() => {
+                    const filtered = sales.filter(s => s.periodYear === year && s.status === "PAID");
+                    if (filtered.length === 0) { showToast(`Sin ventas pagadas en ${year}`, false); return; }
+                    const PLAN_LABELS: Record<string,string> = { BASIC:"Plan Básico", STANDARD:"Plan Standard", ENTERPRISE:"Plan Corporativo" };
+                    const METHOD_LABELS: Record<string,string> = { TRANSFER:"Transferencia", QR_BOLIVIA:"QR Bolivia", STRIPE:"Stripe", CASH:"Efectivo" };
+                    const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+                    const rows = filtered.map(s => [
+                      s.number, s.companyName, s.companyTaxId,
+                      PLAN_LABELS[s.plan] ?? s.plan,
+                      MONTHS[s.periodMonth-1], s.periodYear,
+                      METHOD_LABELS[s.method] ?? s.method,
+                      s.subtotalUSD.toFixed(2),
+                      s.ivaUSD.toFixed(2),
+                      s.totalUSD.toFixed(2),
+                      s.paidAt ? new Date(s.paidAt).toLocaleDateString("es-ES") : "",
+                    ]);
+                    const totalSub = filtered.reduce((a,s) => a + s.subtotalUSD, 0);
+                    const totalIva = filtered.reduce((a,s) => a + s.ivaUSD, 0);
+                    const totalAll = filtered.reduce((a,s) => a + s.totalUSD, 0);
+                    const header = ["Nº Recibo","Empresa","NIT","Plan","Mes","Año","Método","Subtotal USD","IVA 13% USD","Total USD","Fecha de pago"];
+                    const csvRows = [header, ...rows, ["","","","","","","TOTALES", totalSub.toFixed(2), totalIva.toFixed(2), totalAll.toFixed(2), ""]];
+                    const csv = csvRows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+                    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url; a.download = `carbometrica-ventas-${year}.csv`;
+                    a.click(); URL.revokeObjectURL(url);
+                    showToast(`Exportado: ${filtered.length} ventas de ${year}`);
+                  }} className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 hover:text-green-600 text-gray-500 text-xs font-semibold px-3 py-2 rounded-lg transition">
+                    ⬇ Excel {year}
+                  </button>
+                ))}
+                <span className="text-xs text-gray-400 ml-1">Solo ventas pagadas · se abre en Excel</span>
+              </div>
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
