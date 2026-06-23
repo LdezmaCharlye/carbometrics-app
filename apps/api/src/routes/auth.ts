@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { signToken, requireAuth } from "../middleware/auth";
 
 const router = new Hono();
-const prisma = new PrismaClient();
 
 const loginSchema = z.object({
   email:    z.string().email(),

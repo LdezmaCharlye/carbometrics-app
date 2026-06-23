@@ -1,10 +1,9 @@
 import { Hono } from "hono";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 import { v2 as cloudinary } from "cloudinary";
 
 const router = new Hono();
-const prisma = new PrismaClient();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

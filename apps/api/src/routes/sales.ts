@@ -1,10 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { requireSuperAdmin } from "../middleware/auth";
 
 const router = new Hono();
-const prisma = new PrismaClient();
 
 const PLAN_PRICES: Record<string, number> = {
   BASIC: 50, STANDARD: 100, ENTERPRISE: 150,

@@ -1,10 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../lib/prisma";
 import { requireAuth, requireManager } from "../middleware/auth";
 
 const router = new Hono();
-const prisma = new PrismaClient();
 
 // GET /api/branches — listar sucursales de mi empresa
 router.get("/", requireAuth, async (c) => {
