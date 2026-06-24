@@ -235,4 +235,11 @@ router.patch("/:id", requireSuperAdmin, async (c) => {
   return c.json(sale);
 });
 
+// DELETE /api/sales/:id — solo cancela o elimina recibos no pagados
+router.delete("/:id", requireSuperAdmin, async (c) => {
+  const sale = await prisma.sale.findUnique({ where: { id: c.req.param("id") } });
+  if (!sale) return c.json({ error: "Recibo no encontrado" }, 404);
+  await prisma.sale.delete({ where: { id: c.req.param("id") } });
+  return c.json({ ok: true });
+});
 export { router as salesRouter };

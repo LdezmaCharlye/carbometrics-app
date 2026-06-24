@@ -1346,6 +1346,17 @@ const fetchCompanyBranches = async (companyId: string) => {
                               className="text-xs text-gray-400 hover:text-green-600 border border-gray-200 hover:border-green-400 px-2 py-1 rounded-lg transition">
                               Ver recibo
                             </button>
+                            <button onClick={async () => {
+                              if (!confirm(`¿Eliminar recibo ${s.number}? Esta acción no se puede deshacer.`)) return;
+                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales/${s.id}`, {
+                                method: "DELETE",
+                                headers: { Authorization: `Bearer ${token}` },
+                              });
+                              if (res.ok) { setSales(prev => prev.filter(x => x.id !== s.id)); showToast("Recibo eliminado"); }
+                              else showToast("Error al eliminar", false);
+                            }} className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 hover:border-red-300 px-2 py-1 rounded-lg transition">
+                              🗑
+                            </button>
                             {s.status !== "PAID" && (
                               <button onClick={async () => {
                                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/sales/${s.id}`, {
