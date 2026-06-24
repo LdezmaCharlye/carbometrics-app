@@ -188,7 +188,7 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
             <strong style={{color:"#374151"}}>Método de pago: </strong>{METHOD_LABELS[sale.method] ?? sale.method}
             {sale.method === "TRANSFER" && (
               <div style={{marginTop:"4px",fontSize:"12px"}}>
-                Banco BNB · Cuenta: 1000234567 · A nombre de: Carbométrica · <strong>Ref: {sale.number}</strong>
+                Banco FIE · Cuenta: [40014732669] · A nombre de: [CARLOS LEDEZMA BUSTAMANTE] · <strong>Ref: {sale.number}</strong>
               </div>
             )}
           </div>

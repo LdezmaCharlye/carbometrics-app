@@ -206,6 +206,11 @@ router.patch("/:id", requireSuperAdmin, async (c) => {
                 <a href="${receiptUrl}" style="display:inline-block;background:#16a34a;color:white;text-decoration:none;font-size:14px;font-weight:600;padding:12px 28px;border-radius:10px">📄 Ver recibo completo</a>
               </td></tr>
             </table>
+            <div style="background:#f9fafb;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#6b7280">
+              <strong style="color:#374151">Datos para transferencia:</strong><br/>
+              Banco FIE · Cuenta: [40014732669] · A nombre de: [CARLOS LEDEZMA BUSTAMANTE]<br/>
+              <strong>Referencia: ${sale.number}</strong>
+            </div>
             <p style="font-size:13px;color:#6b7280;margin:0 0 4px">¿Tenés alguna consulta? Escribinos a:</p>
             <p style="font-size:13px;color:#16a34a;margin:0">carbometrica@gmail.com</p>
           </td>
