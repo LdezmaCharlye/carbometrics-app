@@ -7,7 +7,7 @@ export function KeepAlive() {
       fetch("https://carbometrics-app-production.up.railway.app/health")
         .catch(() => {});
     ping();
-    const interval = setInterval(ping, 4 * 60 * 1000);
+    const interval = setInterval(ping, 2 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
   return null;
