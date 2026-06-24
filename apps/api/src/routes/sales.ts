@@ -138,7 +138,15 @@ router.patch("/:id", requireSuperAdmin, async (c) => {
                 <td>
                   <table cellpadding="0" cellspacing="0">
                     <tr>
-                      <td><img src="https://carbometrics.site/logo.png" alt="CarboMétrica" height="48" width="48" style="display:block;border-radius:10px;border:2px solid rgba(255,255,255,0.4)"></td>
+                      <td style="vertical-align:middle">
+                  <table cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td style="background:#15803d;width:46px;height:46px;border-radius:10px;border:2px solid rgba(255,255,255,0.35);text-align:center;vertical-align:middle;font-size:24px;line-height:46px">
+                        🌿
+                      </td>
+                    </tr>
+                  </table>
+                </td>
                       <td style="padding-left:12px;vertical-align:middle">
                         <div style="color:white;font-size:20px;font-weight:300;letter-spacing:-0.3px;font-family:'Segoe UI',Arial,sans-serif">CarboMétrica</div>
                         <div style="color:rgba(255,255,255,0.75);font-size:11px;font-style:italic;margin-top:1px;font-family:'Segoe UI',Arial,sans-serif">Expertos en medición de Huella de Carbono.</div>
