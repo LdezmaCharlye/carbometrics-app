@@ -135,7 +135,7 @@ router.patch("/:id", requireSuperAdmin, async (c) => {
           <td style="background:#16a34a;padding:24px 32px">
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td><img src="https://carbometrics.site/Carboм%C3%A9trica2.jpg" alt="CarboMétrica" height="50" style="display:block"></td>
+                <td><img src="https://carbometrics.site/logo-carbometrica.jpg" alt="CarboMétrica" height="50" style="display:block"></td>
                 <td align="right"><span style="background:rgba(255,255,255,0.2);color:white;font-size:12px;padding:4px 12px;border-radius:999px">✅ Pago confirmado</span></td>
               </tr>
             </table>
