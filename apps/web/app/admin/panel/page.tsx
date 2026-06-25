@@ -82,7 +82,10 @@ export default function AdminPanelPage() {
   const [loading,    setLoading]    = useState(false);
   const [toast,      setToast]      = useState<{ msg: string; ok: boolean } | null>(null);
 
-  const [showUserModal,    setShowUserModal]    = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
+const [resetUser, setResetUser]           = useState<User | null>(null);
+const [resetPassword, setResetPassword]   = useState("");
+const [showUserModal,    setShowUserModal]    = useState(false);
   const [showFactorModal,  setShowFactorModal]  = useState(false);
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [editFactor,       setEditFactor]       = useState<Factor | null>(null);
@@ -994,11 +997,19 @@ const fetchCompanyBranches = async (companyId: string) => {
                       {u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString("es-ES") : "Nunca"}
                     </td>
                     <td className="px-4 py-3.5 text-center">
-                      <button onClick={() => toggleUser(u.id, u.isActive)}>
-                        {u.isActive
-                          ? <ToggleRight className="w-6 h-6 text-green-500 mx-auto" />
-                          : <ToggleLeft  className="w-6 h-6 text-gray-300 mx-auto" />}
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          onClick={() => { setResetUser(u); setResetPassword(""); setShowResetModal(true); }}
+                          className="text-xs text-gray-400 hover:text-amber-600 border border-gray-200 hover:border-amber-300 px-2 py-1 rounded-lg transition"
+                          title="Resetear contraseña">
+                          🔑 Reset
+                        </button>
+                        <button onClick={() => toggleUser(u.id, u.isActive)}>
+                          {u.isActive
+                            ? <ToggleRight className="w-6 h-6 text-green-500 mx-auto" />
+                            : <ToggleLeft  className="w-6 h-6 text-gray-300 mx-auto" />}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1852,6 +1863,56 @@ const fetchCompanyBranches = async (companyId: string) => {
               <button onClick={saveFactor}
                 className="flex-1 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-semibold transition">
                 {editFactor ? "Actualizar" : "Crear factor"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    {showResetModal && resetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-900">Resetear contraseña</h3>
+              <button onClick={() => setShowResetModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mb-4">
+              Usuario: <span className="font-semibold text-gray-800">{resetUser.name}</span>
+              <br />{resetUser.email}
+            </p>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Nueva contraseña temporal</label>
+              <input
+                type="text"
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700 mt-3">
+              El usuario deberá cambiar esta contraseña al próximo inicio de sesión.
+            </div>
+            <div className="flex gap-2 mt-5">
+              <button onClick={() => setShowResetModal(false)}
+                className="flex-1 py-2 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+              <button onClick={async () => {
+                if (resetPassword.length < 6) { showToast("Mínimo 6 caracteres", false); return; }
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${resetUser.id}/reset-password`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ password: resetPassword }),
+                });
+                if (!res.ok) { showToast("Error al resetear contraseña", false); return; }
+                showToast(`Contraseña reseteada para ${resetUser.name}`);
+                setShowResetModal(false);
+                setResetUser(null);
+              }}
+                className="flex-1 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition">
+                Confirmar reset
               </button>
             </div>
           </div>

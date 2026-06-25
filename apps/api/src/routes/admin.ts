@@ -459,4 +459,40 @@ router.get("/terms-logs", async (c) => {
   return c.json(logs);
 });
 
+// PATCH /api/admin/users/:id/reset-password
+router.patch("/users/:id/reset-password", async (c) => {
+  const body = await c.req.json().catch(() => null);
+  const schema = z.object({
+    password: z.string().min(6),
+  });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return c.json({ error: "La contraseña debe tener al menos 6 caracteres" }, 400);
+
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+  const user = await prisma.user.update({
+    where: { id: c.req.param("id") },
+    data:  { passwordHash, mustChangePassword: true },
+    select: { id: true, email: true, name: true },
+  });
+  return c.json({ ...user, temporaryPassword: parsed.data.password });
+});
+
+// PATCH /api/admin/users/:id/reset-password
+router.patch("/users/:id/reset-password", async (c) => {
+  const body = await c.req.json().catch(() => null);
+  const schema = z.object({
+    password: z.string().min(6),
+  });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return c.json({ error: "La contraseña debe tener al menos 6 caracteres" }, 400);
+
+  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+  const user = await prisma.user.update({
+    where: { id: c.req.param("id") },
+    data:  { passwordHash, mustChangePassword: true },
+    select: { id: true, email: true, name: true },
+  });
+  return c.json({ ...user, temporaryPassword: parsed.data.password });
+});
+
 export { router as adminRouter };
