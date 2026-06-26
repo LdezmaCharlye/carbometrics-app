@@ -613,14 +613,18 @@ function InventoryPage() {
           <div className="w-8 h-8 bg-green-600 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition">
             <Leaf className="w-4 h-4 text-white" />
           </div>
-          <h1 className="font-bold text-gray-900 group-hover:text-gray-500 group-hover:underline transition">CarboMetrics</h1>
         </button>
-        <div className="flex items-center gap-1 text-xs text-gray-500">
-          <span onClick={() => setStep("scope")} className={`cursor-pointer hover:underline hover:text-gray-500 transition ${step === "scope" ? "text-green-600 font-medium" : ""}`}>Alcance</span>
-          <ChevronRight className="w-3 h-3" />
-          <span onClick={() => { if (selectedScope) setStep("month"); }} className={`cursor-pointer hover:underline hover:text-gray-500 transition ${step === "month" ? "text-green-600 font-medium" : ""}`}>Mes</span>
-          <ChevronRight className="w-3 h-3" />
-          <span className={`${step === "table" ? "text-green-600 font-medium" : "text-gray-400"}`}>Datos</span>
+        <div>
+          <button onClick={() => router.push("/dashboard")} className="group transition">
+            <h1 className="font-bold text-gray-900 group-hover:text-gray-500 group-hover:underline transition leading-tight">CarboMetrics</h1>
+          </button>
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <span onClick={() => setStep("scope")} className={`cursor-pointer hover:underline hover:text-gray-500 transition ${step === "scope" ? "text-green-600 font-medium" : ""}`}>Alcance</span>
+            <ChevronRight className="w-3 h-3" />
+            <span onClick={() => { if (selectedScope) setStep("month"); }} className={`cursor-pointer hover:underline hover:text-gray-500 transition ${step === "month" ? "text-green-600 font-medium" : ""}`}>Mes</span>
+            <ChevronRight className="w-3 h-3" />
+            <span className={`${step === "table" ? "text-green-600 font-medium" : "text-gray-400"}`}>Datos</span>
+          </div>
         </div>
       </div>
       <main className={`px-4 py-6 space-y-4 ${step === "scope" ? "w-1/3" : step === "month" ? "max-w-xs" : "max-w-4xl mx-auto"}`}>
