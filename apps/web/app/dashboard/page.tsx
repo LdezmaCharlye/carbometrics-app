@@ -388,12 +388,12 @@ const T = (key: string) => translate(lang, key);
       {/* Header */}
       <header className="bg-white border-b border-gray-200 px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between h-14">
-          <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2.5 hover:opacity-80 transition">
-            <div className="w-7 h-7 bg-green-600 rounded-lg flex items-center justify-center">
+          <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2.5 group transition">
+            <div className="w-7 h-7 bg-green-600 group-hover:bg-green-700 rounded-lg flex items-center justify-center transition">
               <Leaf className="w-3.5 h-3.5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900 leading-tight">CarboMetrics</p>
+              <p className="text-sm font-bold text-gray-900 group-hover:text-green-600 transition leading-tight">CarboMetrics</p>
               <p className="text-xs text-gray-400 leading-tight">{user?.company}</p>
             </div>
           </button>
