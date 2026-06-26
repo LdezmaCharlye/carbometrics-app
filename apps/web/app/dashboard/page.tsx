@@ -393,8 +393,8 @@ const T = (key: string) => translate(lang, key);
               <Leaf className="w-3.5 h-3.5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900 group-hover:text-green-600 transition leading-tight group-hover:underline">CarboMetrics</p>
-              <p className="text-xs text-gray-400 group-hover:text-green-500 leading-tight group-hover:underline">{user?.company}</p>
+              <p className="text-sm font-bold text-gray-900 group-hover:text-gray-500 transition leading-tight group-hover:underline">CarboMetrics</p>
+              <p className="text-xs text-gray-400 group-hover:text-gray-300 leading-tight group-hover:underline">{user?.company}</p>
             </div>
           </button>
           <div className="flex items-center gap-3">
