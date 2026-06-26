@@ -223,6 +223,10 @@ const T = (key: string) => translate(lang, key);
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/my-license`, {
       headers: { Authorization: `Bearer ${token}` },
     }).then((r) => r.json()).then((company) => {
+      if (company?.error === "LICENSE_EXPIRED" || company?.error === "COMPANY_INACTIVE") {
+        setLicenseAlert({ type: "expired", days: 0 });
+        return;
+      }
       if (company?.licenseExpiresAt) {
         const diff = Math.ceil((new Date(company.licenseExpiresAt).getTime() - Date.now()) / 86400000);
         if (diff <= 0)       setLicenseAlert({ type: "expired",  days: Math.abs(diff) });
@@ -307,6 +311,25 @@ const T = (key: string) => translate(lang, key);
   }).filter((r) => r.total > 0 || r.baseTotal > 0);
 
   const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
+
+  if (!loading && licenseAlert?.type === "expired") return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="bg-white rounded-2xl border border-red-200 p-8 max-w-md text-center shadow-sm">
+        <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">🔒</span>
+        </div>
+        <h2 className="text-lg font-bold text-gray-900 mb-2">Licencia vencida</h2>
+        <p className="text-sm text-gray-500 mb-6">El acceso a CarboMetrics está restringido. Contacta al administrador para renovar tu licencia.</p>
+        <a href="mailto:carbometrica@gmail.com"
+          className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition">
+          Contactar administrador
+        </a>
+        <button onClick={logout} className="block mx-auto mt-3 text-xs text-gray-400 hover:text-gray-600 transition">
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  );
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
