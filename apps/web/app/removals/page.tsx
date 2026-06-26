@@ -127,17 +127,15 @@ export default function RemovalsPage() {
       <header className="bg-white border-b border-gray-200 px-6">
         <div className="max-w-3xl mx-auto flex items-center justify-between h-14">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push("/dashboard")}
-              className="text-gray-400 hover:text-gray-600 transition">
-              <ArrowLeft className="w-4 h-4" />
+            <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2.5 group transition">
+              <div className="w-7 h-7 bg-green-600 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition">
+                <Leaf className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900 group-hover:text-gray-500 group-hover:underline transition leading-tight">CarboMetrics</p>
+                <p className="text-xs text-gray-400 group-hover:text-gray-300 group-hover:underline leading-tight">Remociones y Sumideros</p>
+              </div>
             </button>
-            <div className="w-7 h-7 bg-teal-50 rounded-lg flex items-center justify-center">
-              <Wind className="w-3.5 h-3.5 text-teal-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-900 leading-tight">Remociones y Sumideros</p>
-              <p className="text-xs text-gray-400 leading-tight">ISO 14064-1 · Cláusula 5.3</p>
-            </div>
           </div>
           <button onClick={openNew}
             className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition">
