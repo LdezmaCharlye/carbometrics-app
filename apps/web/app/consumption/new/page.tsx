@@ -608,7 +608,7 @@ function InventoryPage() {
         />
       )}
 
-      <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 group transition">
+      <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 group transition" title="Volver al dashboard">
               <div className="w-8 h-8 bg-green-600 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition">
                 <Leaf className="w-4 h-4 text-white" />
               </div>
@@ -619,7 +619,7 @@ function InventoryPage() {
                   <ChevronRight className="w-3 h-3" />
                   <span onClick={() => { if (selectedScope) setStep("month"); }} className={`cursor-pointer hover:underline hover:text-gray-500 transition ${step === "month" ? "text-green-600 font-medium" : ""}`}>Mes</span>
                   <ChevronRight className="w-3 h-3" />
-                  <span className={`${step === "table" ? "text-green-600 font-medium underline" : "hover:underline hover:text-gray-500 cursor-pointer"}`}>Datos</span>
+                  <span className={`${step === "table" ? "text-green-600 font-medium" : "text-gray-400"}`}>Datos</span>
                 </div>
               </div>
             </button>
