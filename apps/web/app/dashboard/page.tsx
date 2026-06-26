@@ -393,7 +393,7 @@ const T = (key: string) => translate(lang, key);
               <Leaf className="w-3.5 h-3.5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-900 group-hover:text-green-600 transition leading-tight">CarboMetrics</p>
+              <p className="text-sm font-bold text-gray-900 group-hover:text-green-600 transition leading-tight group-hover:underline">CarboMetrics</p>
               <p className="text-xs text-gray-400 leading-tight">{user?.company}</p>
             </div>
           </button>
