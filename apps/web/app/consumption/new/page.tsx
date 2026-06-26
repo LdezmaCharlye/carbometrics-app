@@ -608,12 +608,12 @@ function InventoryPage() {
         />
       )}
 
-      <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 hover:opacity-80 transition">
-              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+      <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 group transition">
+              <div className="w-8 h-8 bg-green-600 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition">
                 <Leaf className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h1 className="font-bold text-gray-900">CarboMetrics</h1>
+                <h1 className="font-bold text-gray-900 group-hover:text-gray-500 group-hover:underline transition">CarboMetrics</h1>
                 <div className="flex items-center gap-1 text-xs text-gray-500">
                   <span className={step === "scope" ? "text-green-600 font-medium" : ""}>Alcance</span>
                   <ChevronRight className="w-3 h-3" />
