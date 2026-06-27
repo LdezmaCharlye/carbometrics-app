@@ -216,36 +216,112 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     const canvas = canvasRef.current;
     const img = imgRef.current;
     if (!canvas || !img) return;
+
     const sx = img.naturalWidth  / canvas.width;
     const sy = img.naturalHeight / canvas.height;
     const [tl, tr, br, bl] = cornersRef.current.map(p => ({ x: p.x * sx, y: p.y * sy }));
+
     const W = Math.round(Math.max(Math.hypot(tr.x-tl.x, tr.y-tl.y), Math.hypot(br.x-bl.x, br.y-bl.y)));
     const H = Math.round(Math.max(Math.hypot(bl.x-tl.x, bl.y-tl.y), Math.hypot(br.x-tr.x, br.y-tr.y)));
+
+    // ── Homografía inversa (igual que Top Scanner) ──────────────────────────
+    // Calcula la matriz H que mapea el rectángulo destino [0,W]x[0,H]
+    // a los 4 puntos del cuadrilátero en la imagen original.
+    // Para cada píxel (dx,dy) del resultado, calculamos el píxel (sx,sy)
+    // correspondiente en la fuente usando H⁻¹ — sin huecos, sin deformación.
+    const buildHomography = (
+      src: {x:number;y:number}[],  // 4 puntos origen (cuadrilátero)
+      dst: {x:number;y:number}[]   // 4 puntos destino (rectángulo)
+    ): number[] => {
+      // Sistema lineal 8x8 → coeficientes h0..h7 de la homografía 3x3
+      const A: number[][] = [];
+      const b: number[]   = [];
+      for (let i = 0; i < 4; i++) {
+        const { x: sx, y: sy } = src[i];
+        const { x: dx, y: dy } = dst[i];
+        A.push([dx, dy, 1, 0,  0,  0, -sx*dx, -sx*dy]);
+        A.push([0,  0,  0, dx, dy, 1, -sy*dx, -sy*dy]);
+        b.push(sx);
+        b.push(sy);
+      }
+      // Gauss-Jordan 8x8
+      const M = A.map((row, i) => [...row, b[i]]);
+      for (let col = 0; col < 8; col++) {
+        let maxRow = col;
+        for (let row = col+1; row < 8; row++)
+          if (Math.abs(M[row][col]) > Math.abs(M[maxRow][col])) maxRow = row;
+        [M[col], M[maxRow]] = [M[maxRow], M[col]];
+        const div = M[col][col];
+        if (Math.abs(div) < 1e-10) continue;
+        for (let j = col; j <= 8; j++) M[col][j] /= div;
+        for (let row = 0; row < 8; row++) {
+          if (row === col) continue;
+          const factor = M[row][col];
+          for (let j = col; j <= 8; j++) M[row][j] -= factor * M[col][j];
+        }
+      }
+      return M.map(row => row[8]);
+    };
+
+    // Homografía: rectángulo destino → cuadrilátero fuente
+    const srcPts = [tl, tr, br, bl];
+    const dstPts = [
+      { x: 0, y: 0 },
+      { x: W, y: 0 },
+      { x: W, y: H },
+      { x: 0, y: H },
+    ];
+    const [h0,h1,h2,h3,h4,h5,h6,h7] = buildHomography(srcPts, dstPts);
+
+    // Dibuja el resultado mapeando cada píxel del destino al origen
     const out = document.createElement("canvas");
     out.width = W; out.height = H;
     const ctx = out.getContext("2d")!;
-    for (let row = 0; row < H; row++) {
-      const t = row / H;
-      const lx = tl.x + (bl.x - tl.x) * t;
-      const ly = tl.y + (bl.y - tl.y) * t;
-      const rx = tr.x + (br.x - tr.x) * t;
-      const ry = tr.y + (br.y - tr.y) * t;
-      const rowW = Math.hypot(rx - lx, ry - ly);
-      if (rowW < 0.5) continue;
-      const angle = Math.atan2(ry - ly, rx - lx);
-      ctx.save();
-      ctx.beginPath(); ctx.rect(0, row, W, 1); ctx.clip();
-      ctx.setTransform(
-        Math.cos(angle) * (W / rowW),
-        Math.sin(angle) * (W / rowW),
-        -Math.sin(angle),
-        Math.cos(angle),
-        -lx * Math.cos(angle) * (W / rowW) - ly * Math.sin(angle) * (W / rowW),
-        row + lx * Math.sin(angle) - ly * Math.cos(angle)
-      );
-      ctx.drawImage(img, 0, 0);
-      ctx.restore();
+
+    // Dibujamos la imagen de fondo para poder leer píxeles
+    const srcCanvas = document.createElement("canvas");
+    srcCanvas.width  = img.naturalWidth;
+    srcCanvas.height = img.naturalHeight;
+    const srcCtx = srcCanvas.getContext("2d")!;
+    srcCtx.drawImage(img, 0, 0);
+    const srcData = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
+    const dstData = ctx.createImageData(W, H);
+    const sw = srcCanvas.width;
+    const sh = srcCanvas.height;
+
+    for (let dy = 0; dy < H; dy++) {
+      for (let dx = 0; dx < W; dx++) {
+        // Homografía inversa: destino → fuente
+        const w  = h6*dx + h7*dy + 1;
+        const ox = (h0*dx + h1*dy + h2) / w;
+        const oy = (h3*dx + h4*dy + h5) / w;
+
+        // Interpolación bilineal para suavidad
+        const x0 = Math.floor(ox); const y0 = Math.floor(oy);
+        const x1 = x0 + 1;        const y1 = y0 + 1;
+        if (x0 < 0 || y0 < 0 || x1 >= sw || y1 >= sh) continue;
+
+        const fx = ox - x0; const fy = oy - y0;
+        const i00 = (y0*sw + x0)*4;
+        const i10 = (y0*sw + x1)*4;
+        const i01 = (y1*sw + x0)*4;
+        const i11 = (y1*sw + x1)*4;
+        const di  = (dy*W  + dx)*4;
+
+        for (let c = 0; c < 3; c++) {
+          dstData.data[di+c] = Math.round(
+            srcData.data[i00+c] * (1-fx)*(1-fy) +
+            srcData.data[i10+c] * fx    *(1-fy) +
+            srcData.data[i01+c] * (1-fx)*fy     +
+            srcData.data[i11+c] * fx    *fy
+          );
+        }
+        dstData.data[di+3] = 255;
+      }
     }
+    ctx.putImageData(dstData, 0, 0);
+    // ────────────────────────────────────────────────────────────────────────
+
     out.toBlob((blob) => { if (blob) onConfirm(blob); }, "image/jpeg", 0.85);
   };
 
