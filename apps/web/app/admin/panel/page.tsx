@@ -1607,28 +1607,6 @@ const fetchCompanyBranches = async (companyId: string) => {
         </div>
 
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-gray-600 mb-1">País</label>
-          <select value={cForm.country} onChange={(e) => setCForm((p) => ({ ...p, country: e.target.value }))}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
-            <option value="BO">🇧🇴 Bolivia — 0.430 kgCO₂/kWh</option>
-            <option value="PE">🇵🇪 Perú — 0.310 kgCO₂/kWh</option>
-            <option value="AR">🇦🇷 Argentina — 0.390 kgCO₂/kWh</option>
-            <option value="CL">🇨🇱 Chile — 0.402 kgCO₂/kWh</option>
-            <option value="CO">🇨🇴 Colombia — 0.176 kgCO₂/kWh</option>
-            <option value="BR">🇧🇷 Brasil — 0.076 kgCO₂/kWh</option>
-            <option value="MX">🇲🇽 México — 0.458 kgCO₂/kWh</option>
-            <option value="EC">🇪🇨 Ecuador — 0.385 kgCO₂/kWh</option>
-            <option value="PY">🇵🇾 Paraguay — 0.025 kgCO₂/kWh</option>
-            <option value="UY">🇺🇾 Uruguay — 0.087 kgCO₂/kWh</option>
-            <option value="VE">🇻🇪 Venezuela — 0.230 kgCO₂/kWh</option>
-            <option value="US">🇺🇸 Estados Unidos — 0.386 kgCO₂/kWh</option>
-            <option value="ES">🇪🇸 España — 0.180 kgCO₂/kWh</option>
-            <option value="GLOBAL">🌍 Otro país — 0.493 kgCO₂/kWh (global)</option>
-          </select>
-          <p className="text-xs text-gray-400 mt-1">El factor de emisión de electricidad se asignará automáticamente según el país.</p>
-        </div>
-
-        <div className="col-span-2">
           <label className="block text-xs font-medium text-gray-600 mb-1">Límite organizacional (ISO 14064-1)</label>
           <select value={cForm.orgBoundaryType} onChange={(e) => setCForm((p) => ({ ...p, orgBoundaryType: e.target.value }))}
             className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
