@@ -386,7 +386,7 @@ router.patch("/companies/:companyId/sources/:sourceId", async (c) => {
     isExcluded:        z.boolean().optional(),
     exclusionReason:   z.string().optional(),
     isActive:          z.boolean().optional(),
-    emissionFactorId:  z.string().optional(),
+    emissionFactorId:  z.string().nullable().optional(),
   });
   const parsed = schema.safeParse(body);
   if (!parsed.success) return c.json({ error: "Datos inválidos" }, 400);

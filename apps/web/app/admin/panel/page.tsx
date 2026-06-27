@@ -885,7 +885,7 @@ const fetchCompanyBranches = async (companyId: string) => {
                       uncertaintyNote:   sfForm.uncertaintyNote || undefined,
                       isExcluded:        sfForm.isExcluded,
                       exclusionReason:   sfForm.exclusionReason || undefined,
-                      emissionFactorId:  sfForm.emissionFactorId || undefined,
+                      ...(sfForm.emissionFactorId ? { emissionFactorId: sfForm.emissionFactorId } : { emissionFactorId: null }),
                     }),
                   });
                   if (res.ok) {
