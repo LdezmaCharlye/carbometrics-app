@@ -227,6 +227,12 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
         const maxH = window.innerHeight - 110;
         const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
         canvas.width  = Math.floor(img.naturalWidth  * scale);
+        canvas.height = Math.floor(img.naturalHeight * scale);
+        resetToFull();
+      };
+      img.src = correctedSrc;
+    });
+  }, [src, resetToFull]);
 
   const getCanvasPos = (e: React.TouchEvent | React.MouseEvent): Point => {
     const canvas = canvasRef.current!;
