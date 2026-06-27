@@ -36,8 +36,41 @@ function newDraft(): DraftRow {
   return { id: crypto.randomUUID(), invoiceNumber: "", plateNumber: "", quantity: "", dataQuality: "DIGITAL_INVOICE", saving: false, imageFile: null };
 }
 
-// ─── Recortador con esquinas libres ──────────────────────────────────────────
+// ─── Recortador con corrección de perspectiva ─────────────────────────────────
 interface Point { x: number; y: number; }
+
+function perspectiveTransform(img: HTMLImageElement, pts: Point[]): HTMLCanvasElement {
+  const [tl, tr, br, bl] = pts;
+  const W = Math.round(Math.max(Math.hypot(tr.x - tl.x, tr.y - tl.y), Math.hypot(br.x - bl.x, br.y - bl.y)));
+  const H = Math.round(Math.max(Math.hypot(bl.x - tl.x, bl.y - tl.y), Math.hypot(br.x - tr.x, br.y - tr.y)));
+  const out = document.createElement("canvas");
+  out.width = W; out.height = H;
+  const ctx = out.getContext("2d")!;
+  for (let col = 0; col < W; col++) {
+    const u = col / W, u1 = (col + 1) / W;
+    const sx0 = tl.x + (tr.x - tl.x) * u,  sy0 = tl.y + (tr.y - tl.y) * u;
+    const sx1 = bl.x + (br.x - bl.x) * u,  sy1 = bl.y + (br.y - bl.y) * u;
+    const sx0b = tl.x + (tr.x - tl.x) * u1, sy0b = tl.y + (tr.y - tl.y) * u1;
+    const colH = Math.hypot(sx1 - sx0, sy1 - sy0);
+    if (colH < 0.5) continue;
+    const colW = Math.max(Math.hypot(sx0b - sx0, sy0b - sy0), 0.001);
+    const angle = Math.atan2(sy1 - sy0, sx1 - sx0);
+    const cos = Math.cos(angle), sin = Math.sin(angle);
+    const cos90 = Math.cos(angle - Math.PI / 2), sin90 = Math.sin(angle - Math.PI / 2);
+    const scaleY = H / colH, scaleX = 1 / colW;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(col, 0, 1, H); ctx.clip();
+    ctx.setTransform(
+      cos90 * scaleX, sin90 * scaleX,
+      cos * scaleY,   sin * scaleY,
+      col - sx0 * cos90 * scaleX + sy0 * sin90 * scaleX - sx0 * cos * scaleY + sy0 * sin * scaleY + sx0 * cos90 * scaleX - sy0 * sin90 * scaleX,
+      0   - sx0 * sin90 * scaleX - sy0 * cos90 * scaleX - sx0 * sin * scaleY - sy0 * cos * scaleY + sx0 * sin90 * scaleX + sy0 * cos90 * scaleX
+    );
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+  }
+  return out;
+}
 
 function ImageCropper({ src, onConfirm, onCancel, loading }: {
   src: string;
@@ -45,12 +78,11 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
   onCancel: () => void;
   loading: boolean;
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imgRef    = useRef<HTMLImageElement | null>(null);
-  const cornersRef = useRef<Point[]>([]);
+  const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const imgRef      = useRef<HTMLImageElement | null>(null);
+  const cornersRef  = useRef<Point[]>([]);
   const draggingIdx = useRef<number | null>(null);
-  const HANDLE = 20;
-  const MID_HANDLE = 14;
+  const HANDLE = 22;
 
   const getMidpoints = (corners: Point[]): Point[] => {
     const [tl, tr, br, bl] = corners;
@@ -69,92 +101,67 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
     const [tl, tr, br, bl] = cornersRef.current;
-
-    // Overlay oscuro fuera del polígono
     ctx.save();
     ctx.fillStyle = "rgba(0,0,0,0.55)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = "destination-out";
     ctx.beginPath();
-    ctx.moveTo(tl.x, tl.y);
-    ctx.lineTo(tr.x, tr.y);
-    ctx.lineTo(br.x, br.y);
-    ctx.lineTo(bl.x, bl.y);
-    ctx.closePath();
-    ctx.fill();
+    ctx.moveTo(tl.x, tl.y); ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(br.x, br.y); ctx.lineTo(bl.x, bl.y);
+    ctx.closePath(); ctx.fill();
     ctx.restore();
-
-    // Imagen dentro del polígono
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(tl.x, tl.y);
-    ctx.lineTo(tr.x, tr.y);
-    ctx.lineTo(br.x, br.y);
-    ctx.lineTo(bl.x, bl.y);
-    ctx.closePath();
-    ctx.clip();
+    ctx.moveTo(tl.x, tl.y); ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(br.x, br.y); ctx.lineTo(bl.x, bl.y);
+    ctx.closePath(); ctx.clip();
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     ctx.restore();
-
-    // Borde verde
-    ctx.strokeStyle = "#00e676";
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#00e676"; ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.moveTo(tl.x, tl.y);
-    ctx.lineTo(tr.x, tr.y);
-    ctx.lineTo(br.x, br.y);
-    ctx.lineTo(bl.x, bl.y);
-    ctx.closePath();
-    ctx.stroke();
-
+    ctx.moveTo(tl.x, tl.y); ctx.lineTo(tr.x, tr.y);
+    ctx.lineTo(br.x, br.y); ctx.lineTo(bl.x, bl.y);
+    ctx.closePath(); ctx.stroke();
     cornersRef.current.forEach((p) => {
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, HANDLE / 2, 0, Math.PI * 2);
-      ctx.fillStyle = "#00e676";
-      ctx.fill();
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 2;
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(p.x, p.y, HANDLE / 2, 0, Math.PI * 2);
+      ctx.fillStyle = "#00e676"; ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5; ctx.stroke();
     });
-
     getMidpoints(cornersRef.current).forEach((p) => {
-      ctx.beginPath();
-      ctx.roundRect(p.x - MID_HANDLE, p.y - MID_HANDLE / 2, MID_HANDLE * 2, MID_HANDLE, 4);
-      ctx.fillStyle = "#00e676";
-      ctx.fill();
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,230,118,0.75)"; ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
     });
   }, []);
+
+  const resetToFull = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const pad = 4;
+    cornersRef.current = [
+      { x: pad,                y: pad },
+      { x: canvas.width - pad, y: pad },
+      { x: canvas.width - pad, y: canvas.height - pad },
+      { x: pad,                y: canvas.height - pad },
+    ];
+    draw();
+  }, [draw]);
 
   useEffect(() => {
     const img = new Image();
     img.onload = () => {
       imgRef.current = img;
       const canvas = canvasRef.current!;
-      const maxW = 360;
-      const maxH = 640;
-      const W = Math.min(window.innerWidth, maxW);
-      const H = Math.min(window.innerHeight - 56, maxH);
-      const scaleW = W / img.naturalWidth;
-      const scaleH = H / img.naturalHeight;
-      const scale = Math.min(scaleW, scaleH);
+      const maxW = Math.min(window.innerWidth - 8, 500);
+      const maxH = window.innerHeight - 110;
+      const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
       canvas.width  = Math.floor(img.naturalWidth  * scale);
       canvas.height = Math.floor(img.naturalHeight * scale);
-      const pad = 20;
-      cornersRef.current = [
-        { x: pad,                  y: pad },
-        { x: canvas.width - pad,   y: pad },
-        { x: canvas.width - pad,   y: canvas.height - pad },
-        { x: pad,                  y: canvas.height - pad },
-      ];
-      draw();
+      resetToFull();
     };
     img.src = src;
-  }, [src, draw]);
+  }, [src, resetToFull]);
 
   const getCanvasPos = (e: React.TouchEvent | React.MouseEvent): Point => {
     const canvas = canvasRef.current!;
@@ -171,11 +178,8 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
   const onStart = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
     const p = getCanvasPos(e);
-    const corners = cornersRef.current;
-    const mids = getMidpoints(corners);
-    const allPoints = [...corners, ...mids];
-    let minDist = 80;
-    let idx: number | null = null;
+    const allPoints = [...cornersRef.current, ...getMidpoints(cornersRef.current)];
+    let minDist = 70; let idx: number | null = null;
     allPoints.forEach((c, i) => {
       const d = Math.hypot(p.x - c.x, p.y - c.y);
       if (d < minDist) { minDist = d; idx = i; }
@@ -192,21 +196,24 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     const py = Math.max(0, Math.min(canvas.height, p.y));
     const idx = draggingIdx.current;
     const [tl, tr, br, bl] = cornersRef.current;
-
     if (idx < 4) {
       cornersRef.current[idx] = { x: px, y: py };
     } else if (idx === 4) {
-      cornersRef.current[0] = { x: tl.x, y: py };
-      cornersRef.current[1] = { x: tr.x, y: py };
+      const dy = py - (tl.y + tr.y) / 2;
+      cornersRef.current[0] = { x: tl.x, y: tl.y + dy };
+      cornersRef.current[1] = { x: tr.x, y: tr.y + dy };
     } else if (idx === 5) {
-      cornersRef.current[1] = { x: px, y: tr.y };
-      cornersRef.current[2] = { x: px, y: br.y };
+      const dx = px - (tr.x + br.x) / 2;
+      cornersRef.current[1] = { x: tr.x + dx, y: tr.y };
+      cornersRef.current[2] = { x: br.x + dx, y: br.y };
     } else if (idx === 6) {
-      cornersRef.current[2] = { x: br.x, y: py };
-      cornersRef.current[3] = { x: bl.x, y: py };
+      const dy = py - (br.y + bl.y) / 2;
+      cornersRef.current[2] = { x: br.x, y: br.y + dy };
+      cornersRef.current[3] = { x: bl.x, y: bl.y + dy };
     } else if (idx === 7) {
-      cornersRef.current[0] = { x: px, y: tl.y };
-      cornersRef.current[3] = { x: px, y: bl.y };
+      const dx = px - (bl.x + tl.x) / 2;
+      cornersRef.current[0] = { x: tl.x + dx, y: tl.y };
+      cornersRef.current[3] = { x: bl.x + dx, y: bl.y };
     }
     draw();
   };
@@ -217,41 +224,34 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     const canvas = canvasRef.current;
     const img = imgRef.current;
     if (!canvas || !img) return;
-    const [tl, tr, br, bl] = cornersRef.current;
     const scaleX = img.naturalWidth  / canvas.width;
     const scaleY = img.naturalHeight / canvas.height;
-
-    // Bounding box del polígono
-    const xs = [tl.x, tr.x, br.x, bl.x];
-    const ys = [tl.y, tr.y, br.y, bl.y];
-    const minX = Math.min(...xs) * scaleX;
-    const minY = Math.min(...ys) * scaleY;
-    const maxX = Math.max(...xs) * scaleX;
-    const maxY = Math.max(...ys) * scaleY;
-
-    const out = document.createElement("canvas");
-    out.width  = maxX - minX;
-    out.height = maxY - minY;
-    out.getContext("2d")!.drawImage(img, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
+    const srcPts = cornersRef.current.map(p => ({ x: p.x * scaleX, y: p.y * scaleY }));
+    const out = perspectiveTransform(img, srcPts);
     out.toBlob((blob) => { if (blob) onConfirm(blob); }, "image/jpeg", 0.92);
   };
 
   return (
     <div className="fixed inset-0 z-[999998] bg-black flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 bg-black/80 flex-shrink-0">
-        <button onClick={onCancel} className="text-white text-sm px-4 py-2 rounded-lg border border-white/30">
+      <div className="flex items-center justify-between px-3 py-2.5 bg-black/90 flex-shrink-0 gap-2">
+        <button onClick={onCancel}
+          className="text-white text-xs px-3 py-2 rounded-lg border border-white/30 hover:bg-white/10 transition">
           Cancelar
         </button>
-        <span className="text-white text-sm font-medium">Ajusta las esquinas</span>
+        <button onClick={resetToFull}
+          className="text-white/80 text-xs px-3 py-2 rounded-lg border border-white/20 hover:bg-white/10 transition">
+          ⛶ Completa
+        </button>
         <button onClick={confirm} disabled={loading}
-          className="bg-green-500 text-white text-sm font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5">
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "✓ Guardar"}
+          className="bg-green-500 hover:bg-green-400 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 transition">
+          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "✓ Guardar"}
         </button>
       </div>
+      <p className="text-center text-white/40 text-xs py-1">Arrastra las esquinas para ajustar</p>
       <div className="flex-1 flex items-center justify-center bg-black overflow-hidden">
         <canvas
           ref={canvasRef}
-          style={{ maxWidth: "100vw", maxHeight: "calc(100vh - 56px)", touchAction: "none", display: "block" }}
+          style={{ maxWidth: "100vw", maxHeight: "calc(100vh - 80px)", touchAction: "none", display: "block" }}
           onMouseDown={onStart} onMouseMove={onMove} onMouseUp={onEnd} onMouseLeave={onEnd}
           onTouchStart={onStart} onTouchMove={onMove} onTouchEnd={onEnd}
         />
