@@ -862,7 +862,7 @@ function InventoryPage() {
                                     method: "DELETE", headers: { Authorization: `Bearer ${token}` },
                                   });
                                   if (res.ok) setSaved((prev) => prev.map((l) => l.id === log.id ? { ...l, evidenceImages: [] } : l));
-                                }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-4 h-4 text-xs items-center justify-center flex">✕</button>
+                                }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs items-center justify-center flex shadow-md">✕</button>
                               </div>
                             ) : !log.isVerified ? (
                               <UploadButtons onFile={(file) => openCropper(file, log.id)} />
