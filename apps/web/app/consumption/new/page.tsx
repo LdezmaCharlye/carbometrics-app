@@ -843,20 +843,20 @@ function InventoryPage() {
                           </td>
                           <td className="px-3 py-2">
                             {log.evidenceImages.length > 0 ? (
-                              <div className="flex flex-col items-center gap-1">
+                              <div className="flex items-center gap-2">
                                 <img src={log.evidenceImages[0].url} alt="evidencia"
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                                   onClick={() => setZoomImage(log.evidenceImages[0].url)}
-                                  className="w-8 h-8 object-cover rounded-lg border border-gray-200 cursor-zoom-in hover:opacity-80 transition" />
+                                  className="w-10 h-10 object-cover rounded-lg border border-gray-200 cursor-zoom-in hover:opacity-80 transition flex-shrink-0" />
                                 <button onClick={async (e) => {
                                   e.stopPropagation();
-                                  if (!confirm("¿Eliminar imagen?")) return;
+                                  if (!confirm("¿Eliminar esta imagen? Esta acción no se puede deshacer.")) return;
                                   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/evidence/image/${log.evidenceImages[0].id}`, {
                                     method: "DELETE", headers: { Authorization: `Bearer ${token}` },
                                   });
                                   if (res.ok) setSaved((prev) => prev.map((l) => l.id === log.id ? { ...l, evidenceImages: [] } : l));
-                                }} className="bg-red-500 text-white rounded-md px-1.5 py-0.5 text-xs flex items-center gap-0.5">
-                                  <Trash2 className="w-2.5 h-2.5" />
+                                }} className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 hover:text-red-600 transition flex-shrink-0">
+                                  <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
                             ) : !log.isVerified ? (
