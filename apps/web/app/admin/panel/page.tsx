@@ -874,6 +874,7 @@ const fetchCompanyBranches = async (companyId: string) => {
                   Cancelar
                 </button>
                 <button onClick={async () => {
+                  if (!selCompanySources || !editSource) return;
                   if (sfForm.isExcluded && !sfForm.exclusionReason) {
                     setToast({ ok: false, msg: "Debe ingresar una razón de exclusión" }); return;
                   }
