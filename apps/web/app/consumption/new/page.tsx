@@ -170,9 +170,9 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
           case 3: ctx.transform(-1, 0, 0, -1, tmp.width, tmp.height); break;
           case 4: ctx.transform(1, 0, 0, -1, 0, tmp.height); break;
           case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
-          case 6: ctx.transform(0, 1, -1, 0, tmp.height, 0); break;
+          case 6: ctx.translate(0, tmp.height); ctx.rotate(-Math.PI / 2); break;
           case 7: ctx.transform(0, -1, -1, 0, tmp.height, tmp.width); break;
-          case 8: ctx.transform(0, -1, 1, 0, 0, tmp.width); break;
+          case 8: ctx.translate(tmp.width, 0); ctx.rotate(Math.PI / 2); break;
         }
         ctx.drawImage(img, 0, 0);
         const rotated = new Image();
