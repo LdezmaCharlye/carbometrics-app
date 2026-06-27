@@ -634,13 +634,13 @@ function InventoryPage() {
       </label>
     );
     return (
-      <div className="flex flex-col gap-1">
-        <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
+      <div className="flex items-center gap-2">
+        <label className="cursor-pointer text-gray-400 hover:text-green-600 text-base transition">
           📷
           <input type="file" accept="image/*" capture="environment" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
         </label>
-        <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
+        <label className="cursor-pointer text-gray-400 hover:text-green-600 text-base transition">
           🖼
           <input type="file" accept="image/*" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
