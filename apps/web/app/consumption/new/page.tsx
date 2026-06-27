@@ -39,40 +39,17 @@ function newDraft(): DraftRow {
 // ─── Recortador con corrección de perspectiva ─────────────────────────────────
 interface Point { x: number; y: number; }
 
-function perspectiveTransform(img: HTMLImageElement, pts: Point[]): HTMLCanvasElement {
-  const [tl, tr, br, bl] = pts;
-  const W = Math.round(Math.max(Math.hypot(tr.x - tl.x, tr.y - tl.y), Math.hypot(br.x - bl.x, br.y - bl.y)));
-  const H = Math.round(Math.max(Math.hypot(bl.x - tl.x, bl.y - tl.y), Math.hypot(br.x - tr.x, br.y - tr.y)));
+function cropRect(img: HTMLImageElement, pts: Point[]): HTMLCanvasElement {
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+  const minX = Math.max(0, Math.min(...xs));
+  const minY = Math.max(0, Math.min(...ys));
+  const maxX = Math.min(img.naturalWidth,  Math.max(...xs));
+  const maxY = Math.min(img.naturalHeight, Math.max(...ys));
   const out = document.createElement("canvas");
-  out.width = W; out.height = H;
-  const ctx = out.getContext("2d")!;
-
-  // Por cada fila del output, calcular la línea correspondiente en el source
-  for (let row = 0; row < H; row++) {
-    const t = row / H;
-    // Punto izquierdo y derecho de esta fila en coords del source
-    const lx = tl.x + (bl.x - tl.x) * t;
-    const ly = tl.y + (bl.y - tl.y) * t;
-    const rx = tr.x + (br.x - tr.x) * t;
-    const ry = tr.y + (br.y - tr.y) * t;
-    const rowW = Math.hypot(rx - lx, ry - ly);
-    if (rowW < 0.5) continue;
-    const angle = Math.atan2(ry - ly, rx - lx);
-    const scaleX = W / rowW;
-    const scaleY = 1;
-    ctx.save();
-    ctx.beginPath(); ctx.rect(0, row, W, 1); ctx.clip();
-    ctx.setTransform(
-      Math.cos(angle) * scaleX,
-      Math.sin(angle) * scaleX,
-      -Math.sin(angle) * scaleY,
-      Math.cos(angle) * scaleY,
-      -lx * Math.cos(angle) * scaleX - ly * Math.sin(angle) * scaleX,
-      row - lx * (-Math.sin(angle)) * scaleY - ly * Math.cos(angle) * scaleY
-    );
-    ctx.drawImage(img, 0, 0);
-    ctx.restore();
-  }
+  out.width  = maxX - minX;
+  out.height = maxY - minY;
+  out.getContext("2d")!.drawImage(img, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
   return out;
 }
 
@@ -275,7 +252,7 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     const scaleX = img.naturalWidth  / canvas.width;
     const scaleY = img.naturalHeight / canvas.height;
     const srcPts = cornersRef.current.map(p => ({ x: p.x * scaleX, y: p.y * scaleY }));
-    const out = perspectiveTransform(img, srcPts);
+    const out = cropRect(img, srcPts);
     out.toBlob((blob) => { if (blob) onConfirm(blob); }, "image/jpeg", 0.92);
   };
 
