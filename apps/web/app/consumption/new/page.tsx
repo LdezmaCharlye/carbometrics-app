@@ -46,25 +46,29 @@ function perspectiveTransform(img: HTMLImageElement, pts: Point[]): HTMLCanvasEl
   const out = document.createElement("canvas");
   out.width = W; out.height = H;
   const ctx = out.getContext("2d")!;
-  for (let col = 0; col < W; col++) {
-    const u = col / W, u1 = (col + 1) / W;
-    const sx0 = tl.x + (tr.x - tl.x) * u,  sy0 = tl.y + (tr.y - tl.y) * u;
-    const sx1 = bl.x + (br.x - bl.x) * u,  sy1 = bl.y + (br.y - bl.y) * u;
-    const sx0b = tl.x + (tr.x - tl.x) * u1, sy0b = tl.y + (tr.y - tl.y) * u1;
-    const colH = Math.hypot(sx1 - sx0, sy1 - sy0);
-    if (colH < 0.5) continue;
-    const colW = Math.max(Math.hypot(sx0b - sx0, sy0b - sy0), 0.001);
-    const angle = Math.atan2(sy1 - sy0, sx1 - sx0);
-    const cos = Math.cos(angle), sin = Math.sin(angle);
-    const cos90 = Math.cos(angle - Math.PI / 2), sin90 = Math.sin(angle - Math.PI / 2);
-    const scaleY = H / colH, scaleX = 1 / colW;
+
+  // Por cada fila del output, calcular la línea correspondiente en el source
+  for (let row = 0; row < H; row++) {
+    const t = row / H;
+    // Punto izquierdo y derecho de esta fila en coords del source
+    const lx = tl.x + (bl.x - tl.x) * t;
+    const ly = tl.y + (bl.y - tl.y) * t;
+    const rx = tr.x + (br.x - tr.x) * t;
+    const ry = tr.y + (br.y - tr.y) * t;
+    const rowW = Math.hypot(rx - lx, ry - ly);
+    if (rowW < 0.5) continue;
+    const angle = Math.atan2(ry - ly, rx - lx);
+    const scaleX = W / rowW;
+    const scaleY = 1;
     ctx.save();
-    ctx.beginPath(); ctx.rect(col, 0, 1, H); ctx.clip();
+    ctx.beginPath(); ctx.rect(0, row, W, 1); ctx.clip();
     ctx.setTransform(
-      cos90 * scaleX, sin90 * scaleX,
-      cos * scaleY,   sin * scaleY,
-      col - sx0 * cos90 * scaleX + sy0 * sin90 * scaleX - sx0 * cos * scaleY + sy0 * sin * scaleY + sx0 * cos90 * scaleX - sy0 * sin90 * scaleX,
-      0   - sx0 * sin90 * scaleX - sy0 * cos90 * scaleX - sx0 * sin * scaleY - sy0 * cos * scaleY + sx0 * sin90 * scaleX + sy0 * cos90 * scaleX
+      Math.cos(angle) * scaleX,
+      Math.sin(angle) * scaleX,
+      -Math.sin(angle) * scaleY,
+      Math.cos(angle) * scaleY,
+      -lx * Math.cos(angle) * scaleX - ly * Math.sin(angle) * scaleX,
+      row - lx * (-Math.sin(angle)) * scaleY - ly * Math.cos(angle) * scaleY
     );
     ctx.drawImage(img, 0, 0);
     ctx.restore();
