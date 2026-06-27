@@ -850,7 +850,7 @@ function InventoryPage() {
                           </td>
                           <td className="px-3 py-2">
                             {log.evidenceImages.length > 0 ? (
-                              <div className="relative inline-block group">
+                              <div className="relative inline-block">
                                 <img src={log.evidenceImages[0].url} alt="evidencia"
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                                   onClick={() => setZoomImage(log.evidenceImages[0].url)}
@@ -862,7 +862,7 @@ function InventoryPage() {
                                     method: "DELETE", headers: { Authorization: `Bearer ${token}` },
                                   });
                                   if (res.ok) setSaved((prev) => prev.map((l) => l.id === log.id ? { ...l, evidenceImages: [] } : l));
-                                }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-4 h-4 text-xs items-center justify-center hidden group-hover:flex">✕</button>
+                                }} className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-4 h-4 text-xs items-center justify-center flex">✕</button>
                               </div>
                             ) : !log.isVerified ? (
                               <UploadButtons onFile={(file) => openCropper(file, log.id)} />
