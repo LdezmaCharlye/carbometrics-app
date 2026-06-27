@@ -856,13 +856,13 @@ function InventoryPage() {
                                   className="w-9 h-9 object-cover rounded-lg border border-gray-200 cursor-zoom-in hover:opacity-80 transition flex-shrink-0" />
                                 <button onClick={async (e) => {
                                   e.stopPropagation();
-                                  if (!confirm("¿Eliminar esta imagen?")) return;
+                                  if (!confirm("¿Eliminar esta imagen? Esta acción no se puede deshacer.")) return;
                                   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/upload/evidence/image/${log.evidenceImages[0].id}`, {
                                     method: "DELETE", headers: { Authorization: `Bearer ${token}` },
                                   });
                                   if (res.ok) setSaved((prev) => prev.map((l) => l.id === log.id ? { ...l, evidenceImages: [] } : l));
-                                }} className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-500 transition flex-shrink-0">
-                                  <Trash2 className="w-3.5 h-3.5" />
+                                }} className="w-5 h-5 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center flex-shrink-0 text-xs font-bold transition">
+                                  ✕
                                 </button>
                               </div>
                             ) : !log.isVerified ? (
@@ -877,7 +877,7 @@ function InventoryPage() {
                             </button>
                           </td>
                           <td className="px-2 py-2 text-center">
-                            <button onClick={() => deleteLog(log.id)} disabled={deleting === log.id}
+                            <button onClick={() => { if (!confirm("¿Eliminar esta fila y todos sus datos?")) return; deleteLog(log.id); }} disabled={deleting === log.id}
                               className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-400 transition">
                               {deleting === log.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                             </button>
