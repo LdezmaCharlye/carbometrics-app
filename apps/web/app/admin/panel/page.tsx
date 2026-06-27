@@ -1610,7 +1610,7 @@ const fetchCompanyBranches = async (companyId: string) => {
           <label className="block text-xs font-medium text-gray-600 mb-1">País</label>
           <select value={cForm.country} onChange={(e) => setCForm((p) => ({ ...p, country: e.target.value }))}
             className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
-            <option value="BO">🇧🇴 Bolivia — 0.557 kgCO₂/kWh</option>
+            <option value="BO">🇧🇴 Bolivia — 0.430 kgCO₂/kWh</option>
             <option value="PE">🇵🇪 Perú — 0.310 kgCO₂/kWh</option>
             <option value="AR">🇦🇷 Argentina — 0.390 kgCO₂/kWh</option>
             <option value="CL">🇨🇱 Chile — 0.402 kgCO₂/kWh</option>
