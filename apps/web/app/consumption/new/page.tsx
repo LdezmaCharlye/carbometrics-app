@@ -153,19 +153,80 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
   }, [draw]);
 
   useEffect(() => {
-    const img = new Image();
-    img.onload = () => {
-      imgRef.current = img;
-      const canvas = canvasRef.current!;
-      const maxW = Math.min(window.innerWidth - 8, 500);
-      const maxH = window.innerHeight - 110;
-      const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
-      canvas.width  = Math.floor(img.naturalWidth  * scale);
-      canvas.height = Math.floor(img.naturalHeight * scale);
-      resetToFull();
+    // Corregir rotación EXIF antes de cargar en canvas
+    const correctOrientation = (src: string): Promise<string> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          // Leer EXIF orientation desde los bytes raw
+          const xhr = new XMLHttpRequest();
+          xhr.open("GET", src, true);
+          xhr.responseType = "arraybuffer";
+          xhr.onload = () => {
+            let orientation = 1;
+            try {
+              const view = new DataView(xhr.response);
+              if (view.getUint16(0, false) === 0xFFD8) {
+                let offset = 2;
+                while (offset < view.byteLength) {
+                  const marker = view.getUint16(offset, false);
+                  offset += 2;
+                  if (marker === 0xFFE1) {
+                    if (view.getUint32(offset += 2, false) === 0x45786966) {
+                      const little = view.getUint16(offset += 6, false) === 0x4949;
+                      offset += view.getUint32(offset + 4, little);
+                      const tags = view.getUint16(offset, little);
+                      offset += 2;
+                      for (let i = 0; i < tags; i++) {
+                        if (view.getUint16(offset + i * 12, little) === 0x0112) {
+                          orientation = view.getUint16(offset + i * 12 + 8, little);
+                        }
+                      }
+                    }
+                    break;
+                  } else if ((marker & 0xFF00) !== 0xFF00) break;
+                  else offset += view.getUint16(offset, false);
+                }
+              }
+            } catch {}
+
+            const tmp = document.createElement("canvas");
+            const ctx = tmp.getContext("2d")!;
+            if (orientation > 4) {
+              tmp.width = img.naturalHeight;
+              tmp.height = img.naturalWidth;
+            } else {
+              tmp.width = img.naturalWidth;
+              tmp.height = img.naturalHeight;
+            }
+            switch (orientation) {
+              case 2: ctx.transform(-1, 0, 0, 1, tmp.width, 0); break;
+              case 3: ctx.transform(-1, 0, 0, -1, tmp.width, tmp.height); break;
+              case 4: ctx.transform(1, 0, 0, -1, 0, tmp.height); break;
+              case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+              case 6: ctx.transform(0, 1, -1, 0, tmp.height, 0); break;
+              case 7: ctx.transform(0, -1, -1, 0, tmp.height, tmp.width); break;
+              case 8: ctx.transform(0, -1, 1, 0, 0, tmp.width); break;
+            }
+            ctx.drawImage(img, 0, 0);
+            resolve(tmp.toDataURL("image/jpeg", 0.95));
+          };
+          xhr.onerror = () => resolve(src);
+          xhr.send();
+        };
+        img.src = src;
+      });
     };
-    img.src = src;
-  }, [src, resetToFull]);
+
+    correctOrientation(src).then((correctedSrc) => {
+      const img = new Image();
+      img.onload = () => {
+        imgRef.current = img;
+        const canvas = canvasRef.current!;
+        const maxW = Math.min(window.innerWidth - 8, 500);
+        const maxH = window.innerHeight - 110;
+        const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+        canvas.width  = Math.floor(img.naturalWidth  * scale);
 
   const getCanvasPos = (e: React.TouchEvent | React.MouseEvent): Point => {
     const canvas = canvasRef.current!;
