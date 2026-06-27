@@ -281,6 +281,29 @@ router.patch("/emission-factors/:id", async (c) => {
   return c.json(factor);
 });
 
+// DELETE /api/admin/emission-factors/:id
+router.delete("/emission-factors/:id", async (c) => {
+  const id = c.req.param("id");
+  try {
+    const inUse = await prisma.emissionSource.count({ where: { emissionFactorId: id } });
+    if (inUse > 0) return c.json({ error: "Este factor está asignado a fuentes de empresas. Desactívalo en su lugar." }, 422);
+    await prisma.emissionFactor.delete({ where: { id } });
+    return c.json({ success: true });
+  } catch {
+    return c.json({ error: "Error al eliminar el factor" }, 500);
+  }
+});
+
+// DELETE /api/admin/country-factors/:id
+router.delete("/country-factors/:id", async (c) => {
+  try {
+    await prisma.countryEmissionFactor.delete({ where: { id: c.req.param("id") } });
+    return c.json({ success: true });
+  } catch {
+    return c.json({ error: "Error al eliminar el factor de país" }, 500);
+  }
+});
+
 // GET /api/admin/consumption
 router.get("/consumption", async (c) => {
   const companyId = c.req.query("companyId");
