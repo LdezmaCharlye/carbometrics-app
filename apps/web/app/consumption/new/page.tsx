@@ -115,74 +115,45 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
 
   useEffect(() => {
     confirmedRef.current = false;
-    const img = new Image();
-    img.onload = () => {
-      const applyToCanvas = (source: HTMLImageElement) => {
-        imgRef.current = source;
-        const canvas = canvasRef.current!;
-        const maxW = Math.min(window.innerWidth - 4, 480);
-        const maxH = window.innerHeight - 100;
-        const scale = Math.min(maxW / source.naturalWidth, maxH / source.naturalHeight);
-        canvas.width  = Math.floor(source.naturalWidth  * scale);
-        canvas.height = Math.floor(source.naturalHeight * scale);
-        resetToFull();
-      };
-
-      const xhr = new XMLHttpRequest();
-      xhr.open("GET", src, true);
-      xhr.responseType = "arraybuffer";
-      xhr.onload = () => {
-        let orientation = 1;
-        try {
-          const view = new DataView(xhr.response);
-          if (view.getUint16(0, false) === 0xFFD8) {
-            let offset = 2;
-            while (offset < view.byteLength) {
-              const marker = view.getUint16(offset, false);
-              offset += 2;
-              if (marker === 0xFFE1) {
-                if (view.getUint32(offset + 2, false) === 0x45786966) {
-                  const little = view.getUint16(offset + 8, false) === 0x4949;
-                  const ifd = offset + 8 + view.getUint32(offset + 12, little);
-                  const tags = view.getUint16(ifd, little);
-                  for (let i = 0; i < tags; i++) {
-                    if (view.getUint16(ifd + 2 + i * 12, little) === 0x0112) {
-                      orientation = view.getUint16(ifd + 2 + i * 12 + 8, little);
-                    }
-                  }
-                }
-                break;
-              } else if ((marker & 0xFF00) !== 0xFF00) break;
-              else offset += view.getUint16(offset, false);
-            }
-          }
-        } catch {}
-
-        if (orientation === 1) { applyToCanvas(img); return; }
-
+    const loadImg = async () => {
+      try {
+        // createImageBitmap respeta orientation automáticamente en todos los navegadores modernos
+        const resp = await fetch(src);
+        const blob = await resp.blob();
+        const bitmap = await createImageBitmap(blob, { imageOrientation: "from-image" });
         const tmp = document.createElement("canvas");
-        const ctx = tmp.getContext("2d")!;
-        const w = img.naturalWidth, h = img.naturalHeight;
-        if (orientation > 4) { tmp.width = h; tmp.height = w; }
-        else { tmp.width = w; tmp.height = h; }
-        switch (orientation) {
-          case 2: ctx.transform(-1, 0, 0, 1, tmp.width, 0); break;
-          case 3: ctx.transform(-1, 0, 0, -1, tmp.width, tmp.height); break;
-          case 4: ctx.transform(1, 0, 0, -1, 0, tmp.height); break;
-          case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
-          case 6: ctx.translate(0, tmp.height); ctx.rotate(-Math.PI / 2); break;
-          case 7: ctx.transform(0, -1, -1, 0, tmp.height, tmp.width); break;
-          case 8: ctx.translate(tmp.width, 0); ctx.rotate(Math.PI / 2); break;
-        }
-        ctx.drawImage(img, 0, 0);
-        const rotated = new Image();
-        rotated.onload = () => applyToCanvas(rotated);
-        rotated.src = tmp.toDataURL("image/jpeg", 0.92);
-      };
-      xhr.onerror = () => applyToCanvas(img);
-      xhr.send();
+        tmp.width  = bitmap.width;
+        tmp.height = bitmap.height;
+        tmp.getContext("2d")!.drawImage(bitmap, 0, 0);
+        bitmap.close();
+        const corrected = new Image();
+        corrected.onload = () => {
+          imgRef.current = corrected;
+          const canvas = canvasRef.current!;
+          const maxW = Math.min(window.innerWidth - 4, 480);
+          const maxH = window.innerHeight - 100;
+          const scale = Math.min(maxW / corrected.naturalWidth, maxH / corrected.naturalHeight);
+          canvas.width  = Math.floor(corrected.naturalWidth  * scale);
+          canvas.height = Math.floor(corrected.naturalHeight * scale);
+          resetToFull();
+        };
+        corrected.src = tmp.toDataURL("image/jpeg", 0.92);
+      } catch {
+        const img = new Image();
+        img.onload = () => {
+          imgRef.current = img;
+          const canvas = canvasRef.current!;
+          const maxW = Math.min(window.innerWidth - 4, 480);
+          const maxH = window.innerHeight - 100;
+          const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
+          canvas.width  = Math.floor(img.naturalWidth  * scale);
+          canvas.height = Math.floor(img.naturalHeight * scale);
+          resetToFull();
+        };
+        img.src = src;
+      }
     };
-    img.src = src;
+    loadImg();
   }, [src, resetToFull]);
 
   const getPos = (e: React.TouchEvent | React.MouseEvent): Point => {
