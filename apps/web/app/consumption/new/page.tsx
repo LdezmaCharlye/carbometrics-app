@@ -619,18 +619,11 @@ function InventoryPage() {
   const verifiedCount  = saved.filter((l) => l.isVerified).length;
 
   const UploadButtons = ({ onFile }: { onFile: (file: File) => void }) => (
-    <div className="flex flex-col gap-0.5">
-      <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
-        <Upload className="w-3 h-3" /><span>Galería</span>
-        <input type="file" accept="image/*" className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
-      </label>
-      <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
-        <Upload className="w-3 h-3" /><span>Cámara</span>
-        <input type="file" accept="image/*" capture="environment" className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
-      </label>
-    </div>
+    <label className="cursor-pointer text-gray-400 hover:text-green-600 transition flex items-center justify-center">
+      <Upload className="w-4 h-4" />
+      <input type="file" accept="image/*" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+    </label>
   );
 
   return (
@@ -850,7 +843,7 @@ function InventoryPage() {
                           </td>
                           <td className="px-3 py-2">
                             {log.evidenceImages.length > 0 ? (
-                              <div className="relative inline-block">
+                              <div className="flex flex-col items-center gap-1">
                                 <img src={log.evidenceImages[0].url} alt="evidencia"
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                                   onClick={() => setZoomImage(log.evidenceImages[0].url)}
@@ -862,7 +855,9 @@ function InventoryPage() {
                                     method: "DELETE", headers: { Authorization: `Bearer ${token}` },
                                   });
                                   if (res.ok) setSaved((prev) => prev.map((l) => l.id === log.id ? { ...l, evidenceImages: [] } : l));
-                                }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs items-center justify-center flex shadow-md">✕</button>
+                                }} className="bg-red-500 text-white rounded-md px-1.5 py-0.5 text-xs flex items-center gap-0.5">
+                                  <Trash2 className="w-2.5 h-2.5" />
+                                </button>
                               </div>
                             ) : !log.isVerified ? (
                               <UploadButtons onFile={(file) => openCropper(file, log.id)} />
