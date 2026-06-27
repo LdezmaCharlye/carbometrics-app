@@ -218,16 +218,34 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     if (!canvas || !img) return;
     const sx = img.naturalWidth  / canvas.width;
     const sy = img.naturalHeight / canvas.height;
-    const pts = cornersRef.current.map(p => ({ x: p.x * sx, y: p.y * sy }));
-    const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
-    const minX = Math.max(0, Math.min(...xs));
-    const minY = Math.max(0, Math.min(...ys));
-    const maxX = Math.min(img.naturalWidth,  Math.max(...xs));
-    const maxY = Math.min(img.naturalHeight, Math.max(...ys));
+    const [tl, tr, br, bl] = cornersRef.current.map(p => ({ x: p.x * sx, y: p.y * sy }));
+    const W = Math.round(Math.max(Math.hypot(tr.x-tl.x, tr.y-tl.y), Math.hypot(br.x-bl.x, br.y-bl.y)));
+    const H = Math.round(Math.max(Math.hypot(bl.x-tl.x, bl.y-tl.y), Math.hypot(br.x-tr.x, br.y-tr.y)));
     const out = document.createElement("canvas");
-    out.width  = maxX - minX;
-    out.height = maxY - minY;
-    out.getContext("2d")!.drawImage(img, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
+    out.width = W; out.height = H;
+    const ctx = out.getContext("2d")!;
+    for (let row = 0; row < H; row++) {
+      const t = row / H;
+      const lx = tl.x + (bl.x - tl.x) * t;
+      const ly = tl.y + (bl.y - tl.y) * t;
+      const rx = tr.x + (br.x - tr.x) * t;
+      const ry = tr.y + (br.y - tr.y) * t;
+      const rowW = Math.hypot(rx - lx, ry - ly);
+      if (rowW < 0.5) continue;
+      const angle = Math.atan2(ry - ly, rx - lx);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, row, W, 1); ctx.clip();
+      ctx.setTransform(
+        Math.cos(angle) * (W / rowW),
+        Math.sin(angle) * (W / rowW),
+        -Math.sin(angle),
+        Math.cos(angle),
+        -lx * Math.cos(angle) * (W / rowW) - ly * Math.sin(angle) * (W / rowW),
+        row + lx * Math.sin(angle) - ly * Math.cos(angle)
+      );
+      ctx.drawImage(img, 0, 0);
+      ctx.restore();
+    }
     out.toBlob((blob) => { if (blob) onConfirm(blob); }, "image/jpeg", 0.85);
   };
 
