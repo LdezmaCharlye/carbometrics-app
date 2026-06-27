@@ -1074,6 +1074,17 @@ const fetchCompanyBranches = async (companyId: string) => {
                                 ? <ToggleRight className="w-5 h-5 text-green-500" />
                                 : <ToggleLeft  className="w-5 h-5 text-gray-300" />}
                             </button>
+                            <button onClick={async () => {
+                              if (!confirm(`¿Eliminar el factor "${f.name}"? Esta acción no se puede deshacer.`)) return;
+                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/emission-factors/${f.id}`, {
+                                method: "DELETE",
+                                headers: { Authorization: `Bearer ${token}` },
+                              });
+                              if (res.ok) { setFactors((prev) => prev.filter((x) => x.id !== f.id)); showToast("Factor eliminado"); }
+                              else showToast("Error al eliminar factor", false);
+                            }} className="text-gray-400 hover:text-red-500 transition">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -1107,13 +1118,26 @@ const fetchCompanyBranches = async (companyId: string) => {
                         <td className="px-4 py-3.5 text-xs text-gray-500">{cf.source}</td>
                         <td className="px-4 py-3.5 text-center text-xs text-gray-500">{cf.year}</td>
                         <td className="px-4 py-3.5 text-center">
-                          <button onClick={() => {
-                            setEditCountryFactor(cf);
-                            setCfForm({ kgCO2perKwh: String(cf.kgCO2perKwh), source: cf.source, year: String(cf.year) });
-                            setShowCountryFactorModal(true);
-                          }} className="text-gray-400 hover:text-green-600 transition">
-                            <Pencil className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center justify-center gap-2">
+                            <button onClick={() => {
+                              setEditCountryFactor(cf);
+                              setCfForm({ kgCO2perKwh: String(cf.kgCO2perKwh), source: cf.source, year: String(cf.year) });
+                              setShowCountryFactorModal(true);
+                            }} className="text-gray-400 hover:text-green-600 transition">
+                              <Pencil className="w-4 h-4" />
+                            </button>
+                            <button onClick={async () => {
+                              if (!confirm(`¿Eliminar el factor de ${cf.countryName}?`)) return;
+                              const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/country-factors/${cf.id}`, {
+                                method: "DELETE",
+                                headers: { Authorization: `Bearer ${token}` },
+                              });
+                              if (res.ok) { setCountryFactors((prev) => prev.filter((x) => x.id !== cf.id)); showToast("Factor eliminado"); }
+                              else showToast("Error al eliminar", false);
+                            }} className="text-gray-400 hover:text-red-500 transition">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
