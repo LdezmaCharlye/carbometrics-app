@@ -624,30 +624,20 @@ function InventoryPage() {
   const totalEmissions = saved.reduce((a, l) => a + l.emissionsKgCO2eq, 0) / 1000;
   const verifiedCount  = saved.filter((l) => l.isVerified).length;
 
-  const UploadButtons = ({ onFile }: { onFile: (file: File) => void }) => {
-    const isMobile = typeof window !== "undefined" && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (!isMobile) return (
-      <label className="cursor-pointer text-gray-400 hover:text-green-600 transition flex items-center justify-center">
-        <Upload className="w-4 h-4" />
+  const UploadButtons = ({ onFile }: { onFile: (file: File) => void }) => (
+    <div className="flex items-center gap-2">
+      <label className="cursor-pointer text-gray-400 hover:text-green-600 text-base transition" title="Cámara">
+        📷
+        <input type="file" accept="image/*" capture="environment" className="hidden"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+      </label>
+      <label className="cursor-pointer text-gray-400 hover:text-green-600 text-base transition" title="Galería">
+        🖼
         <input type="file" accept="image/*" className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
       </label>
-    );
-    return (
-      <div className="flex items-center gap-2">
-        <label className="cursor-pointer text-gray-400 hover:text-green-600 text-base transition">
-          📷
-          <input type="file" accept="image/*" capture="environment" className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
-        </label>
-        <label className="cursor-pointer text-gray-400 hover:text-green-600 text-base transition">
-          🖼
-          <input type="file" accept="image/*" className="hidden"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
-        </label>
-      </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
