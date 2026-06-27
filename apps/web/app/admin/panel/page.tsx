@@ -588,6 +588,7 @@ const fetchCompanyBranches = async (companyId: string) => {
                           </button>
                           <button onClick={(e) => {
                             e.stopPropagation();
+                            const company = selCompanySources;
                             setEditSource(s);
                             setSfForm({
                               uncertaintyLevel:  s.uncertaintyLevel,
@@ -597,6 +598,9 @@ const fetchCompanyBranches = async (companyId: string) => {
                               emissionFactorId:  s.emissionFactorId ?? "",
                             });
                             setShowSourceModal(true);
+                            // Asegurar que selCompanySources no se pierda
+                            if (!company) return;
+                            setSelCompanySources(company);
                           }} className="text-gray-400 hover:text-green-600 transition">
                             <Pencil className="w-4 h-4" />
                           </button>
@@ -815,7 +819,7 @@ const fetchCompanyBranches = async (companyId: string) => {
 
         {/* Modal editar fuente */}
         {showSourceModal && editSource && (
-          <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/50 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[90] overflow-y-auto bg-black/50 backdrop-blur-sm p-4">
             <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-auto my-8">
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-bold text-gray-900">Editar — {editSource.name}</h3>
