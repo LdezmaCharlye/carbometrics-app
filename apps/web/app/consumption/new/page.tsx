@@ -625,7 +625,6 @@ function InventoryPage() {
   const verifiedCount  = saved.filter((l) => l.isVerified).length;
 
   const UploadButtons = ({ onFile }: { onFile: (file: File) => void }) => {
-    const [showOptions, setShowOptions] = useState(false);
     const isMobile = typeof window !== "undefined" && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (!isMobile) return (
       <label className="cursor-pointer text-gray-400 hover:text-green-600 transition flex items-center justify-center">
@@ -635,25 +634,17 @@ function InventoryPage() {
       </label>
     );
     return (
-      <div className="relative">
-        <button onClick={(e) => { e.stopPropagation(); setShowOptions(!showOptions); }}
-          className="text-gray-400 hover:text-green-600 transition flex items-center justify-center">
-          <Upload className="w-4 h-4" />
-        </button>
-        {showOptions && (
-          <div className="absolute left-0 top-6 z-50 bg-white border border-gray-200 rounded-xl shadow-lg py-1 min-w-36">
-            <label className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 cursor-pointer">
-              📷 Cámara
-              <input type="file" accept="image/*" capture="environment" className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) { onFile(f); setShowOptions(false); } }} />
-            </label>
-            <label className="flex items-center gap-2 px-3 py-2 text-xs text-gray-700 hover:bg-gray-50 cursor-pointer">
-              🖼 Galería / Archivo
-              <input type="file" accept="image/*" className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) { onFile(f); setShowOptions(false); } }} />
-            </label>
-          </div>
-        )}
+      <div className="flex flex-col gap-1">
+        <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
+          📷
+          <input type="file" accept="image/*" capture="environment" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+        </label>
+        <label className="flex items-center gap-1 cursor-pointer text-gray-400 hover:text-green-600 text-xs transition">
+          🖼
+          <input type="file" accept="image/*" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
+        </label>
       </div>
     );
   };
