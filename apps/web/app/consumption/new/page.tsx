@@ -36,22 +36,8 @@ function newDraft(): DraftRow {
   return { id: crypto.randomUUID(), invoiceNumber: "", plateNumber: "", quantity: "", dataQuality: "DIGITAL_INVOICE", saving: false, imageFile: null };
 }
 
-// ─── Recortador con corrección de perspectiva ─────────────────────────────────
+// ─── Recortador ──────────────────────────────────────────────────────────────
 interface Point { x: number; y: number; }
-
-function cropRect(img: HTMLImageElement, pts: Point[]): HTMLCanvasElement {
-  const xs = pts.map(p => p.x);
-  const ys = pts.map(p => p.y);
-  const minX = Math.max(0, Math.min(...xs));
-  const minY = Math.max(0, Math.min(...ys));
-  const maxX = Math.min(img.naturalWidth,  Math.max(...xs));
-  const maxY = Math.min(img.naturalHeight, Math.max(...ys));
-  const out = document.createElement("canvas");
-  out.width  = maxX - minX;
-  out.height = maxY - minY;
-  out.getContext("2d")!.drawImage(img, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
-  return out;
-}
 
 function ImageCropper({ src, onConfirm, onCancel, loading }: {
   src: string;
@@ -59,32 +45,30 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
   onCancel: () => void;
   loading: boolean;
 }) {
-  const canvasRef   = useRef<HTMLCanvasElement>(null);
-  const imgRef      = useRef<HTMLImageElement | null>(null);
-  const cornersRef  = useRef<Point[]>([]);
-  const draggingIdx = useRef<number | null>(null);
-  const HANDLE = 22;
+  const canvasRef    = useRef<HTMLCanvasElement>(null);
+  const imgRef       = useRef<HTMLImageElement | null>(null);
+  const cornersRef   = useRef<Point[]>([]);
+  const dragIdx      = useRef<number | null>(null);
+  const confirmedRef = useRef(false);
+  const HANDLE = 26;
 
-  const getMidpoints = (corners: Point[]): Point[] => {
-    const [tl, tr, br, bl] = corners;
-    return [
-      { x: (tl.x + tr.x) / 2, y: (tl.y + tr.y) / 2 },
-      { x: (tr.x + br.x) / 2, y: (tr.y + br.y) / 2 },
-      { x: (br.x + bl.x) / 2, y: (br.y + bl.y) / 2 },
-      { x: (bl.x + tl.x) / 2, y: (bl.y + tl.y) / 2 },
-    ];
-  };
+  const getMids = (c: Point[]) => [
+    { x: (c[0].x + c[1].x) / 2, y: (c[0].y + c[1].y) / 2 },
+    { x: (c[1].x + c[2].x) / 2, y: (c[1].y + c[2].y) / 2 },
+    { x: (c[2].x + c[3].x) / 2, y: (c[2].y + c[3].y) / 2 },
+    { x: (c[3].x + c[0].x) / 2, y: (c[3].y + c[0].y) / 2 },
+  ];
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     const img = imgRef.current;
     if (!canvas || !img || cornersRef.current.length < 4) return;
     const ctx = canvas.getContext("2d")!;
+    const [tl, tr, br, bl] = cornersRef.current;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const [tl, tr, br, bl] = cornersRef.current;
     ctx.save();
-    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillStyle = "rgba(0,0,0,0.6)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.globalCompositeOperation = "destination-out";
     ctx.beginPath();
@@ -99,7 +83,7 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     ctx.closePath(); ctx.clip();
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     ctx.restore();
-    ctx.strokeStyle = "#00e676"; ctx.lineWidth = 2.5;
+    ctx.strokeStyle = "#00e676"; ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(tl.x, tl.y); ctx.lineTo(tr.x, tr.y);
     ctx.lineTo(br.x, br.y); ctx.lineTo(bl.x, bl.y);
@@ -107,11 +91,11 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     cornersRef.current.forEach((p) => {
       ctx.beginPath(); ctx.arc(p.x, p.y, HANDLE / 2, 0, Math.PI * 2);
       ctx.fillStyle = "#00e676"; ctx.fill();
-      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
     });
-    getMidpoints(cornersRef.current).forEach((p) => {
-      ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0,230,118,0.75)"; ctx.fill();
+    getMids(cornersRef.current).forEach((p) => {
+      ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,230,118,0.8)"; ctx.fill();
       ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.5; ctx.stroke();
     });
   }, []);
@@ -119,107 +103,113 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
   const resetToFull = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const pad = 4;
+    const p = 6;
     cornersRef.current = [
-      { x: pad,                y: pad },
-      { x: canvas.width - pad, y: pad },
-      { x: canvas.width - pad, y: canvas.height - pad },
-      { x: pad,                y: canvas.height - pad },
+      { x: p, y: p },
+      { x: canvas.width - p, y: p },
+      { x: canvas.width - p, y: canvas.height - p },
+      { x: p, y: canvas.height - p },
     ];
     draw();
   }, [draw]);
 
   useEffect(() => {
-    const loadImage = async () => {
-      try {
-        const exifr = await import("exifr");
-        const orientation = await exifr.parse(src, ["Orientation"])
-          .then((d: any) => d?.Orientation ?? 1)
-          .catch(() => 1);
+    confirmedRef.current = false;
+    const img = new Image();
+    img.onload = () => {
+      const applyToCanvas = (source: HTMLImageElement) => {
+        imgRef.current = source;
+        const canvas = canvasRef.current!;
+        const maxW = Math.min(window.innerWidth - 4, 480);
+        const maxH = window.innerHeight - 100;
+        const scale = Math.min(maxW / source.naturalWidth, maxH / source.naturalHeight);
+        canvas.width  = Math.floor(source.naturalWidth  * scale);
+        canvas.height = Math.floor(source.naturalHeight * scale);
+        resetToFull();
+      };
 
-        const img = new Image();
-        img.onload = () => {
-          const tmp = document.createElement("canvas");
-          const ctx = tmp.getContext("2d")!;
-          const w = img.naturalWidth;
-          const h = img.naturalHeight;
-          if (orientation > 4) { tmp.width = h; tmp.height = w; }
-          else { tmp.width = w; tmp.height = h; }
-          switch (orientation) {
-            case 2: ctx.transform(-1, 0, 0, 1, tmp.width, 0); break;
-            case 3: ctx.transform(-1, 0, 0, -1, tmp.width, tmp.height); break;
-            case 4: ctx.transform(1, 0, 0, -1, 0, tmp.height); break;
-            case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
-            case 6: ctx.transform(0, 1, -1, 0, tmp.height, 0); break;
-            case 7: ctx.transform(0, -1, -1, 0, tmp.height, tmp.width); break;
-            case 8: ctx.transform(0, -1, 1, 0, 0, tmp.width); break;
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", src, true);
+      xhr.responseType = "arraybuffer";
+      xhr.onload = () => {
+        let orientation = 1;
+        try {
+          const view = new DataView(xhr.response);
+          if (view.getUint16(0, false) === 0xFFD8) {
+            let offset = 2;
+            while (offset < view.byteLength) {
+              const marker = view.getUint16(offset, false);
+              offset += 2;
+              if (marker === 0xFFE1) {
+                if (view.getUint32(offset + 2, false) === 0x45786966) {
+                  const little = view.getUint16(offset + 8, false) === 0x4949;
+                  const ifd = offset + 8 + view.getUint32(offset + 12, little);
+                  const tags = view.getUint16(ifd, little);
+                  for (let i = 0; i < tags; i++) {
+                    if (view.getUint16(ifd + 2 + i * 12, little) === 0x0112) {
+                      orientation = view.getUint16(ifd + 2 + i * 12 + 8, little);
+                    }
+                  }
+                }
+                break;
+              } else if ((marker & 0xFF00) !== 0xFF00) break;
+              else offset += view.getUint16(offset, false);
+            }
           }
-          ctx.drawImage(img, 0, 0);
-          const correctedSrc = tmp.toDataURL("image/jpeg", 0.95);
-          const corrected = new Image();
-          corrected.onload = () => {
-            imgRef.current = corrected;
-            const canvas = canvasRef.current!;
-            const maxW = Math.min(window.innerWidth - 8, 500);
-            const maxH = window.innerHeight - 110;
-            const scale = Math.min(maxW / corrected.naturalWidth, maxH / corrected.naturalHeight);
-            canvas.width  = Math.floor(corrected.naturalWidth  * scale);
-            canvas.height = Math.floor(corrected.naturalHeight * scale);
-            resetToFull();
-          };
-          corrected.src = correctedSrc;
-        };
-        img.src = src;
-      } catch {
-        const img = new Image();
-        img.onload = () => {
-          imgRef.current = img;
-          const canvas = canvasRef.current!;
-          const maxW = Math.min(window.innerWidth - 8, 500);
-          const maxH = window.innerHeight - 110;
-          const scale = Math.min(maxW / img.naturalWidth, maxH / img.naturalHeight);
-          canvas.width  = Math.floor(img.naturalWidth  * scale);
-          canvas.height = Math.floor(img.naturalHeight * scale);
-          resetToFull();
-        };
-        img.src = src;
-      }
+        } catch {}
+
+        if (orientation === 1) { applyToCanvas(img); return; }
+
+        const tmp = document.createElement("canvas");
+        const ctx = tmp.getContext("2d")!;
+        const w = img.naturalWidth, h = img.naturalHeight;
+        if (orientation > 4) { tmp.width = h; tmp.height = w; }
+        else { tmp.width = w; tmp.height = h; }
+        switch (orientation) {
+          case 3: ctx.transform(-1, 0, 0, -1, tmp.width, tmp.height); break;
+          case 6: ctx.transform(0, 1, -1, 0, tmp.height, 0); break;
+          case 8: ctx.transform(0, -1, 1, 0, 0, tmp.width); break;
+        }
+        ctx.drawImage(img, 0, 0);
+        const rotated = new Image();
+        rotated.onload = () => applyToCanvas(rotated);
+        rotated.src = tmp.toDataURL("image/jpeg", 0.92);
+      };
+      xhr.onerror = () => applyToCanvas(img);
+      xhr.send();
     };
-    loadImage();
+    img.src = src;
   }, [src, resetToFull]);
 
-  const getCanvasPos = (e: React.TouchEvent | React.MouseEvent): Point => {
+  const getPos = (e: React.TouchEvent | React.MouseEvent): Point => {
     const canvas = canvasRef.current!;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width  / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const touch = "touches" in e ? e.touches[0] : e;
-    return {
-      x: (touch.clientX - rect.left) * scaleX,
-      y: (touch.clientY - rect.top)  * scaleY,
-    };
+    const sx = canvas.width / rect.width;
+    const sy = canvas.height / rect.height;
+    const t = "touches" in e ? e.touches[0] : e;
+    return { x: (t.clientX - rect.left) * sx, y: (t.clientY - rect.top) * sy };
   };
 
   const onStart = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
-    const p = getCanvasPos(e);
-    const allPoints = [...cornersRef.current, ...getMidpoints(cornersRef.current)];
-    let minDist = 70; let idx: number | null = null;
-    allPoints.forEach((c, i) => {
+    const p = getPos(e);
+    const all = [...cornersRef.current, ...getMids(cornersRef.current)];
+    let minD = 80; let idx: number | null = null;
+    all.forEach((c, i) => {
       const d = Math.hypot(p.x - c.x, p.y - c.y);
-      if (d < minDist) { minDist = d; idx = i; }
+      if (d < minD) { minD = d; idx = i; }
     });
-    draggingIdx.current = idx;
+    dragIdx.current = idx;
   };
 
   const onMove = (e: React.TouchEvent | React.MouseEvent) => {
     e.preventDefault();
-    if (draggingIdx.current === null) return;
+    if (dragIdx.current === null) return;
     const canvas = canvasRef.current!;
-    const p = getCanvasPos(e);
-    const px = Math.max(0, Math.min(canvas.width,  p.x));
+    const p = getPos(e);
+    const px = Math.max(0, Math.min(canvas.width, p.x));
     const py = Math.max(0, Math.min(canvas.height, p.y));
-    const idx = draggingIdx.current;
+    const idx = dragIdx.current;
     const [tl, tr, br, bl] = cornersRef.current;
     if (idx < 4) {
       cornersRef.current[idx] = { x: px, y: py };
@@ -243,36 +233,46 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     draw();
   };
 
-  const onEnd = () => { draggingIdx.current = null; };
+  const onEnd = () => { dragIdx.current = null; };
 
   const confirm = () => {
+    if (confirmedRef.current) return;
+    confirmedRef.current = true;
     const canvas = canvasRef.current;
     const img = imgRef.current;
     if (!canvas || !img) return;
-    const scaleX = img.naturalWidth  / canvas.width;
-    const scaleY = img.naturalHeight / canvas.height;
-    const srcPts = cornersRef.current.map(p => ({ x: p.x * scaleX, y: p.y * scaleY }));
-    const out = cropRect(img, srcPts);
-    out.toBlob((blob) => { if (blob) onConfirm(blob); }, "image/jpeg", 0.92);
+    const sx = img.naturalWidth  / canvas.width;
+    const sy = img.naturalHeight / canvas.height;
+    const pts = cornersRef.current.map(p => ({ x: p.x * sx, y: p.y * sy }));
+    const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+    const minX = Math.max(0, Math.min(...xs));
+    const minY = Math.max(0, Math.min(...ys));
+    const maxX = Math.min(img.naturalWidth,  Math.max(...xs));
+    const maxY = Math.min(img.naturalHeight, Math.max(...ys));
+    const out = document.createElement("canvas");
+    out.width  = maxX - minX;
+    out.height = maxY - minY;
+    out.getContext("2d")!.drawImage(img, minX, minY, out.width, out.height, 0, 0, out.width, out.height);
+    out.toBlob((blob) => { if (blob) onConfirm(blob); }, "image/jpeg", 0.85);
   };
 
   return (
     <div className="fixed inset-0 z-[999998] bg-black flex flex-col">
       <div className="flex items-center justify-between px-3 py-2.5 bg-black/90 flex-shrink-0 gap-2">
         <button onClick={onCancel}
-          className="text-white text-xs px-3 py-2 rounded-lg border border-white/30 hover:bg-white/10 transition">
+          className="text-white text-xs px-3 py-2 rounded-lg border border-white/30 active:bg-white/20 transition">
           Cancelar
         </button>
         <button onClick={resetToFull}
-          className="text-white/80 text-xs px-3 py-2 rounded-lg border border-white/20 hover:bg-white/10 transition">
+          className="text-white/70 text-xs px-3 py-2 rounded-lg border border-white/20 active:bg-white/20 transition">
           ⛶ Completa
         </button>
         <button onClick={confirm} disabled={loading}
-          className="bg-green-500 hover:bg-green-400 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 transition">
+          className="bg-green-500 active:bg-green-400 disabled:opacity-50 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 transition">
           {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "✓ Guardar"}
         </button>
       </div>
-      <p className="text-center text-white/40 text-xs py-1">Arrastra las esquinas para ajustar</p>
+      <p className="text-center text-white/40 text-xs py-1">Arrastra las esquinas verdes para ajustar</p>
       <div className="flex-1 flex items-center justify-center bg-black overflow-hidden">
         <canvas
           ref={canvasRef}
