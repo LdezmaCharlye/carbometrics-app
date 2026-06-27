@@ -221,8 +221,13 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
     const sy = img.naturalHeight / canvas.height;
     const [tl, tr, br, bl] = cornersRef.current.map(p => ({ x: p.x * sx, y: p.y * sy }));
 
-    const W = Math.round(Math.max(Math.hypot(tr.x-tl.x, tr.y-tl.y), Math.hypot(br.x-bl.x, br.y-bl.y)));
-    const H = Math.round(Math.max(Math.hypot(bl.x-tl.x, bl.y-tl.y), Math.hypot(br.x-tr.x, br.y-tr.y)));
+    const wTop    = Math.hypot(tr.x-tl.x, tr.y-tl.y);
+    const wBottom = Math.hypot(br.x-bl.x, br.y-bl.y);
+    const hLeft   = Math.hypot(bl.x-tl.x, bl.y-tl.y);
+    const hRight  = Math.hypot(br.x-tr.x, br.y-tr.y);
+    // Usar el lado más largo + 8% de margen para no cortar contenido en perspectiva pronunciada
+    const W = Math.round(Math.max(wTop, wBottom) * 1.08);
+    const H = Math.round(Math.max(hLeft, hRight) * 1.08);
 
     // ── Homografía inversa (igual que Top Scanner) ──────────────────────────
     // Calcula la matriz H que mapea el rectángulo destino [0,W]x[0,H]
