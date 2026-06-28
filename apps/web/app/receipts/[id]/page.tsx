@@ -6,7 +6,7 @@ const PLAN_LABELS: Record<string,string> = {
   BASIC:"Plan Básico", STANDARD:"Plan Standard", ENTERPRISE:"Plan Corporativo",
 };
 const METHOD_LABELS: Record<string,string> = {
-  TRANSFER:"Transferencia bancaria", QR_BOLIVIA:"QR Bolivia (BCB)",
+  TRANSFER:"Transferencia bancaria", QR_BOLIVIA:"QR Bolivia (Banco FIE)",
   STRIPE:"Stripe (tarjeta)", CASH:"Efectivo",
 };
 const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio",
