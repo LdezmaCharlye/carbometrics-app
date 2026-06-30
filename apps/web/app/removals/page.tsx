@@ -156,7 +156,7 @@ export default function RemovalsPage() {
             </div>
             <div className="bg-gray-800 rounded-2xl p-5">
               <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Total removido/año</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{totalRemovals.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-white mt-2">{totalRemovals.toFixed(2)}</p>
               <p className="text-xs text-gray-400 mt-1">tCO₂eq removidas por año</p>
             </div>
           </div>
