@@ -775,23 +775,29 @@ function InventoryPage() {
                 ))}
               </select>
             </div>
-            {branches.length > 0 && (
+            {branches.length > 0 ? (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Instalación (opcional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Instalación *</label>
                 <select value={selectedBranchId}
                   onChange={(e) => { setSelectedBranchId(e.target.value); updateURL({ branchId: e.target.value }); }}
                   className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                  <option value="">— Toda la empresa —</option>
+                  <option value="">— Seleccionar instalación —</option>
                   {branches.map((b) => (
                     <option key={b.id} value={b.id}>{b.name}</option>
                   ))}
                 </select>
-                {!selectedBranchId && branches.length > 0 && (
-                  <div className="mt-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5.5 text-xs text-amber-700">
-                    <span className="text-base leading-none mt-0.5">⚠️</span>
-                    <span>Tenés <strong>{branches.length} instalación(es)</strong> creadas. Si ya registraste consumo por instalación, evitá usar "Toda la empresa" para no duplicar datos. Seleccioná una instalación específica para mayor precisión.</span>
-                  </div>
-                )}
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3.5">
+                <span className="text-base leading-none mt-0.5">⚠️</span>
+                <div>
+                  <p className="text-sm font-semibold text-amber-700">Necesitas crear una instalación primero</p>
+                  <p className="text-xs text-amber-600 mt-1">Para registrar consumo, tu empresa debe tener al menos una instalación creada.</p>
+                  <button onClick={() => router.push("/instalaciones")}
+                    className="mt-2.5 text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg transition">
+                    Crear instalación →
+                  </button>
+                </div>
               </div>
             )}
             <div>
@@ -800,6 +806,7 @@ function InventoryPage() {
                 {MONTHS.map((m, i) => (
                   <button key={i} onClick={() => {
                     if (!selectedSource) { alert("Selecciona una fuente primero"); return; }
+                    if (branches.length > 0 && !selectedBranchId) { alert("Selecciona una instalación primero"); return; }
                     setSelectedMonth(i + 1); setDrafts([newDraft()]); setSaved([]);
                     setStep("table"); updateURL({ step: "table", month: String(i + 1) });
                   }} className="py-3 px-2 rounded-lg border border-gray-200 bg-white hover:border-green-400 hover:bg-green-50 hover:shadow-sm text-sm font-medium text-gray-700 transition">
