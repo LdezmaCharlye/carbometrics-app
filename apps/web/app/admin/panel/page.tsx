@@ -25,7 +25,7 @@ const LICENSE_COLORS: Record<string, string> = {
 };
 const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
-type Tab = "companies" | "licenses" | "users" | "factors" | "consumption" | "tyc" | "sales";
+type Tab = "companies" | "licenses" | "installations" | "users" | "factors" | "consumption" | "tyc" | "sales";
 
 interface Company {
   id: string; name: string; taxId: string; industry: string; country: string;
@@ -79,6 +79,9 @@ export default function AdminPanelPage() {
   });
   const [selCompany, setSelCompany] = useState("");
   const [selYear,    setSelYear]    = useState(new Date().getFullYear());
+  const [instCompanyId, setInstCompanyId] = useState("");
+  const [instBranches,  setInstBranches]  = useState<any[]>([]);
+  const [instLoading,   setInstLoading]   = useState(false);
   const [loading,    setLoading]    = useState(false);
   const [toast,      setToast]      = useState<{ msg: string; ok: boolean } | null>(null);
 
@@ -145,6 +148,24 @@ const fetchCompanyBranches = async (companyId: string) => {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.ok) setCompanyBranches(await res.json());
+};
+
+useEffect(() => {
+  if (!token || tab !== "installations" || !instCompanyId) { setInstBranches([]); return; }
+  setInstLoading(true);
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${instCompanyId}/branches`, {
+    headers: { Authorization: `Bearer ${token}` },
+  }).then((r) => r.json()).then((d) => setInstBranches(Array.isArray(d) ? d : [])).catch(() => setInstBranches([])).finally(() => setInstLoading(false));
+}, [tab, instCompanyId, token]);
+
+const toggleInstallation = async (branchId: string, isActive: boolean) => {
+  await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/companies/${instCompanyId}/branches/${branchId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ isActive: !isActive }),
+  }).catch(() => {});
+  setInstBranches((prev) => prev.map((b) => b.id === branchId ? { ...b, isActive: !isActive } : b));
+  showToast(!isActive ? "Instalación activada" : "Instalación desactivada");
 };
 
   const fetchCountryFactors = async () => {
@@ -338,9 +359,10 @@ const fetchCompanyBranches = async (companyId: string) => {
   };
 
   const tabs = [
-    { key: "companies", label: "Empresas",            icon: Building2   },
-    { key: "licenses",  label: "Licencias",           icon: BadgeCheck  },
-    { key: "users",     label: "Usuarios",            icon: Users       },
+    { key: "companies",      label: "Empresas",            icon: Building2   },
+    { key: "licenses",       label: "Licencias",           icon: BadgeCheck  },
+    { key: "installations",  label: "Instalaciones",       icon: Building2   },
+    { key: "users",          label: "Usuarios",            icon: Users       },
     { key: "factors",   label: "Factores de emisión", icon: FlaskConical},
     { key: "consumption",label:"Registros de consumo",icon: FileText    },
     { key: "tyc",        label:"Registro TyC",        icon: BadgeCheck  },
@@ -964,6 +986,68 @@ const fetchCompanyBranches = async (companyId: string) => {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ── INSTALACIONES ────────────────────────────────────────────── */}
+        {tab === "installations" && (
+          <div className="space-y-4">
+            <div className="relative w-72">
+              <select value={instCompanyId} onChange={(e) => setInstCompanyId(e.target.value)}
+                className="appearance-none w-full pl-3 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer">
+                <option value="">— Selecciona una empresa —</option>
+                {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
+
+            {!instCompanyId ? (
+              <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center text-gray-400 text-sm">
+                Selecciona una empresa para ver y administrar sus instalaciones.
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                <div className="px-5 py-3 border-b border-gray-100 text-xs text-gray-400">
+                  {instBranches.length} instalación(es) · Las instalaciones desactivadas no son visibles para el usuario en su panel.
+                </div>
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 border-b border-gray-100">
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Instalación</th>
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Dirección</th>
+                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
+                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Activar/Desactivar</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {instLoading ? (
+                      <tr><td colSpan={4} className="px-5 py-10 text-center text-gray-400 text-sm">Cargando...</td></tr>
+                    ) : instBranches.length === 0 ? (
+                      <tr><td colSpan={4} className="px-5 py-10 text-center text-gray-400 text-sm">Esta empresa no tiene instalaciones registradas</td></tr>
+                    ) : instBranches.map((b) => (
+                      <tr key={b.id} className={`hover:bg-gray-50 transition ${!b.isActive ? "opacity-50" : ""}`}>
+                        <td className="px-5 py-3.5 font-medium text-gray-800">{b.name}</td>
+                        <td className="px-4 py-3.5 text-xs text-gray-500">
+                          {[b.address, b.city, b.country].filter(Boolean).join(", ") || "Sin dirección"}
+                        </td>
+                        <td className="px-4 py-3.5 text-center">
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${b.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                            {b.isActive ? "Activa" : "Desactivada"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5 text-center">
+                          <button onClick={() => toggleInstallation(b.id, b.isActive)}>
+                            {b.isActive
+                              ? <ToggleRight className="w-6 h-6 text-green-500 mx-auto" />
+                              : <ToggleLeft  className="w-6 h-6 text-gray-300 mx-auto" />}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
