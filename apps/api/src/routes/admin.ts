@@ -472,6 +472,24 @@ router.post("/companies/:id/branches", async (c) => {
   return c.json(branch, 201);
 });
 
+// PATCH /api/admin/companies/:companyId/branches/:branchId — activar/desactivar (control de plan)
+router.patch("/companies/:companyId/branches/:branchId", async (c) => {
+  const { companyId, branchId } = c.req.param();
+  const body = await c.req.json().catch(() => null);
+  const schema = z.object({ isActive: z.boolean() });
+  const parsed = schema.safeParse(body);
+  if (!parsed.success) return c.json({ error: "Datos inválidos" }, 400);
+
+  const existing = await prisma.branch.findFirst({ where: { id: branchId, companyId } });
+  if (!existing) return c.json({ error: "Instalación no encontrada" }, 404);
+
+  const branch = await prisma.branch.update({
+    where: { id: branchId },
+    data:  { isActive: parsed.data.isActive },
+  });
+  return c.json(branch);
+});
+
 // GET /api/admin/terms-logs
 router.get("/terms-logs", async (c) => {
   const companyId = c.req.query("companyId");
