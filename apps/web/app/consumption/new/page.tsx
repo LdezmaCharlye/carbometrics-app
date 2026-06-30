@@ -332,13 +332,13 @@ function ImageCropper({ src, onConfirm, onCancel, loading }: {
 
   return (
     <div className="fixed inset-0 z-[999998] bg-black flex flex-col">
-      <div className="flex items-center justify-between px-3 py-2.5 bg-black/90 flex-shrink-0 gap-2">
+      <div className="flex items-center justify-between px-3 py-2.5.5 bg-black/90 flex-shrink-0 gap-2">
         <button onClick={onCancel}
-          className="text-white text-xs px-3 py-2 rounded-lg border border-white/30 active:bg-white/20 transition">
+          className="text-white text-xs px-3 py-2.5 rounded-lg border border-white/30 active:bg-white/20 transition">
           Cancelar
         </button>
         <button onClick={resetToFull}
-          className="text-white/70 text-xs px-3 py-2 rounded-lg border border-white/20 active:bg-white/20 transition">
+          className="text-white/70 text-xs px-3 py-2.5 rounded-lg border border-white/20 active:bg-white/20 transition">
           ⛶ Completa
         </button>
         <button onClick={confirm} disabled={loading}
@@ -747,7 +747,7 @@ function InventoryPage() {
                 return (
                   <button key={scope.id} onClick={() => { setSelectedScope(scope.id); setStep("month"); updateURL({ scope: scope.id, step: "month", sourceId: "" }); }}
                     disabled={count === 0}
-                    className={`flex flex-col px-3 py-2.5 rounded-lg border-2 text-left transition hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed ${scope.color}`}>
+                    className={`flex flex-col px-3 py-2.5.5 rounded-lg border-2 text-left transition hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed ${scope.color}`}>
                     <p className="font-bold text-sm">{scope.label}</p>
                     <p className="text-xs opacity-70 mt-0.5">{scope.desc}</p>
                     <p className="text-xs opacity-50 mt-1">{count} fuente(s)</p>
@@ -787,7 +787,7 @@ function InventoryPage() {
                   ))}
                 </select>
                 {!selectedBranchId && branches.length > 0 && (
-                  <div className="mt-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 text-xs text-amber-700">
+                  <div className="mt-2 flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5.5 text-xs text-amber-700">
                     <span className="text-base leading-none mt-0.5">⚠️</span>
                     <span>Tenés <strong>{branches.length} instalación(es)</strong> creadas. Si ya registraste consumo por instalación, evitá usar "Toda la empresa" para no duplicar datos. Seleccioná una instalación específica para mayor precisión.</span>
                   </div>
@@ -841,40 +841,40 @@ function InventoryPage() {
                   </div>
                 )}
                 <div className="overflow-x-auto">
-                  <table className="text-sm mx-auto" style={{width:"fit-content"}}>
+                  <table className="text-base mx-auto" style={{width:"fit-content"}}>
                     <thead>
                       <tr className="bg-gray-50 border-b border-gray-100">
-                        <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-8">#</th>
-                        <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-28">N° Factura</th>
-                        {isScope1 && <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-24">Placa</th>}
-                        <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-32">Cantidad ({UNIT_LABELS[selectedSource.unit] ?? selectedSource.unit})</th>
-                        <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-36">Tipo de factura</th>
-                        <th className="text-left px-2 py-2 text-xs text-gray-400 font-semibold w-20">Imagen</th>
-                        <th className="text-center px-2 py-2 text-xs text-gray-400 font-semibold w-24">Verificar</th>
+                        <th className="text-left px-2 py-2 text-sm text-gray-500 font-semibold w-8">#</th>
+                        <th className="text-left px-2 py-2 text-sm text-gray-500 font-semibold w-28">N° Factura</th>
+                        {isScope1 && <th className="text-left px-2 py-2 text-sm text-gray-500 font-semibold w-24">Placa</th>}
+                        <th className="text-left px-2 py-2 text-sm text-gray-500 font-semibold w-32">Cantidad ({UNIT_LABELS[selectedSource.unit] ?? selectedSource.unit})</th>
+                        <th className="text-left px-2 py-2 text-sm text-gray-500 font-semibold w-36">Tipo de factura</th>
+                        <th className="text-left px-2 py-2 text-sm text-gray-500 font-semibold w-20">Imagen</th>
+                        <th className="text-center px-2 py-2 text-sm text-gray-500 font-semibold w-24">Verificar</th>
                         <th className="w-8"></th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {saved.map((log, idx) => (
                         <tr key={log.id} className={`${log.isVerified ? "bg-green-50/40" : "hover:bg-gray-50"} transition`}>
-                          <td className="px-3 py-2 text-xs text-gray-400">{idx + 1}</td>
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-2.5 text-xs text-gray-400">{idx + 1}</td>
+                          <td className="px-3 py-2.5">
                             <input value={log.editInvoice} onChange={(e) => updateSaved(log.id, "editInvoice", e.target.value)} disabled={log.isVerified}
-                              className="w-28 px-2 py-1 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-green-400 disabled:bg-gray-50 disabled:text-gray-400" />
+                              className="w-28 px-2 py-1 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 disabled:bg-gray-50 disabled:text-gray-400" />
                           </td>
                           {isScope1 && (
-                            <td className="px-3 py-2">
+                            <td className="px-3 py-2.5">
                               <input value={log.editPlate} onChange={(e) => updateSaved(log.id, "editPlate", e.target.value.toUpperCase())} disabled={log.isVerified}
                                 className="w-24 px-2 py-1 rounded-lg border border-gray-200 text-xs font-mono uppercase focus:outline-none focus:ring-2 focus:ring-red-300 disabled:bg-gray-50 disabled:text-gray-400" />
                             </td>
                           )}
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-2.5">
                             <input type="number" step="0.001" value={log.editQuantity} onChange={(e) => updateSaved(log.id, "editQuantity", e.target.value)} disabled={log.isVerified}
-                              className="w-28 px-2 py-1 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-green-400 disabled:bg-gray-50 disabled:text-gray-400" />
+                              className="w-28 px-2 py-1 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 disabled:bg-gray-50 disabled:text-gray-400" />
                           </td>
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-2.5">
                             <select value={log.editQuality} onChange={(e) => updateSaved(log.id, "editQuality", e.target.value)} disabled={log.isVerified}
-                              className="px-2 py-1 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-green-400 disabled:bg-gray-50 disabled:text-gray-400">
+                              className="px-2 py-1 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 disabled:bg-gray-50 disabled:text-gray-400">
                               <option value="DIGITAL_INVOICE">Factura digital</option>
                               <option value="PHYSICAL_INVOICE">Factura física</option>
                               <option value="MEASURED">Medido</option>
@@ -882,7 +882,7 @@ function InventoryPage() {
                               <option value="ESTIMATED">Estimado</option>
                             </select>
                           </td>
-                          <td className="px-3 py-2">
+                          <td className="px-3 py-2.5">
                             {log.evidenceImages.length > 0 ? (
                               <div className="flex items-center gap-2">
                                 <img src={log.evidenceImages[0].url} alt="evidencia"
@@ -904,7 +904,7 @@ function InventoryPage() {
                               <UploadButtons onFile={(file) => openCropper(file, log.id)} />
                             ) : <span className="text-gray-300 text-xs">—</span>}
                           </td>
-                          <td className="px-3 py-2 text-center">
+                          <td className="px-3 py-2.5 text-center">
                             <button onClick={() => verifyLog(log.id)} disabled={verifying === log.id}
                               className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium transition ${log.isVerified ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500 hover:bg-green-100 hover:text-green-700"}`}>
                               {verifying === log.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
@@ -921,30 +921,30 @@ function InventoryPage() {
                       ))}
                       {drafts.map((draft, i) => (
                         <tr key={draft.id} className="hover:bg-gray-50 bg-green-50/20">
-                          <td className="px-3 py-2.5 text-gray-400 text-xs">{saved.length + i + 1}</td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2.5.5 text-gray-400 text-xs">{saved.length + i + 1}</td>
+                          <td className="px-3 py-2.5.5">
                             <input value={draft.invoiceNumber} onChange={(e) => updateDraft(draft.id, "invoiceNumber", e.target.value)} placeholder="F-001234"
-                              className="w-28 px-2 py-1 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-green-400" />
+                              className="w-28 px-2 py-1 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
                           </td>
                           {isScope1 && (
-                            <td className="px-3 py-2.5">
+                            <td className="px-3 py-2.5.5">
                               <input value={draft.plateNumber} onChange={(e) => updateDraft(draft.id, "plateNumber", e.target.value.toUpperCase())} placeholder="ABC-123" maxLength={10}
                                 className="w-24 px-2 py-1 rounded-lg border border-gray-200 text-xs font-mono uppercase focus:outline-none focus:ring-2 focus:ring-red-300" />
                             </td>
                           )}
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2.5.5">
                             <div className="relative">
                               <input type="number" step="0.001" min="0" value={draft.quantity}
                                 onChange={(e) => updateDraft(draft.id, "quantity", e.target.value)}
                                 onKeyDown={(e) => { if ((e.key === "Enter" || e.key === "Tab") && e.currentTarget.value && parseFloat(e.currentTarget.value) > 0) autoSave(draft); }}
                                 placeholder="0.000"
-                                className="w-28 px-2 py-1 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-green-400" />
+                                className="w-28 px-2 py-1 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400" />
                               {draft.saving && <Loader2 className="w-3 h-3 animate-spin text-green-500 absolute right-2 top-2.5" />}
                             </div>
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2.5.5">
                             <select value={draft.dataQuality} onChange={(e) => updateDraft(draft.id, "dataQuality", e.target.value)}
-                              className="px-2 py-1 rounded-lg border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-green-400">
+                              className="px-2 py-1 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400">
                               <option value="DIGITAL_INVOICE">Factura digital</option>
                               <option value="PHYSICAL_INVOICE">Factura física</option>
                               <option value="MEASURED">Medido</option>
@@ -952,7 +952,7 @@ function InventoryPage() {
                               <option value="ESTIMATED">Estimado</option>
                             </select>
                           </td>
-                          <td className="px-3 py-2.5">
+                          <td className="px-3 py-2.5.5">
                             <UploadButtons onFile={(file) => {
                               if (!draft.quantity || parseFloat(draft.quantity) <= 0) {
                                 alert("Ingresa la cantidad primero y presiona Enter para guardar el registro antes de subir la imagen.");
@@ -961,7 +961,7 @@ function InventoryPage() {
                               openCropper(file, undefined, draft);
                             }} />
                           </td>
-                          <td className="px-3 py-2.5 text-center">
+                          <td className="px-3 py-2.5.5 text-center">
                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-gray-50 text-gray-300">
                               <ShieldCheck className="w-3 h-3" />Verificar
                             </span>
