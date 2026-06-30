@@ -726,7 +726,7 @@ function InventoryPage() {
           </div>
         </div>
       </div>
-      <main className={`px-4 py-6 space-y-4 mx-auto ${step === "scope" ? "max-w-3xl" : step === "month" ? "max-w-xs" : "max-w-4xl"}`}>
+      <main className={`px-4 py-6 space-y-4 mx-auto ${step === "scope" ? "max-w-3xl" : step === "month" ? "max-w-2xl" : "max-w-5xl"}`}>
 
         {step === "scope" && (
           <div>
@@ -796,14 +796,14 @@ function InventoryPage() {
             )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">Mes de registro</label>
-              <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
                 {MONTHS.map((m, i) => (
                   <button key={i} onClick={() => {
                     if (!selectedSource) { alert("Selecciona una fuente primero"); return; }
                     setSelectedMonth(i + 1); setDrafts([newDraft()]); setSaved([]);
                     setStep("table"); updateURL({ step: "table", month: String(i + 1) });
-                  }} className="py-2 px-2 rounded-lg border border-gray-200 bg-white hover:border-green-400 hover:bg-green-50 text-xs font-medium text-gray-700 transition hover:shadow-sm">
-                    {m}
+                  }} className="py-3 px-2 rounded-lg border border-gray-200 bg-white hover:border-green-400 hover:bg-green-50 hover:shadow-sm text-sm font-medium text-gray-700 transition">
+                    {m.slice(0, 3)}
                   </button>
                 ))}
               </div>
