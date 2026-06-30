@@ -105,16 +105,6 @@ export default function InstalacionesPage() {
     }
   };
 
-  const toggleActive = async (b: Branch) => {
-    if (!token) return;
-    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${b.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ isActive: !b.isActive }),
-    }).catch(() => {});
-    loadBranches();
-  };
-
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -193,7 +183,7 @@ export default function InstalacionesPage() {
                         {[b.address, b.city, b.country].filter(Boolean).join(", ") || "Sin dirección"}
                       </p>
                       {!b.isActive && (
-                        <span className="inline-block mt-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Inactiva</span>
+                        <span className="inline-block mt-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full" title="Solo el administrador puede reactivarla">Inactiva — contacta al administrador</span>
                       )}
                     </div>
                   </div>
@@ -201,10 +191,6 @@ export default function InstalacionesPage() {
                     <div className="flex items-center gap-2">
                       <button onClick={() => openEdit(b)} className="text-gray-400 hover:text-green-600 transition p-1.5">
                         <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => toggleActive(b)}
-                        className="text-xs font-semibold text-gray-400 hover:text-gray-600 px-2 py-1 transition">
-                        {b.isActive ? "Desactivar" : "Activar"}
                       </button>
                     </div>
                   )}
