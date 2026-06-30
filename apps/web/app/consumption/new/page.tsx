@@ -796,14 +796,14 @@ function InventoryPage() {
             )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">Mes de registro</label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 {MONTHS.map((m, i) => (
                   <button key={i} onClick={() => {
                     if (!selectedSource) { alert("Selecciona una fuente primero"); return; }
                     setSelectedMonth(i + 1); setDrafts([newDraft()]); setSaved([]);
                     setStep("table"); updateURL({ step: "table", month: String(i + 1) });
                   }} className="py-3 px-2 rounded-lg border border-gray-200 bg-white hover:border-green-400 hover:bg-green-50 hover:shadow-sm text-sm font-medium text-gray-700 transition">
-                    {m.slice(0, 3)}
+                    {m}
                   </button>
                 ))}
               </div>
