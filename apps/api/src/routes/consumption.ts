@@ -521,14 +521,23 @@ router.patch("/:id", requireManager, async (c) => {
   try {
     const log = await prisma.consumptionLog.findFirst({
       where: { id, companyId: payload.companyId },
+      include: { emissionSource: { include: { emissionFactor: true } } },
     });
     if (!log) return c.json({ error: "Registro no encontrado" }, 404);
+
+    const newQuantity = body.quantity !== undefined ? parseFloat(body.quantity) : log.quantity;
+    const factor = log.emissionSource?.emissionFactor;
+    const emissionsKgCO2eq = factor
+      ? calcEmissions(newQuantity, factor)
+      : log.emissionsKgCO2eq;
+
     const updated = await prisma.consumptionLog.update({
       where: { id },
       data: {
-        quantity: body.quantity ?? log.quantity,
+        quantity: newQuantity,
         notes: body.notes ?? log.notes,
         dataQuality: body.dataQuality ?? log.dataQuality,
+        emissionsKgCO2eq,
       },
     });
     return c.json(updated);
