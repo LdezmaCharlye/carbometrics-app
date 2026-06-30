@@ -44,9 +44,11 @@ router.get("/summary", requireAuth, async (c) => {
           SUM(cl."emissionsKgCO2eq") AS total_kg
         FROM consumption_logs cl
         JOIN emission_sources es ON es.id = cl."emissionSourceId"
+        LEFT JOIN branches b ON b.id = cl."branchId"
         WHERE cl."companyId" = ${companyId}
           AND cl.year = ${year}
           AND cl."branchId" = ${branchId}
+          AND (b.id IS NULL OR b."isActive" = true)
         GROUP BY cl.month, es.scope
         ORDER BY cl.month
       `
@@ -57,14 +59,20 @@ router.get("/summary", requireAuth, async (c) => {
           SUM(cl."emissionsKgCO2eq") AS total_kg
         FROM consumption_logs cl
         JOIN emission_sources es ON es.id = cl."emissionSourceId"
+        LEFT JOIN branches b ON b.id = cl."branchId"
         WHERE cl."companyId" = ${companyId}
           AND cl.year = ${year}
+          AND (b.id IS NULL OR b."isActive" = true)
         GROUP BY cl.month, es.scope
         ORDER BY cl.month
       `;
 
   const totals = await prisma.consumptionLog.aggregate({
-    where: branchId ? { companyId, year, branchId } : { companyId, year },
+    where: {
+      companyId, year,
+      ...(branchId ? { branchId } : {}),
+      OR: [{ branchId: null }, { branch: { isActive: true } }],
+    },
     _sum:   { emissionsKgCO2eq: true },
     _count: { id: true },
   });
@@ -226,7 +234,10 @@ router.get("/list", requireAuth, async (c) => {
   const emissionSourceId = c.req.query("emissionSourceId") ?? undefined;
   const branchId          = c.req.query("branchId") || undefined;
 
-  const where: any = { companyId: payload.companyId, year };
+  const where: any = {
+    companyId: payload.companyId, year,
+    OR: [{ branchId: null }, { branch: { isActive: true } }],
+  };
   if (month) where.month = month;
   if (branchId) where.branchId = branchId;
   if (emissionSourceId) {
