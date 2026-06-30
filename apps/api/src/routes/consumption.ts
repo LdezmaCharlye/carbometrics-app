@@ -445,7 +445,7 @@ router.post("/removals", requireManager, async (c) => {
 
     await prisma.$executeRaw`
       INSERT INTO removal_projects (id, name, description, type, methodology, "startYear", "endYear", "tCO2eRemovedPerYear", "verificationBody", status, notes, "createdAt", "updatedAt", "companyId")
-      VALUES (${id}, ${name}, ${description}, ${type}, ${methodology}, ${startYear}, ${endYear}, ${tCO2e}, ${verificationBody}, 'ACTIVE', ${notes}, NOW(), NOW(), ${companyId})
+      VALUES (${id}, ${name}, ${description}, ${type}::"RemovalType", ${methodology}, ${startYear}, ${endYear}, ${tCO2e}, ${verificationBody}, 'ACTIVE', ${notes}, NOW(), NOW(), ${companyId})
     `;
 
     return c.json({ success: true, data: { id, name, type, startYear, endYear, tCO2eRemovedPerYear: tCO2e } }, 201);
@@ -477,13 +477,13 @@ router.patch("/removals/:id", requireManager, async (c) => {
       UPDATE removal_projects
       SET name = ${name},
           description = ${description},
-          type = ${type},
+          type = ${type}::"RemovalType",
           methodology = ${methodology},
           "startYear" = ${startYear},
           "endYear" = ${endYear},
           "tCO2eRemovedPerYear" = ${tCO2e},
           "verificationBody" = ${verificationBody},
-          status = ${status},
+          status = ${status}::"RemovalStatus",
           notes = ${notes},
           "updatedAt" = NOW()
       WHERE id = ${id}
