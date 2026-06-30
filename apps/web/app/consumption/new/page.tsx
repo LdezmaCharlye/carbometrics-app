@@ -33,7 +33,7 @@ interface DraftRow {
 }
 
 function newDraft(): DraftRow {
-  return { id: crypto.randomUUID(), invoiceNumber: "", plateNumber: "", quantity: "", dataQuality: "DIGITAL_INVOICE", saving: false, imageFile: null };
+  return { id: crypto.randomUUID(), invoiceNumber: "", plateNumber: "", quantity: "", dataQuality: "PHYSICAL_INVOICE", saving: false, imageFile: null };
 }
 
 // ─── Recortador ──────────────────────────────────────────────────────────────
@@ -875,8 +875,8 @@ function InventoryPage() {
                           <td className="px-3 py-2.5">
                             <select value={log.editQuality} onChange={(e) => updateSaved(log.id, "editQuality", e.target.value)} disabled={log.isVerified}
                               className="px-2 py-1 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 disabled:bg-gray-50 disabled:text-gray-400">
-                              <option value="DIGITAL_INVOICE">Factura digital</option>
                               <option value="PHYSICAL_INVOICE">Factura física</option>
+                              <option value="DIGITAL_INVOICE">Factura digital</option>
                               <option value="MEASURED">Medido</option>
                               <option value="CALCULATED">Calculado</option>
                               <option value="ESTIMATED">Estimado</option>
