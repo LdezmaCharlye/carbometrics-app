@@ -707,7 +707,7 @@ function InventoryPage() {
         />
       )}
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-200 bg-white">
         <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 group transition">
           <div className="w-8 h-8 bg-green-600 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition">
             <Leaf className="w-4 h-4 text-white" />
@@ -726,7 +726,7 @@ function InventoryPage() {
           </div>
         </div>
       </div>
-      <main className={`px-4 py-6 space-y-4 ${step === "scope" ? "w-1/3" : step === "month" ? "max-w-xs" : "max-w-4xl mx-auto"}`}>
+      <main className={`px-4 py-6 space-y-4 mx-auto ${step === "scope" ? "max-w-3xl" : step === "month" ? "max-w-xs" : "max-w-4xl"}`}>
 
         {step === "scope" && (
           <div>
@@ -741,7 +741,7 @@ function InventoryPage() {
                 ))}
               </select>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {SCOPES.map((scope) => {
                 const count = sources.filter((s) => s.scope === scope.id).length;
                 return (
