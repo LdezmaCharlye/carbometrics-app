@@ -707,7 +707,8 @@ function InventoryPage() {
         />
       )}
 
-      <div className="flex items-center gap-2 px-4 py-4 border-b border-gray-200 bg-white">
+      <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-200 bg-white">
+        <div className="max-w-6xl w-full mx-auto flex items-center gap-2">
         <button onClick={() => router.push("/dashboard")} className="flex items-center gap-2 group transition">
           <div className="w-8 h-8 bg-green-600 group-hover:bg-green-500 rounded-lg flex items-center justify-center transition">
             <Leaf className="w-4 h-4 text-white" />
@@ -725,8 +726,9 @@ function InventoryPage() {
             <span className={`${step === "table" ? "text-green-600 font-medium" : "text-gray-400"}`}>Datos</span>
           </div>
         </div>
+        </div>
       </div>
-      <main className={`px-4 py-6 space-y-4 mx-auto ${step === "scope" ? "max-w-3xl" : step === "month" ? "max-w-2xl" : "max-w-5xl"}`}>
+      <main className={`px-6 py-6 space-y-4 mx-auto ${step === "scope" ? "max-w-3xl" : step === "month" ? "max-w-2xl" : "max-w-5xl"}`}>
 
         {step === "scope" && (
           <div>
