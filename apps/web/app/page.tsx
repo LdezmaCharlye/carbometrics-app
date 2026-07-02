@@ -410,7 +410,7 @@ footer{background:var(--black);padding:44px 5% 26px}
 <section className="section" style={{background: 'var(--gray)'}} id="nosotros">
   <div className="inner">
     <span className="sec-tag rv">Nosotros</span>
-    <h2 className="sec-title rv">Cuidamos los recursos del planeta<br/>a través de cada <em>empresa comprometida.</em></h2>
+    <h2 className="sec-title rv">Protegemos los recursos del planeta<br/>a través de cada <em>empresa comprometida.</em></h2>
     <p className="sec-sub rv">Nuestra organización promueve la innovación y la ciencia para que empresas de todo el mundo puedan medir, gestionar y reducir su huella de carbono.</p>
     <div className="pillars-grid">
       <div className="pillar rv">
