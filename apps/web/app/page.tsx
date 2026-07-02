@@ -710,6 +710,140 @@ footer{background:var(--black);padding:44px 5% 26px}
 </section>
 
 
+<section style={{padding:'64px 5% 0',background:'var(--white)',overflow:'hidden'}}>
+  <div style={{maxWidth:'var(--max)',margin:'0 auto',textAlign:'center'}}>
+    <span style={{fontSize:'11px',fontWeight:'700',color:'var(--g)',letterSpacing:'.12em',textTransform:'uppercase',display:'block',marginBottom:'10px'}}>Ecosistema de emisiones</span>
+    <h2 style={{fontSize:'clamp(22px,3vw,34px)',fontWeight:'800',color:'var(--black)',letterSpacing:'-.6px',marginBottom:'8px'}}>Cada fuente de emisión,<br/><span style={{color:'var(--g)'}}>bajo control.</span></h2>
+    <p style={{fontSize:'14px',color:'var(--muted)',marginBottom:'0'}}>CarboMetrics conecta tus actividades con su huella real de carbono.</p>
+  </div>
+  <div style={{position:'relative',width:'100%',height:'340px',overflow:'hidden'}}>
+    <style>{`
+      @keyframes floatUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+      @keyframes floatUpSlow{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+      @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+      @keyframes spinBlade{from{transform:rotate(0deg) translateX(0)}to{transform:rotate(360deg) translateX(0)}}
+      @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+      @keyframes dash{0%{stroke-dashoffset:200}100%{stroke-dashoffset:0}}
+      .ico-float{animation:floatUp 4s ease-in-out infinite}
+      .ico-float-slow{animation:floatUpSlow 6s ease-in-out infinite}
+      .blade{transform-origin:50% 50%;animation:spin 2s linear infinite}
+      .blade2{transform-origin:50% 50%;animation:spin 3s linear infinite}
+      .pulse-dot{animation:pulse 2s ease-in-out infinite}
+      .dash-line{stroke-dasharray:200;animation:dash 3s linear infinite}
+    `}</style>
+    <svg viewBox="0 0 1200 320" xmlns="http://www.w3.org/2000/svg" style={{width:'100%',height:'100%',display:'block'}}>
+
+      {/* Suelo */}
+      <rect x="0" y="290" width="1200" height="30" fill="#f3fdf6"/>
+      <line x1="0" y1="290" x2="1200" y2="290" stroke="#2db84b" strokeWidth="2" strokeOpacity=".3"/>
+
+      {/* Líneas de conexión animadas */}
+      <line x1="200" y1="200" x2="600" y2="200" stroke="#2db84b" strokeWidth="1.5" strokeOpacity=".2" strokeDasharray="8 6" className="dash-line"/>
+      <line x1="600" y1="200" x2="1000" y2="200" stroke="#2db84b" strokeWidth="1.5" strokeOpacity=".2" strokeDasharray="8 6" className="dash-line"/>
+
+      {/* Fábrica izquierda */}
+      <g className="ico-float-slow" style={{animationDelay:'0s'}}>
+        <rect x="80" y="210" width="50" height="80" rx="3" fill="#e8f8ed" stroke="#2db84b" strokeWidth="1.5"/>
+        <rect x="90" y="190" width="12" height="25" rx="2" fill="#2db84b" fillOpacity=".3"/>
+        <rect x="108" y="180" width="12" height="35" rx="2" fill="#2db84b" fillOpacity=".5"/>
+        <rect x="88" y="230" width="8" height="12" rx="1" fill="#2db84b" fillOpacity=".4"/>
+        <rect x="100" y="230" width="8" height="12" rx="1" fill="#2db84b" fillOpacity=".4"/>
+        <rect x="112" y="230" width="8" height="12" rx="1" fill="#2db84b" fillOpacity=".4"/>
+        {/* Humo */}
+        <circle cx="96" cy="172" r="8" fill="#2db84b" fillOpacity=".1" className="pulse-dot"/>
+        <circle cx="114" cy="162" r="6" fill="#2db84b" fillOpacity=".08" className="pulse-dot" style={{animationDelay:'.5s'}}/>
+        <text x="105" y="308" textAnchor="middle" fontSize="10" fill="#2db84b" fontWeight="700">Industria</text>
+      </g>
+
+      {/* Auto */}
+      <g className="ico-float" style={{animationDelay:'.3s'}}>
+        <rect x="230" y="255" width="70" height="30" rx="8" fill="#e8f8ed" stroke="#2db84b" strokeWidth="1.5"/>
+        <rect x="245" y="240" width="42" height="20" rx="6" fill="#2db84b" fillOpacity=".3"/>
+        <circle cx="248" cy="288" r="8" fill="#2db84b"/>
+        <circle cx="282" cy="288" r="8" fill="#2db84b"/>
+        <circle cx="248" cy="288" r="4" fill="white"/>
+        <circle cx="282" cy="288" r="4" fill="white"/>
+        <text x="265" y="308" textAnchor="middle" fontSize="10" fill="#2db84b" fontWeight="700">Transporte</text>
+      </g>
+
+      {/* Edificio oficinas */}
+      <g className="ico-float-slow" style={{animationDelay:'1s'}}>
+        <rect x="380" y="180" width="60" height="110" rx="3" fill="#e8f8ed" stroke="#2db84b" strokeWidth="1.5"/>
+        <rect x="388" y="190" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".5"/>
+        <rect x="403" y="190" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".5"/>
+        <rect x="418" y="190" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".5"/>
+        <rect x="388" y="210" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".3"/>
+        <rect x="403" y="210" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".5"/>
+        <rect x="418" y="210" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".3"/>
+        <rect x="388" y="230" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".5"/>
+        <rect x="403" y="230" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".3"/>
+        <rect x="418" y="230" width="10" height="12" rx="1" fill="#2db84b" fillOpacity=".5"/>
+        <rect x="400" y="260" width="20" height="30" rx="2" fill="#2db84b" fillOpacity=".3"/>
+        <text x="410" y="308" textAnchor="middle" fontSize="10" fill="#2db84b" fontWeight="700">Electricidad</text>
+      </g>
+
+      {/* LOGO CENTRAL CarboMetrics */}
+      <g className="ico-float" style={{animationDelay:'.5s'}}>
+        <rect x="540" y="155" width="120" height="120" rx="16" fill="#2db84b"/>
+        <circle cx="600" cy="215" r="35" fill="white" fillOpacity=".15"/>
+        <path d="M590 228 C585 218 585 205 592 198 C598 192 608 191 614 196 C618 200 618 206 614 210 L608 207 C610 204 609 200 606 198 C602 196 597 198 594 202 C590 208 590 218 594 224 Z" fill="white"/>
+        <path d="M580 235 C578 230 590 220 600 230 C607 237 600 245 593 240" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+        <text x="600" y="248" textAnchor="middle" fontSize="11" fill="white" fontWeight="800">CarboMetrics</text>
+        <text x="600" y="262" textAnchor="middle" fontSize="9" fill="rgba(255,255,255,.7)">Inventario GEI</text>
+      </g>
+
+      {/* Aerogenerador */}
+      <g style={{animationDelay:'0s'}}>
+        <line x1="780" y1="290" x2="780" y2="180" stroke="#2db84b" strokeWidth="3" strokeOpacity=".5"/>
+        <g className="blade" style={{transformOrigin:'780px 180px'}}>
+          <line x1="780" y1="180" x2="780" y2="130" stroke="#2db84b" strokeWidth="3"/>
+          <line x1="780" y1="180" x2="737" y2="205" stroke="#2db84b" strokeWidth="3"/>
+          <line x1="780" y1="180" x2="823" y2="205" stroke="#2db84b" strokeWidth="3"/>
+        </g>
+        <circle cx="780" cy="180" r="6" fill="#2db84b"/>
+        <text x="780" y="308" textAnchor="middle" fontSize="10" fill="#2db84b" fontWeight="700">Energía eólica</text>
+      </g>
+
+      {/* Panel solar */}
+      <g className="ico-float" style={{animationDelay:'1.5s'}}>
+        <rect x="900" y="220" width="80" height="50" rx="4" fill="none" stroke="#2db84b" strokeWidth="1.5"/>
+        <line x1="933" y1="220" x2="933" y2="270" stroke="#2db84b" strokeWidth="1" strokeOpacity=".5"/>
+        <line x1="967" y1="220" x2="967" y2="270" stroke="#2db84b" strokeWidth="1" strokeOpacity=".5"/>
+        <line x1="900" y1="237" x2="980" y2="237" stroke="#2db84b" strokeWidth="1" strokeOpacity=".5"/>
+        <line x1="900" y1="253" x2="980" y2="253" stroke="#2db84b" strokeWidth="1" strokeOpacity=".5"/>
+        <rect x="901" y="221" width="31" height="15" rx="2" fill="#2db84b" fillOpacity=".2"/>
+        <rect x="934" y="221" width="31" height="15" rx="2" fill="#2db84b" fillOpacity=".4"/>
+        <rect x="901" y="238" width="31" height="15" rx="2" fill="#2db84b" fillOpacity=".4"/>
+        <rect x="934" y="238" width="31" height="15" rx="2" fill="#2db84b" fillOpacity=".2"/>
+        <rect x="901" y="255" width="31" height="14" rx="2" fill="#2db84b" fillOpacity=".3"/>
+        <rect x="934" y="255" width="31" height="14" rx="2" fill="#2db84b" fillOpacity=".5"/>
+        <text x="940" y="308" textAnchor="middle" fontSize="10" fill="#2db84b" fontWeight="700">Energía solar</text>
+      </g>
+
+      {/* Árbol / remoción */}
+      <g className="ico-float-slow" style={{animationDelay:'2s'}}>
+        <rect x="1070" y="250" width="10" height="40" rx="2" fill="#2db84b" fillOpacity=".5"/>
+        <ellipse cx="1075" cy="230" rx="25" ry="28" fill="#e8f8ed" stroke="#2db84b" strokeWidth="1.5"/>
+        <ellipse cx="1063" cy="242" rx="18" ry="20" fill="#e8f8ed" stroke="#2db84b" strokeWidth="1.5"/>
+        <ellipse cx="1087" cy="242" rx="18" ry="20" fill="#e8f8ed" stroke="#2db84b" strokeWidth="1.5"/>
+        <ellipse cx="1075" cy="222" rx="22" ry="24" fill="#d1f5da" stroke="#2db84b" strokeWidth="1.5"/>
+        <text x="1075" y="308" textAnchor="middle" fontSize="10" fill="#2db84b" fontWeight="700">Remociones</text>
+      </g>
+
+      {/* Nubes decorativas */}
+      <g fillOpacity=".06" fill="#2db84b">
+        <ellipse cx="160" cy="100" rx="40" ry="18"/>
+        <ellipse cx="185" cy="95" rx="30" ry="15"/>
+        <ellipse cx="500" cy="80" rx="35" ry="15"/>
+        <ellipse cx="525" cy="75" rx="25" ry="12"/>
+        <ellipse cx="950" cy="110" rx="38" ry="16"/>
+        <ellipse cx="975" cy="105" rx="28" ry="13"/>
+      </g>
+
+    </svg>
+  </div>
+</section>
+
 <section className="cta-band">
   <h2 className="rv">Empieza ahora. Lucha contra el Cambio Climático.</h2>
   <p className="rv">Únete a las organizaciones comprometidas con luchar contra el cambio climático.</p>
