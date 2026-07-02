@@ -386,18 +386,17 @@ footer{background:var(--black);padding:44px 5% 26px}
     <div>
       <div className="hero-chip">
         <div className="chip-dot"><svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M5 12l5 5L20 7"/></svg></div>
-        <span>ISO 14064-1 · ISO 14046 · Beta</span>
+        <span>ISO 14064-1 · GHG Protocol</span>
       </div>
       <h1>Gestiona el impacto<br/>ambiental de tu empresa</h1>
-      <h2>Huella de carbono y huella hídrica,<br/>en un solo lugar.</h2>
-      <p className="hero-desc">CarboMetrics e HydroMetrics te ayudan a medir, gestionar y reportar tus emisiones de carbono y tu consumo de agua bajo normas internacionales reconocidas.</p>
+      <h2>Gestión de huella de carbono<br/>bajo estándares internacionales.</h2>
+      <p className="hero-desc">CarboMetrics te ayuda a medir, gestionar y reportar tus emisiones de gases de efecto invernadero bajo normas internacionales reconocidas.</p>
       <div className="hero-btns">
         <a href="#productos" className="btn-primary">VER NUESTROS PRODUCTOS</a>
       </div>
       <div className="hero-badges">
         <span className="badge-label">BASADO EN:</span>
         <span className="badge">ISO 14064-1</span>
-        <span className="badge">ISO 14046</span>
         <span className="badge">GHG Protocol</span>
         <span className="badge">Net Zero</span>
       </div>
@@ -413,7 +412,7 @@ footer{background:var(--black);padding:44px 5% 26px}
   <div className="inner">
     <span className="sec-tag rv">Nosotros</span>
     <h2 className="sec-title rv">Cuidamos los recursos del planeta<br/>a través de cada <em>empresa comprometida.</em></h2>
-    <p className="sec-sub rv">Nuestra organización promueve la innovación y la ciencia para que empresas de todo el mundo puedan medir, gestionar y reducir su huella de carbono y su huella hídrica.</p>
+    <p className="sec-sub rv">Nuestra organización promueve la innovación y la ciencia para que empresas de todo el mundo puedan medir, gestionar y reducir su huella de carbono.</p>
     <div className="pillars-grid">
       <div className="pillar rv">
         <div className="pillar-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg></div>
@@ -439,7 +438,7 @@ footer{background:var(--black);padding:44px 5% 26px}
   <div className="inner">
     <span className="sec-tag rv">Productos</span>
     <h2 className="sec-title rv">Dos plataformas,<br/><em>dos soluciones.</em></h2>
-    <p className="sec-sub rv">Cada producto mide un recurso distinto, pero ambos viven bajo el mismo techo: administra tus emisiones de carbono y tu consumo de agua.</p>
+    <p className="sec-sub rv">Mide y gestiona tus emisiones de carbono con herramientas alineadas a estándares internacionales.</p>
     <div className="products-grid">
 
       <div className="product-card is-carbon rv">
@@ -454,7 +453,7 @@ footer{background:var(--black);padding:44px 5% 26px}
         <a href="https://www.carbometrics.site/login" className="btn-product">Iniciar sesión en CarboMetrics</a>
       </div>
 
-      <div className="product-card is-water rv d1">
+      <div className="product-card is-water rv d1" style={{display:'none'}}>
         <div className="product-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 11.5 5 16a7 7 0 0 0 14 0c0-4.5-7-14-7-14Z"/></svg></div>
         <div className="product-name">Hydro<span>Metrics</span></div>
         <span className="product-tag">Gestión de huella hídrica</span>
@@ -467,7 +466,7 @@ footer{background:var(--black);padding:44px 5% 26px}
       </div>
 
     </div>
-    <p className="login-note rv">¿Tu organización usa ambos productos? Entra al panel correspondiente según los productos habilitados para tu empresa.</p>
+    <p className="login-note rv">¿Tienes una cuenta? <a href="https://www.carbometrics.site/login">Inicia sesión aquí.</a></p>
   </div>
 </section>
 
@@ -476,7 +475,7 @@ footer{background:var(--black);padding:44px 5% 26px}
   <div className="inner">
     <span className="sec-tag rv">Cómo funciona</span>
     <h2 className="sec-title rv">Tu camino hacia la<br/><em>sostenibilidad ambiental</em></h2>
-    <p className="sec-sub rv">Tres pasos simples para medir, gestionar y reducir tu huella de carbono y/o tu huella hídrica organizacional.</p>
+    <p className="sec-sub rv">Tres pasos simples para medir, gestionar y reducir tu huella de carbono organizacional.</p>
     <div className="how-grid">
       <div className="how-card rv">
         <span className="how-step">Paso 01</span>
@@ -507,8 +506,8 @@ footer{background:var(--black);padding:44px 5% 26px}
       <div className="normas-badges rv">
         <div className="norma-badge"><div className="norma-badge-dot"></div><span>ISO 14064-1</span></div>
         <div className="norma-badge"><div className="norma-badge-dot"></div><span>GHG Protocol</span></div>
-        <div className="norma-badge"><div className="norma-badge-dot" style={{background: 'var(--b)'}}></div><span>ISO 14046:2014</span></div>
-        <div className="norma-badge"><div className="norma-badge-dot" style={{background: 'var(--b)'}}></div><span>Water Footprint Network</span></div>
+        <div className="norma-badge"><div className="norma-badge-dot"></div><span>IPCC AR6</span></div>
+        <div className="norma-badge"><div className="norma-badge-dot"></div><span>Net Zero</span></div>
       </div>
     </div>
     <div className="normas-right rv">
@@ -527,10 +526,10 @@ footer{background:var(--black);padding:44px 5% 26px}
         <div className="norma-title">Otras Emisiones Indirectas</div>
         <div className="norma-desc">Transporte, compras, residuos y viajes fuera de tus límites operativos pero dentro de tu cadena de valor.</div>
       </div>
-      <div className="norma-card is-water">
-        <div className="norma-num" style={{color: 'var(--b)'}}>IV</div>
-        <div className="norma-title">Huella Hídrica</div>
-        <div className="norma-desc">Agua Azul, Verde y Gris según ISO 14046, con evaluación de escasez y degradación de la cuenca.</div>
+      <div className="norma-card">
+        <div className="norma-num">IV</div>
+        <div className="norma-title">Remociones y Sumideros</div>
+        <div className="norma-desc">Proyectos de remoción de carbono (reforestación, biocarbón, etc.) conforme a la cláusula 5.3 de ISO 14064-1.</div>
       </div>
     </div>
   </div>
@@ -665,7 +664,7 @@ footer{background:var(--black);padding:44px 5% 26px}
         </div>
         <div className="ci">
           <div className="ci-icon"><svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
-          <div><strong>Estado</strong><span>Operativo — HydroMetrics en fase beta</span></div>
+          <div><strong>Estado</strong><span>Operativo</span></div>
         </div>
       </div>
     </div>
@@ -707,15 +706,13 @@ footer{background:var(--black);padding:44px 5% 26px}
   <div style={{maxWidth: 'var(--max)', margin: '0 auto'}}>
     <div className="footer-top">
       <div className="footer-brand">
-        <div className="footer-logo">Carbo<span>Metrics</span> · Hydro<span style={{color: 'var(--b)'}}>Metrics</span></div>
-        <p>Innovación y ciencia para la gestión de la huella de carbono y la huella hídrica en organizaciones comprometidas con el planeta.</p>
+        <div className="footer-logo">Carbo<span>Metrics</span></div>
+        <p>Innovación y ciencia para la gestión de la huella de carbono en organizaciones comprometidas con el planeta.</p>
         <div className="footer-tags">
           <span className="footer-tag">ISO 14064-1</span>
-          <span className="footer-tag">ISO 14046</span>
-          <span className="footer-tag">Huella Hídrica</span>
           <span className="footer-tag">GHG Protocol</span>
           <span className="footer-tag">Net Zero</span>
-          <span className="footer-tag">Beta</span>
+          <span className="footer-tag">IPCC AR6</span>
         </div>
       </div>
       <div className="footer-col">
@@ -738,7 +735,7 @@ footer{background:var(--black);padding:44px 5% 26px}
       </div>
     </div>
     <div className="footer-bot">
-      <span className="footer-copy">© 2026 CarboMetrics & HydroMetrics. Todos los derechos reservados. · Cochabamba, Bolivia</span>
+      <span className="footer-copy">© 2026 CarboMetrics · Carbométrica. Todos los derechos reservados. · Cochabamba, Bolivia</span>
     </div>
   </div>
 </footer>
