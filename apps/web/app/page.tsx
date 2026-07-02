@@ -346,9 +346,6 @@ export default function Home() {
   return (
     <>
       <link rel="preconnect" href="https://fonts.googleapis.com" />
-ENDOFFILE
-echo "done"</parameter>
-<parameter name="description">Generar el texto del cambio completo</parameter>
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
       <style>{`
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
