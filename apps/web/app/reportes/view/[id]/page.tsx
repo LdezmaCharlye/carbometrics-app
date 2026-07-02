@@ -92,7 +92,7 @@ export default function PublicReportPage() {
   const preparedDate: string = data.preparedDate ?? "";
   const branchName: string | null = payload.branchName ?? data.branchName ?? null;
 
-  const publicUrl = `https://carbometrics.site/reports/view/${id}`;
+  const publicUrl = `https://carbometrics.site/reportes/view/${id}`;
 
   const baseYear = company?.baseYear ?? years[0] ?? null;
   const activeSources   = (company?.emissionSources ?? []).filter((s: any) => !s.isExcluded);
