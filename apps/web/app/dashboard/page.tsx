@@ -53,19 +53,19 @@ function CustomTooltip({ active, payload, label, baseYear, viewYear, isBaseYear 
             <span className="w-2 h-2 rounded-sm inline-block bg-green-500" />
             Gestión {viewYear}
           </span>
-          <span className="font-semibold text-gray-800">{current.toFixed(3)} tCO₂eq</span>
+          <span className="font-semibold text-gray-800">{current.toFixed(2)} tCO₂eq</span>
         </div>
         <div className="flex justify-between gap-6">
           <span className="flex items-center gap-1.5 text-gray-400">
             <span className="w-2 h-2 rounded-sm inline-block bg-gray-400" />
             {isBaseYear ? "Año base (ref.)" : `Año base ${baseYear}`}
           </span>
-          <span className="font-medium text-gray-500">{baseline.toFixed(3)} tCO₂eq</span>
+          <span className="font-medium text-gray-500">{baseline.toFixed(2)} tCO₂eq</span>
         </div>
         {diffTCO2 !== null && (
           <div className="flex justify-between gap-6 pt-1.5 border-t border-gray-100 font-semibold text-blue-500">
             <span>Diferencia</span>
-            <span>{diffTCO2 > 0 ? "+" : ""}{diffTCO2.toFixed(3)} tCO₂eq</span>
+            <span>{diffTCO2 > 0 ? "+" : ""}{diffTCO2.toFixed(2)} tCO₂eq</span>
           </div>
         )}
         {isBaseYear && (
@@ -702,15 +702,15 @@ const T = (key: string) => translate(lang, key);
                     <td className="px-4 py-3.5 text-right tabular-nums text-gray-600 text-xs">
                       {row.v3 > 0 ? row.v3.toFixed(2) : <span className="text-gray-200">—</span>}
                     </td>
-                    <td className="px-4 py-3.5 text-right tabular-nums font-semibold text-gray-900">{row.total.toFixed(3)}</td>
+                    <td className="px-4 py-3.5 text-right tabular-nums font-semibold text-gray-900">{row.total.toFixed(2)}</td>
                     {!isBaseYear && baseYear && <>
                       <td className="px-4 py-3.5 text-right tabular-nums text-gray-400 text-xs">
-                        {row.baseTotal > 0 ? row.baseTotal.toFixed(3) : <span className="text-gray-200">—</span>}
+                        {row.baseTotal > 0 ? row.baseTotal.toFixed(2) : <span className="text-gray-200">—</span>}
                       </td>
                       <td className="px-6 py-3.5 text-right">
                         {row.diffTCO2 !== null ? (
                           <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-500">
-                            {row.diffTCO2 > 0 ? "▲" : "▼"} {Math.abs(row.diffTCO2).toFixed(3)}
+                            {row.diffTCO2 > 0 ? "▲" : "▼"} {Math.abs(row.diffTCO2).toFixed(2)}
                           </span>
                         ) : <span className="text-gray-200 text-xs">—</span>}
                       </td>
@@ -721,16 +721,16 @@ const T = (key: string) => translate(lang, key);
               <tfoot>
                 <tr className="bg-gray-50 border-t-2 border-gray-200">
                   <td className="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Total {viewYear}</td>
-                  <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-600 text-xs">{s1.toFixed(3)}</td>
-                  <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-600 text-xs">{s2.toFixed(3)}</td>
-                  <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-600 text-xs">{s3.toFixed(3)}</td>
-                  <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-900">{totalCurrent.toFixed(3)}</td>
+                  <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-600 text-xs">{s1.toFixed(2)}</td>
+                  <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-600 text-xs">{s2.toFixed(2)}</td>
+                  <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-600 text-xs">{s3.toFixed(2)}</td>
+                  <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-900">{totalCurrent.toFixed(2)}</td>
                   {!isBaseYear && baseYear && <>
-                    <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-400 text-xs">{totalBaseline.toFixed(3)}</td>
+                    <td className="px-4 py-3.5 text-right tabular-nums font-bold text-gray-400 text-xs">{totalBaseline.toFixed(2)}</td>
                     <td className="px-6 py-3.5 text-right">
                       {totalDiffTCO2 !== null && (
                         <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-500">
-                          {totalDiffTCO2 > 0 ? "▲" : "▼"} {Math.abs(totalDiffTCO2).toFixed(3)}
+                          {totalDiffTCO2 > 0 ? "▲" : "▼"} {Math.abs(totalDiffTCO2).toFixed(2)}
                         </span>
                       )}
                     </td>

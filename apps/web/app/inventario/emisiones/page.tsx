@@ -845,7 +845,7 @@ function InventoryPage() {
                     <p className="text-xs font-semibold text-gray-700">{saved.length} factura(s)</p>
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       <span><strong className="text-green-700">{verifiedCount}</strong>/{saved.length} verificados</span>
-                      <span>Total: <strong className="text-green-700">{totalEmissions.toFixed(4)} tCO₂eq</strong></span>
+                      <span>Total: <strong className="text-green-700">{totalEmissions.toFixed(2)} tCO₂eq</strong></span>
                     </div>
                   </div>
                 )}
