@@ -120,7 +120,7 @@ function RemovalsCard({ token, viewYear, totalEmissions }: { token: string; view
           </div>
         </div>
         <button
-          onClick={() => router.push("/removals")}
+          onClick={() => router.push("/remociones")}
           className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition">
           <Plus className="w-3.5 h-3.5" />Gestionar
         </button>
@@ -136,7 +136,7 @@ function RemovalsCard({ token, viewYear, totalEmissions }: { token: string; view
             La organización no tiene remociones ni sumideros identificados en el período de inventario.
           </p>
           <button
-            onClick={() => router.push("/removals")}
+            onClick={() => router.push("/remociones")}
             className="mt-3 inline-flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
             <Plus className="w-3.5 h-3.5" />Registrar remoción
           </button>
@@ -425,7 +425,7 @@ const T = (key: string) => translate(lang, key);
               className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition">
               <Plus className="w-3.5 h-3.5" />{T("dashboard.registerConsumption")}
             </button>
-            <button onClick={() => router.push("/removals")}
+            <button onClick={() => router.push("/remociones")}
               className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
               <Leaf className="w-3.5 h-3.5" />{T("dashboard.removals")}
             </button>
