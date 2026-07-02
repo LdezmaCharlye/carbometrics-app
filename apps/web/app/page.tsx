@@ -387,7 +387,7 @@ footer{background:var(--black);padding:44px 5% 26px}
         <div className="chip-dot"><svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M5 12l5 5L20 7"/></svg></div>
         <span>ISO 14064-1 · GHG Protocol</span>
       </div>
-      <h1>Gestiona el impacto<br/>ambiental de tu empresa</h1>
+      <h1>Controla el <em style={{fontStyle:'normal',color:'var(--g)'}}>impacto ambiental</em><br/>de tu organización</h1>
       <h2>Gestión de huella de carbono<br/>bajo estándares internacionales.</h2>
       <p className="hero-desc">CarboMetrics te ayuda a medir, gestionar y reportar tus emisiones de gases de efecto invernadero bajo normas internacionales reconocidas.</p>
       <div className="hero-btns">
@@ -436,7 +436,7 @@ footer{background:var(--black);padding:44px 5% 26px}
 <section className="section" id="productos">
   <div className="inner">
     <span className="sec-tag rv">Productos</span>
-    <h2 className="sec-title rv">Una plataforma,<br/><em>una solución.</em></h2>
+    <h2 className="sec-title rv">Una plataforma online,<br/><em>una solución tecnológica.</em></h2>
     <p className="sec-sub rv">Mide y gestiona tus emisiones de carbono con herramientas alineadas a estándares internacionales.</p>
     <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px', marginTop:'32px', marginBottom:'24px'}}>
       <div className="pillar rv" style={{textAlign:'left'}}>
