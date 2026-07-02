@@ -421,7 +421,7 @@ const T = (key: string) => translate(lang, key);
             </div>
           </button>
           <div className="flex items-center gap-3">
-            <button onClick={() => { window.location.href = "/consumption/new"; }}
+            <button onClick={() => { window.location.href = "/inventario/emisiones"; }}
               className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition">
               <Plus className="w-3.5 h-3.5" />{T("dashboard.registerConsumption")}
             </button>
@@ -659,7 +659,7 @@ const T = (key: string) => translate(lang, key);
           {tableRows.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <p className="text-sm text-gray-400">No hay registros para {viewYear}.</p>
-              <button onClick={() => { window.location.href = "/consumption/new"; }}
+              <button onClick={() => { window.location.href = "/inventario/emisiones"; }}
                 className="mt-3 flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition mx-auto">
                 <Plus className="w-3.5 h-3.5" />Registrar consumo
               </button>
