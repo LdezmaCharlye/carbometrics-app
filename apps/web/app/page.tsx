@@ -437,7 +437,7 @@ footer{background:var(--black);padding:44px 5% 26px}
 <section className="section" id="productos">
   <div className="inner">
     <span className="sec-tag rv">Productos</span>
-    <h2 className="sec-title rv">Dos plataformas,<br/><em>dos soluciones.</em></h2>
+    <h2 className="sec-title rv">Una plataforma,<br/><em>una solución.</em></h2>
     <p className="sec-sub rv">Mide y gestiona tus emisiones de carbono con herramientas alineadas a estándares internacionales.</p>
     <div className="products-grid">
 
@@ -623,24 +623,24 @@ footer{background:var(--black);padding:44px 5% 26px}
     <div className="faq-wrap rv">
       <div className="faq-item open">
         <button className="faq-btn">
-          <span className="faq-q">¿Necesito una cuenta distinta para CarboMetrics y para HydroMetrics?</span>
+          <span className="faq-q">¿Necesito conocimientos técnicos para usar CarboMetrics?</span>
           <span className="faq-icon"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
         </button>
-        <div className="faq-body">No. Usas un solo inicio de sesión para ambos productos. Si tu organización tiene habilitado CarboMetrics, HydroMetrics, o ambos, el sistema te lleva directamente al panel correspondiente con esa misma cuenta.</div>
+        <div className="faq-body">No. CarboMetrics está diseñado para que cualquier persona pueda registrar consumos y generar reportes sin necesitar formación técnica previa. Solo necesitas tus facturas y datos de actividad.</div>
       </div>
       <div className="faq-item">
         <button className="faq-btn">
-          <span className="faq-q">¿Puedo empezar con un solo producto y agregar el otro más adelante?</span>
+          <span className="faq-q">¿Puedo cambiar de plan más adelante?</span>
           <span className="faq-icon"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
         </button>
-        <div className="faq-body">Sí. La mayoría de nuestros clientes comienza con uno de los dos productos y activa el segundo cuando lo necesita, sin perder su historial ni tener que crear una cuenta nueva.</div>
+        <div className="faq-body">Sí. Puedes cambiar de plan en cualquier momento sin perder tu historial de datos ni tener que crear una cuenta nueva. Contacta al administrador para gestionar el cambio.</div>
       </div>
       <div className="faq-item">
         <button className="faq-btn">
-          <span className="faq-q">¿Qué normas siguen sus reportes?</span>
+          <span className="faq-q">¿Qué normas siguen los reportes de CarboMetrics?</span>
           <span className="faq-icon"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></span>
         </button>
-        <div className="faq-body">CarboMetrics genera reportes alineados a ISO 14064-1 y al GHG Protocol. HydroMetrics genera reportes alineados a ISO 14046:2014, incluyendo inventario de huella hídrica y evaluación de impacto (escasez y degradación).</div>
+        <div className="faq-body">CarboMetrics genera reportes alineados a ISO 14064-1:2018 y al GHG Protocol Corporate Standard, usando factores de emisión del IPCC AR6, DEFRA 2023 y EPA 2023.</div>
       </div>
     </div>
   </div>
