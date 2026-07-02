@@ -429,7 +429,7 @@ const T = (key: string) => translate(lang, key);
               className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
               <Leaf className="w-3.5 h-3.5" />{T("dashboard.removals")}
             </button>
-            <button onClick={() => router.push("/reportes")}
+            <button onClick={() => router.push("/reporte")}
               className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
               <FileText className="w-3.5 h-3.5" />{T("dashboard.report")}
             </button>
@@ -668,7 +668,7 @@ const T = (key: string) => translate(lang, key);
   <CheckCircle className="w-3.5 h-3.5" />
   Verificar
 </button>
-<button onClick={() => router.push("/reportes")}
+<button onClick={() => router.push("/reporte")}
   className="flex items-center gap-1.5 border border-gray-200 hover:border-green-400 text-gray-600 hover:text-green-600 text-xs font-semibold px-3.5 py-2 rounded-lg transition">
   <FileText className="w-3.5 h-3.5" />
   Reportes
