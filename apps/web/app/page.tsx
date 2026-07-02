@@ -376,7 +376,6 @@ footer{background:var(--black);padding:44px 5% 26px}
   <div className="mob-div"></div>
   <div className="mob-btns">
     <a href="https://www.carbometrics.site/login" className="btn-login">Iniciar sesión</a>
-    <button type="button" className="btn-login-blue" onClick={handleHydroClick}>Iniciar sesión</button>
   </div>
 </div>
 
@@ -427,7 +426,7 @@ footer{background:var(--black);padding:44px 5% 26px}
       <div className="pillar rv d2">
         <div className="pillar-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <div className="pillar-title">Compromiso Ambiental</div>
-        <div className="pillar-desc">Cada organización que usa CarboMetrics o HydroMetrics suma un paso concreto hacia la sostenibilidad y el uso responsable de los recursos.</div>
+        <div className="pillar-desc">Cada organización que usa CarboMetrics suma un paso concreto hacia la sostenibilidad y la reducción de su impacto ambiental.</div>
       </div>
     </div>
   </div>
@@ -439,34 +438,50 @@ footer{background:var(--black);padding:44px 5% 26px}
     <span className="sec-tag rv">Productos</span>
     <h2 className="sec-title rv">Una plataforma,<br/><em>una solución.</em></h2>
     <p className="sec-sub rv">Mide y gestiona tus emisiones de carbono con herramientas alineadas a estándares internacionales.</p>
-    <div className="products-grid">
-
-      <div className="product-card is-carbon rv">
-        <div className="product-icon"><svg viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
-        <div className="product-name">Carbo<span>Metrics</span></div>
-        <span className="product-tag">Gestión de huella de carbono</span>
-        <p className="product-desc">Inventario de gases de efecto invernadero por Alcances 1, 2 y 3, con reporte técnico listo para auditoría.</p>
-        <div className="product-badges">
-          <span className="product-badge">ISO 14064-1</span>
-          <span className="product-badge">GHG Protocol</span>
+    <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:'16px', marginTop:'32px', marginBottom:'24px'}}>
+      <div className="pillar rv" style={{textAlign:'left'}}>
+        <div className="pillar-icon" style={{margin:'0 0 14px'}}>
+          <svg viewBox="0 0 24 24" style={{width:'24px',height:'24px',stroke:'var(--g)',fill:'none',strokeWidth:'1.8'}}><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         </div>
-        <a href="https://www.carbometrics.site/login" className="btn-product">Iniciar sesión en CarboMetrics</a>
+        <div className="pillar-title">Inventario GEI</div>
+        <div className="pillar-desc">Alcances 1, 2 y 3 con cálculo automático de emisiones por factura.</div>
       </div>
-
-      <div className="product-card is-water rv d1" style={{display:'none'}}>
-        <div className="product-icon"><svg viewBox="0 0 24 24"><path d="M12 2C12 2 5 11.5 5 16a7 7 0 0 0 14 0c0-4.5-7-14-7-14Z"/></svg></div>
-        <div className="product-name">Hydro<span>Metrics</span></div>
-        <span className="product-tag">Gestión de huella hídrica</span>
-        <p className="product-desc">Inventario de agua Azul, Verde y Gris, con evaluación de impacto (escasez y degradación) y reporte conforme a ISO 14046.</p>
-        <div className="product-badges">
-          <span className="product-badge">ISO 14046:2014</span>
-          <span className="product-badge">Water Footprint Network</span>
+      <div className="pillar rv d1" style={{textAlign:'left'}}>
+        <div className="pillar-icon" style={{margin:'0 0 14px'}}>
+          <svg viewBox="0 0 24 24" style={{width:'24px',height:'24px',stroke:'var(--g)',fill:'none',strokeWidth:'1.8'}}><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
         </div>
-        <button type="button" className="btn-product" onClick={handleHydroClick}>Iniciar sesión en HydroMetrics</button>
+        <div className="pillar-title">Por instalación</div>
+        <div className="pillar-desc">Gestiona emisiones por sucursal o planta con desglose detallado.</div>
       </div>
-
+      <div className="pillar rv d2" style={{textAlign:'left'}}>
+        <div className="pillar-icon" style={{margin:'0 0 14px'}}>
+          <svg viewBox="0 0 24 24" style={{width:'24px',height:'24px',stroke:'var(--g)',fill:'none',strokeWidth:'1.8'}}><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <div className="pillar-title">Reporte verificable</div>
+        <div className="pillar-desc">Informe técnico con QR público, listo para auditoría externa.</div>
+      </div>
     </div>
-    <p className="login-note rv">¿Tienes una cuenta? <a href="https://www.carbometrics.site/login">Inicia sesión aquí.</a></p>
+
+    <div className="rv" style={{background:'var(--g-pale)',border:'2px solid var(--g)',borderRadius:'16px',padding:'32px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'2rem',flexWrap:'wrap'}}>
+      <div style={{display:'flex',alignItems:'center',gap:'20px'}}>
+        <div style={{width:'60px',height:'60px',background:'var(--g)',borderRadius:'16px',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+          <svg viewBox="0 0 24 24" style={{width:'30px',height:'30px',fill:'none',stroke:'white',strokeWidth:'1.8'}} strokeLinecap="round" strokeLinejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
+        </div>
+        <div>
+          <div style={{fontSize:'22px',fontWeight:'800',letterSpacing:'-.4px',marginBottom:'4px',color:'var(--black)'}}>Carbo<span style={{color:'var(--g)'}}>Metrics</span></div>
+          <div style={{fontSize:'11px',fontWeight:'700',letterSpacing:'.08em',textTransform:'uppercase',color:'var(--g)',marginBottom:'10px'}}>Gestión de huella de carbono</div>
+          <div style={{display:'flex',gap:'8px',flexWrap:'wrap'}}>
+            <span style={{fontSize:'11px',background:'var(--g-light)',color:'var(--g-dark)',fontWeight:'600',padding:'4px 10px',borderRadius:'4px'}}>ISO 14064-1</span>
+            <span style={{fontSize:'11px',background:'var(--g-light)',color:'var(--g-dark)',fontWeight:'600',padding:'4px 10px',borderRadius:'4px'}}>GHG Protocol</span>
+            <span style={{fontSize:'11px',background:'var(--g-light)',color:'var(--g-dark)',fontWeight:'600',padding:'4px 10px',borderRadius:'4px'}}>IPCC AR6</span>
+          </div>
+        </div>
+      </div>
+      <a href="https://www.carbometrics.site/login" style={{display:'inline-flex',alignItems:'center',gap:'8px',background:'var(--g)',color:'white',fontSize:'14px',fontWeight:'700',padding:'14px 28px',borderRadius:'var(--r)',textDecoration:'none',whiteSpace:'nowrap',transition:'background .2s'}} onMouseOver={e=>(e.currentTarget.style.background='var(--g-dark)')} onMouseOut={e=>(e.currentTarget.style.background='var(--g)')}>
+        Iniciar sesión →
+      </a>
+    </div>
+    <p className="login-note rv" style={{marginTop:'16px'}}>¿Primera vez? <a href="#contacto">Contáctanos</a> para solicitar acceso.</p>
   </div>
 </section>
 
@@ -481,7 +496,7 @@ footer{background:var(--black);padding:44px 5% 26px}
         <span className="how-step">Paso 01</span>
         <div className="how-icon"><svg viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
         <div className="how-title">Inventario de Datos</div>
-        <div className="how-desc">Registra tus fuentes de emisión (Alcances 1, 2 y 3) o tu inventario de agua (Azul, Verde y Gris). La plataforma sugiere los factores correctos según tu sector y país.</div>
+        <div className="how-desc">Registra tus fuentes de emisión por Alcances 1, 2 y 3. La plataforma sugiere los factores de emisión correctos según tu sector y país.</div>
       </div>
       <div className="how-card rv d1">
         <span className="how-step">Paso 02</span>
@@ -493,7 +508,7 @@ footer{background:var(--black);padding:44px 5% 26px}
         <span className="how-step">Paso 03</span>
         <div className="how-icon"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg></div>
         <div className="how-title">Reporte Verificable</div>
-        <div className="how-desc">Genera el informe técnico ISO 14064-1 o ISO 14046 listo para auditoría. Demuestra tu compromiso ambiental de forma verificada.</div>
+        <div className="how-desc">Genera el informe técnico ISO 14064-1 listo para auditoría. Demuestra tu compromiso ambiental con un reporte verificable y con código QR público.</div>
       </div>
     </div>
   </div>
@@ -541,7 +556,7 @@ footer{background:var(--black);padding:44px 5% 26px}
     <span className="sec-tag rv">Planes · CarboMetrics</span>
     <h2 className="sec-title rv">Elige el plan adecuado<br/>para tu <em>organización.</em></h2>
     <p className="sec-sub rv" style={{margin: '0 auto 12px'}}>Sin contratos largos. Cancela cuando quieras.</p>
-    <p className="sec-sub rv" style={{margin: '0 auto 44px', fontSize: '14px'}}>¿También necesitas HydroMetrics? <a href="#contacto" style={{color: 'var(--b)', fontWeight: '700', textDecoration: 'none'}}>Contáctanos</a> para un plan combinado.</p>
+    <p className="sec-sub rv" style={{margin: '0 auto 44px', fontSize: '14px'}}>¿Tienes dudas sobre qué plan elegir? <a href="#contacto" style={{color: 'var(--g)', fontWeight: '700', textDecoration: 'none'}}>Contáctanos</a> y te asesoramos.</p>
     <div className="plans-grid">
 
       <div className="plan rv">
