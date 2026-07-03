@@ -711,16 +711,13 @@ footer{background:var(--black);padding:44px 5% 26px}
   </div>
 </section>
 
-
 <section style={{padding:'64px 5% 0',background:'var(--white)',overflow:'hidden'}}>
   <div style={{maxWidth:'var(--max)',margin:'0 auto',textAlign:'center'}}>
     <span style={{fontSize:'11px',fontWeight:'700',color:'var(--g)',letterSpacing:'.12em',textTransform:'uppercase',display:'block',marginBottom:'10px'}}>Ecosistema de emisiones</span>
     <h2 style={{fontSize:'clamp(22px,3vw,34px)',fontWeight:'800',color:'var(--black)',letterSpacing:'-.6px',marginBottom:'8px'}}>Cada fuente de emisión,<br/><span style={{color:'var(--g)'}}>bajo control.</span></h2>
     <p style={{fontSize:'14px',color:'var(--muted)',marginBottom:'0'}}>CarboMetrics conecta tus actividades con su huella real de carbono.</p>
   </div>
-  <video autoPlay loop muted playsInline style={{width:'100%',display:'block'}}>
-  <source src="/escena-carbometrics.mp4" type="video/mp4" />
-</video>
+  <img src="/Escena SVG Carbometrics.svg" style={{width:'100%',display:'block'}} alt="Ecosistema de emisiones" />
   <div style={{display:'none'}}>
     <style>{`
       @keyframes floatUp{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
